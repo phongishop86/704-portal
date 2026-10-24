@@ -1,0 +1,1969 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VTB-ASSETS | Quản lý Tài sản &amp; CCDC</title>
+<style>
+:root{
+  --primary:#0b5ed7; --primary-dark:#07428f; --primary-light:#e8f1fd;
+  --accent:#14b8a6; --bg:#f3f5f9; --card:#ffffff; --border:#e2e6ee;
+  --text:#1b2330; --text-mute:#6b7585;
+  --green:#1a9c5b; --green-bg:#e6f8ef;
+  --red:#d9344a; --red-bg:#fdeaec;
+  --gray:#6b7585; --gray-bg:#eef0f4;
+  --amber:#c9890c; --amber-bg:#fdf3dc;
+  --radius:10px; --shadow:0 1px 3px rgba(20,30,60,.08), 0 1px 2px rgba(20,30,60,.06);
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;height:100%;}
+body{font-family:"Segoe UI",-apple-system,BlinkMacSystemFont,Roboto,Arial,sans-serif;background:var(--bg);color:var(--text);font-size:14px;}
+a{color:var(--primary);text-decoration:none;}
+button{font-family:inherit;cursor:pointer;}
+input,select,textarea{font-family:inherit;font-size:14px;}
+::-webkit-scrollbar{width:9px;height:9px;}
+::-webkit-scrollbar-thumb{background:#c4ccda;border-radius:6px;}
+
+#app{display:flex;min-height:100vh;}
+
+/* Login */
+.login-wrap{min-height:100vh;width:100%;display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(135deg,var(--primary-dark),var(--primary) 55%,var(--accent));}
+.login-card{background:#fff;border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,.25);padding:40px 36px;width:380px;}
+.login-logo{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
+.login-logo .mark{width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,var(--primary),var(--accent));
+  display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:16px;}
+.login-logo .name{font-size:20px;font-weight:800;color:var(--primary-dark);letter-spacing:.3px;}
+.login-sub{color:var(--text-mute);margin:0 0 22px;font-size:13px;}
+.login-card label{display:block;font-size:12.5px;font-weight:600;color:var(--text-mute);margin:14px 0 5px;}
+.login-card input{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;outline:none;transition:.15s;}
+.login-card input:focus{border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-light);}
+.btn-primary{background:var(--primary);color:#fff;border:none;padding:11px 16px;border-radius:8px;font-weight:600;width:100%;margin-top:20px;font-size:14.5px;}
+.btn-primary:hover{background:var(--primary-dark);}
+.login-hint{margin-top:18px;font-size:12px;color:var(--text-mute);background:var(--bg);padding:10px 12px;border-radius:8px;line-height:1.7;}
+.login-error{background:var(--red-bg);color:var(--red);padding:9px 12px;border-radius:8px;font-size:13px;margin-top:14px;}
+
+/* Sidebar */
+.sidebar{width:248px;flex:0 0 248px;background:linear-gradient(180deg,#0c2340,#0a1c33 60%);color:#cfd8e8;display:flex;flex-direction:column;position:sticky;top:0;height:100vh;}
+.sidebar-head{display:flex;align-items:center;gap:10px;padding:18px 16px;border-bottom:1px solid rgba(255,255,255,.08);}
+.sidebar-head .mark{width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,var(--primary),var(--accent));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;}
+.sidebar-head .name{color:#fff;font-weight:800;font-size:15.5px;}
+.sidebar-head .sub{font-size:10.5px;color:#8fa3c2;letter-spacing:.4px;}
+.sidebar-nav{flex:1;overflow-y:auto;padding:10px 10px;}
+.nav-group-label{font-size:10.5px;text-transform:uppercase;letter-spacing:.6px;color:#6f84a6;margin:16px 10px 6px;font-weight:700;}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:8px;color:#cfd8e8;font-size:13.5px;cursor:pointer;margin-bottom:2px;}
+.nav-item .ic{width:18px;text-align:center;font-size:15px;}
+.nav-item:hover{background:rgba(255,255,255,.08);color:#fff;}
+.nav-item.active{background:var(--primary);color:#fff;font-weight:600;}
+.sidebar-foot{padding:12px 16px;font-size:10.5px;color:#5f7497;border-top:1px solid rgba(255,255,255,.08);}
+
+/* Main */
+.main{flex:1;min-width:0;display:flex;flex-direction:column;}
+.topbar{height:58px;flex:0 0 58px;background:#fff;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 22px;position:sticky;top:0;z-index:5;}
+.topbar-left{display:flex;align-items:center;gap:10px;min-width:0;}
+.topbar-title{font-size:16.5px;font-weight:700;}
+.breadcrumb{font-size:12px;color:var(--text-mute);}
+.topbar-right{display:flex;align-items:center;gap:12px;}
+.user-chip{display:flex;align-items:center;gap:8px;padding:5px 10px 5px 5px;border-radius:20px;background:var(--bg);}
+.user-chip .av{width:28px;height:28px;border-radius:50%;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;}
+.user-chip .nm{font-size:12.5px;font-weight:600;line-height:1.1;}
+.user-chip .rl{font-size:10.5px;color:var(--text-mute);}
+.btn-logout{border:1px solid var(--border);background:#fff;padding:7px 13px;border-radius:7px;font-size:12.5px;color:var(--text);font-weight:600;}
+.btn-logout:hover{background:var(--red-bg);color:var(--red);border-color:var(--red);}
+
+.content{padding:22px;flex:1;}
+.page-title{font-size:19px;font-weight:800;margin:0 0 4px;}
+.page-sub{color:var(--text-mute);font-size:13px;margin:0 0 18px;}
+
+/* Cards / stats */
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px;margin-bottom:20px;}
+.stat-card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px 18px;cursor:pointer;border:1px solid var(--border);transition:.15s;position:relative;overflow:hidden;}
+.stat-card:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(20,30,60,.12);}
+.stat-card .bar{position:absolute;left:0;top:0;bottom:0;width:4px;}
+.stat-card .lab{font-size:12px;color:var(--text-mute);font-weight:600;}
+.stat-card .val{font-size:26px;font-weight:800;margin-top:4px;}
+.stat-card.active{outline:2px solid var(--primary);}
+
+.card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);border:1px solid var(--border);padding:18px;margin-bottom:16px;}
+.card h3{margin:0 0 12px;font-size:14.5px;font-weight:700;}
+.warn-row{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;background:var(--amber-bg);color:#7a5a06;font-size:13px;margin-bottom:6px;cursor:pointer;}
+.warn-row:hover{filter:brightness(.97);}
+.warn-row.danger{background:var(--red-bg);color:#7a1322;}
+
+/* Toolbar / filters */
+.toolbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:14px;}
+.toolbar .grow{flex:1;min-width:180px;}
+.input,.select{padding:8px 11px;border:1px solid var(--border);border-radius:8px;background:#fff;width:100%;}
+.btn{padding:8px 14px;border-radius:8px;border:1px solid var(--border);background:#fff;font-size:13px;font-weight:600;color:var(--text);white-space:nowrap;}
+.btn:hover{background:var(--bg);}
+.btn-blue{background:var(--primary);border-color:var(--primary);color:#fff;}
+.btn-blue:hover{background:var(--primary-dark);}
+.btn-green{background:var(--green);border-color:var(--green);color:#fff;}
+.btn-red{background:var(--red);border-color:var(--red);color:#fff;}
+.btn-sm{padding:5px 10px;font-size:12px;border-radius:6px;}
+.btn[disabled]{opacity:.5;cursor:not-allowed;}
+
+/* Table */
+.table-wrap{overflow-x:auto;background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);border:1px solid var(--border);}
+table{border-collapse:collapse;width:100%;font-size:13px;}
+th,td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);white-space:nowrap;}
+th{background:#f8f9fc;font-weight:700;font-size:12px;color:var(--text-mute);text-transform:uppercase;letter-spacing:.3px;user-select:none;cursor:pointer;position:sticky;top:0;}
+th.sortable:hover{color:var(--primary);}
+th .arrow{margin-left:4px;font-size:10px;}
+tbody tr:hover{background:var(--primary-light);}
+tbody tr{cursor:pointer;}
+.selbanner{display:flex;align-items:center;gap:12px;background:var(--primary);color:#fff;padding:9px 14px;font-size:13px;font-weight:600;border-radius:var(--radius) var(--radius) 0 0;}
+.selbanner .sp{flex:1;}
+.selbanner button{background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.4);color:#fff;padding:6px 11px;border-radius:6px;font-size:12px;font-weight:600;}
+.selbanner button:hover{background:rgba(255,255,255,.3);}
+
+.badge{display:inline-block;padding:3px 9px;border-radius:20px;font-size:11.5px;font-weight:700;}
+.badge-green{background:var(--green-bg);color:var(--green);}
+.badge-red{background:var(--red-bg);color:var(--red);}
+.badge-gray{background:var(--gray-bg);color:var(--gray);}
+.badge-amber{background:var(--amber-bg);color:var(--amber);}
+.badge-blue{background:var(--primary-light);color:var(--primary);}
+
+.pill{display:inline-flex;align-items:center;gap:5px;background:var(--bg);border-radius:20px;padding:4px 10px;font-size:11.5px;color:var(--text-mute);}
+
+/* Forms */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.form-grid .full{grid-column:1/-1;}
+.form-field label{display:block;font-size:12.5px;font-weight:600;color:var(--text-mute);margin-bottom:5px;}
+.form-actions{display:flex;gap:10px;margin-top:18px;}
+
+/* Steps */
+.steps{display:flex;align-items:center;margin:4px 0 20px;flex-wrap:wrap;}
+.step{display:flex;align-items:center;gap:8px;padding:7px 12px;border-radius:20px;background:var(--gray-bg);color:var(--text-mute);font-size:12.5px;font-weight:600;margin-right:6px;margin-bottom:6px;}
+.step.done{background:var(--green-bg);color:var(--green);}
+.step.current{background:var(--primary);color:#fff;}
+.step .n{width:18px;height:18px;border-radius:50%;background:rgba(0,0,0,.12);display:flex;align-items:center;justify-content:center;font-size:10.5px;}
+.step.current .n,.step.done .n{background:rgba(255,255,255,.3);}
+
+.hist-item{display:flex;gap:10px;padding:9px 0;border-bottom:1px dashed var(--border);font-size:12.5px;}
+.hist-item .dot{width:9px;height:9px;border-radius:50%;background:var(--primary);margin-top:4px;flex:0 0 9px;}
+.hist-item .t{color:var(--text-mute);font-size:11.5px;}
+
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--border);margin-bottom:16px;}
+.tab{padding:9px 16px;font-size:13px;font-weight:600;color:var(--text-mute);border-bottom:2px solid transparent;cursor:pointer;}
+.tab.active{color:var(--primary);border-color:var(--primary);}
+
+.empty{text-align:center;padding:40px 20px;color:var(--text-mute);}
+.flash{position:fixed;top:16px;right:16px;z-index:200;display:flex;flex-direction:column;gap:8px;}
+.flash .msg{background:#1b2330;color:#fff;padding:11px 16px;border-radius:8px;font-size:13px;box-shadow:0 6px 20px rgba(0,0,0,.25);max-width:360px;}
+.flash .msg.ok{background:var(--green);}
+.flash .msg.err{background:var(--red);}
+
+.fab-back{position:fixed;right:24px;bottom:24px;width:50px;height:50px;border-radius:50%;background:var(--primary);color:#fff;
+  display:flex;align-items:center;justify-content:center;font-size:20px;box-shadow:0 6px 18px rgba(11,94,215,.45);border:none;z-index:90;}
+.fab-back:hover{background:var(--primary-dark);}
+
+.modal-bg{position:fixed;inset:0;background:rgba(10,15,25,.5);display:flex;align-items:center;justify-content:center;z-index:300;}
+.modal{background:#fff;border-radius:12px;padding:22px;width:420px;max-width:92vw;max-height:86vh;overflow:auto;}
+.modal h3{margin-top:0;}
+
+.quickref{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;}
+.quickref button{font-size:12px;}
+
+.kv{display:grid;grid-template-columns:150px 1fr;gap:8px 14px;font-size:13px;}
+.kv .k{color:var(--text-mute);font-weight:600;}
+
+.filegrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;}
+.filecard{border:1px solid var(--border);border-radius:10px;padding:14px;background:#fafbfd;}
+.filecard.has{border-color:var(--green);background:var(--green-bg);}
+.filecard h4{margin:0 0 6px;font-size:13px;}
+.filecard .fn{font-size:11.5px;color:var(--text-mute);word-break:break-all;}
+
+@media(max-width:860px){
+  .sidebar{position:fixed;left:-260px;z-index:100;transition:.2s;}
+  .sidebar.open{left:0;}
+  .form-grid{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+(function(){
+"use strict";
+/* ========================= Constants ========================= */
+var STORAGE_KEY = "vtbAssetsDB_v1";
+var DB = null;
+
+var STATUS = {USE:"Đang sử dụng", BROKEN:"Hỏng đề nghị sửa chữa", LIQ:"Đề nghị thanh lý"};
+var STATUS_BADGE = {};
+STATUS_BADGE[STATUS.USE]="badge-green"; STATUS_BADGE[STATUS.BROKEN]="badge-red"; STATUS_BADGE[STATUS.LIQ]="badge-gray";
+var STATUS_LIST = [STATUS.USE, STATUS.BROKEN, STATUS.LIQ];
+
+var ROLE = {ADMIN:"admin", TCTH:"tcth", IT:"it", LDP:"ldp", USER:"user"};
+var ROLE_LABELS = {admin:"Quản trị hệ thống", tcth:"TCTH (Quản lý tài sản TW)", it:"Nhân viên IT", ldp:"Lãnh đạo Phòng", user:"Nhân viên"};
+
+var TRANSFER_STEPS = ["Lập lệnh","LĐP đích xác nhận","TCTH/Admin phê duyệt","Thủ kho/Admin thực hiện","Hoàn thành"];
+var REPAIR_STEPS = ["Lập phiếu báo hỏng","LĐP duyệt","TCTH tiếp nhận & điều phối","IT khắc phục"];
+
+var TEMPLATE_TYPES = {
+  repair:{label:"Phiếu báo hỏng / sự cố"},
+  transfer:{label:"Lệnh điều chuyển tài sản"},
+  rotation:{label:"Biên bản luân chuyển CCDC"},
+  inventory:{label:"Biên bản kiểm kê"}
+};
+
+var NAV_ITEMS = [
+  {group:"Chính", items:[
+    {route:"dashboard", icon:"🏠", label:"Tổng quan", roles:null},
+    {route:"assets", icon:"📦", label:"Sổ Tài sản / CCDC", roles:null},
+    {route:"transfers", icon:"🔄", label:"Điều chuyển", roles:null},
+    {route:"repairs", icon:"🛠️", label:"Sửa chữa / Báo hỏng", roles:null},
+    {route:"inventory", icon:"📋", label:"Kiểm kê", roles:null}
+  ]},
+  {group:"Quản trị", items:[
+    {route:"admin_users", icon:"👤", label:"Người dùng", roles:["admin"]},
+    {route:"admin_departments", icon:"🏢", label:"Phòng ban", roles:["admin","tcth"]},
+    {route:"admin_categories", icon:"🏷️", label:"Nhóm tài sản", roles:["admin","tcth"]},
+    {route:"admin_import", icon:"📥", label:"Import dữ liệu", roles:["admin","tcth"]},
+    {route:"admin_templates", icon:"📄", label:"Mẫu biểu", roles:["admin","tcth"]},
+    {route:"admin_settings", icon:"⚙️", label:"Cài đặt / Sao lưu", roles:["admin"]},
+    {route:"admin_reset", icon:"⚠️", label:"Hard Reset", roles:["admin"]}
+  ]}
+];
+
+/* ========================= Utils ========================= */
+function uid(prefix){ return (prefix||"ID")+"-"+Date.now().toString(36).toUpperCase()+Math.random().toString(36).slice(2,6).toUpperCase(); }
+function escapeHtml(s){ s=(s===null||s===undefined)?"":String(s); return s.replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];}); }
+function fmtMoney(n){ n=Number(n||0); return n.toLocaleString("vi-VN")+" đ"; }
+function fmtDate(iso){ if(!iso) return "—"; var d=new Date(iso); if(isNaN(d.getTime())) return iso; return d.toLocaleDateString("vi-VN"); }
+function nowISO(){ return new Date().toISOString(); }
+function todayStr(){ return new Date().toISOString().slice(0,10); }
+function stripDiacritics(str){
+  str=(str||"").toString();
+  str=str.normalize("NFD").replace(/[̀-ͯ]/g,"");
+  str=str.replace(/đ/g,"d").replace(/Đ/g,"D");
+  return str;
+}
+function normKey(s){ return stripDiacritics(String(s||"")).toLowerCase().replace(/\s+/g," ").trim(); }
+function qs(sel,root){ return (root||document).querySelector(sel); }
+function qsa(sel,root){ return Array.prototype.slice.call((root||document).querySelectorAll(sel)); }
+function byId(id){ var l=DB.assets; for(var i=0;i<l.length;i++) if(l[i].id===id) return l[i]; return null; }
+function userById(id){ var l=DB.users; for(var i=0;i<l.length;i++) if(l[i].id===id) return l[i]; return null; }
+function deptById(id){ var l=DB.departments; for(var i=0;i<l.length;i++) if(l[i].id===id) return l[i]; return null; }
+function catById(id){ var l=DB.categories; for(var i=0;i<l.length;i++) if(l[i].id===id) return l[i]; return null; }
+function deptName(id){ var d=deptById(id); return d?d.name:"(Không rõ phòng ban)"; }
+function catName(id){ var c=catById(id); return c?(c.code?c.code+" - ":"")+c.name:"(Chưa phân nhóm)"; }
+function arrayBufferToBase64(buf){
+  var bytes=new Uint8Array(buf), binary="", chunk=0x8000;
+  for(var i=0;i<bytes.length;i+=chunk){ binary+=String.fromCharCode.apply(null, bytes.subarray(i,i+chunk)); }
+  return btoa(binary);
+}
+function base64ToUint8Array(b64){
+  var binary=atob(b64), bytes=new Uint8Array(binary.length);
+  for(var i=0;i<binary.length;i++) bytes[i]=binary.charCodeAt(i);
+  return bytes;
+}
+function downloadBlob(blob, filename){
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement("a"); a.href=url; a.download=filename;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(function(){URL.revokeObjectURL(url);},2000);
+}
+
+/* ========================= Seed data ========================= */
+function seedData(){
+  var depts=[
+    {id:"D1", code:"001", name:"Hội sở - Phòng CNTT", address:"Trụ sở chính"},
+    {id:"D2", code:"002", name:"Hội sở - Phòng Kế toán", address:"Trụ sở chính"},
+    {id:"D3", code:"070430", name:"CN Bến Lức - PGD Cần Giuộc", address:"Long An"},
+    {id:"D4", code:"070435", name:"CN Bến Lức - PGD Thủ Thừa", address:"Long An"},
+    {id:"D5", code:"003", name:"Phòng Hành chính Quản trị (TCTH)", address:"Trụ sở chính"}
+  ];
+  var cats=[
+    {id:"C1", code:"TSCD-01", name:"Nhà cửa vật kiến trúc", type:"TSCD"},
+    {id:"C2", code:"TSCD-02", name:"Máy móc thiết bị", type:"TSCD"},
+    {id:"C3", code:"CCDC-01", name:"Thiết bị văn phòng", type:"CCDC"},
+    {id:"C4", code:"CCDC-02", name:"Thiết bị CNTT", type:"CCDC"}
+  ];
+  var users=[
+    {id:"U1", username:"admin", password:"admin123", name:"Nguyễn Văn Quản", empCode:"NV0001", deptId:"D1", role:"admin"},
+    {id:"U2", username:"tcth", password:"tcth123", name:"Trần Thị Thảo", empCode:"NV0002", deptId:"D5", role:"tcth"},
+    {id:"U3", username:"it", password:"it123", name:"Lê Văn Khoa", empCode:"NV0003", deptId:"D1", role:"it"},
+    {id:"U4", username:"ldp", password:"ldp123", name:"Phạm Thị Hạnh", empCode:"NV0004", deptId:"D2", role:"ldp"},
+    {id:"U5", username:"nv1", password:"nv123", name:"Hoàng Văn Nam", empCode:"NV0005", deptId:"D2", role:"user"}
+  ];
+  var assets=[
+    {id:"TSCD-000001", code:"TSCD-000001", name:"Trụ sở làm việc Hội sở", type:"TSCD", catId:"C1", deptId:"D1", userId:null,
+      nguyenGia:5000000000, giaTriConLai:4200000000, ngayGhiNhan:"2023-01-10", status:STATUS.USE,
+      history:[{status:STATUS.USE, date:"2023-01-10", note:"Ghi nhận ban đầu", by:"admin"}]},
+    {id:"TSCD-000002", code:"TSCD-000002", name:"Máy phát điện dự phòng", type:"TSCD", catId:"C2", deptId:"D1", userId:"U3",
+      nguyenGia:320000000, giaTriConLai:180000000, ngayGhiNhan:"2022-06-01", status:STATUS.USE,
+      history:[{status:STATUS.USE, date:"2022-06-01", note:"Ghi nhận ban đầu", by:"admin"}]},
+    {id:"CCDC-000001", code:"CCDC-000001", name:"Laptop Dell Latitude 5420", type:"CCDC", catId:"C4", deptId:"D1", userId:"U3",
+      nguyenGia:22000000, giaTriConLai:9000000, ngayGhiNhan:"2023-03-15", status:STATUS.USE,
+      history:[{status:STATUS.USE, date:"2023-03-15", note:"Ghi nhận ban đầu", by:"admin"}]},
+    {id:"CCDC-000002", code:"CCDC-000002", name:"Máy in Canon LBP2900", type:"CCDC", catId:"C3", deptId:"D2", userId:"U4",
+      nguyenGia:3200000, giaTriConLai:500000, ngayGhiNhan:"2021-09-01", status:STATUS.BROKEN,
+      history:[{status:STATUS.USE, date:"2021-09-01", note:"Ghi nhận ban đầu", by:"admin"},
+                {status:STATUS.BROKEN, date:"2026-09-20", note:"Hỏng nguồn", by:"ldp"}]},
+    {id:"CCDC-000003", code:"CCDC-000003", name:"Bàn làm việc gỗ công nghiệp", type:"CCDC", catId:"C3", deptId:"D2", userId:null,
+      nguyenGia:2500000, giaTriConLai:300000, ngayGhiNhan:"2019-01-01", status:STATUS.LIQ,
+      history:[{status:STATUS.USE, date:"2019-01-01", note:"Ghi nhận ban đầu", by:"admin"},
+                {status:STATUS.LIQ, date:"2026-08-01", note:"Đề nghị thanh lý do hết khấu hao", by:"tcth"}]},
+    {id:"CCDC-000004", code:"CCDC-000004", name:"Laptop HP ProBook 440", type:"CCDC", catId:"C4", deptId:"D3", userId:null,
+      nguyenGia:18000000, giaTriConLai:12000000, ngayGhiNhan:"2024-02-10", status:STATUS.USE,
+      history:[{status:STATUS.USE, date:"2024-02-10", note:"Ghi nhận ban đầu", by:"admin"}]}
+  ];
+  return {
+    version:1, seededAt: nowISO(),
+    departments: depts, categories: cats, users: users, assets: assets,
+    transfers: [], repairs: [], inventories: [],
+    templateConfig: {files:{}},
+    inventoryCadenceMonths: 6,
+    session: null
+  };
+}
+
+function loadDB(){
+  var raw=null;
+  try{ raw=localStorage.getItem(STORAGE_KEY); }catch(e){}
+  if(!raw){ DB=seedData(); saveDB(); return; }
+  try{
+    DB=JSON.parse(raw);
+    migrateDB();
+  }catch(e){
+    DB=seedData();
+  }
+  saveDB();
+}
+function migrateDB(){
+  if(!DB.version) DB.version=1;
+  if(!DB.departments) DB.departments=[];
+  if(!DB.categories) DB.categories=[];
+  if(!DB.users) DB.users=[];
+  if(!DB.assets) DB.assets=[];
+  if(!DB.transfers) DB.transfers=[];
+  if(!DB.repairs) DB.repairs=[];
+  if(!DB.inventories) DB.inventories=[];
+  if(!DB.templateConfig) DB.templateConfig={files:{}};
+  if(!DB.templateConfig.files) DB.templateConfig.files={};
+  if(!DB.inventoryCadenceMonths) DB.inventoryCadenceMonths=6;
+  DB.assets.forEach(function(a){ if(!a.history) a.history=[]; if(a.nguyenGia===undefined) a.nguyenGia=a.giaTriConLai||0; });
+}
+function saveDB(){
+  try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(DB)); }catch(e){ console.warn("saveDB failed", e); }
+}
+function hardReset(){
+  try{ localStorage.removeItem(STORAGE_KEY); }catch(e){}
+  DB=seedData();
+  saveDB();
+  state.session=null;
+  state.history=[];
+  state.selectedIds={};
+}
+
+/* ========================= App state / router ========================= */
+var state = {
+  route:"login", params:{}, flash:[], session:null,
+  history:[], sidebarOpen:false,
+  assetFilters:{q:"", type:"", status:"", catId:"", deptId:""},
+  sortCol:{assets:"code"}, sortDir:{assets:1},
+  selectedIds:{}
+};
+
+function currentUser(){ return state.session ? userById(state.session.userId) : null; }
+function hasRole(){ var u=currentUser(); if(!u) return false; for(var i=0;i<arguments.length;i++) if(u.role===arguments[i]) return true; return false; }
+
+function nav(route, params, opts){
+  opts=opts||{};
+  if(!opts.replace && state.route && state.route!=="login"){
+    state.history.push({route:state.route, params:state.params});
+    if(state.history.length>40) state.history.shift();
+  }
+  state.route=route; state.params=params||{};
+  state.selectedIds={};
+  render();
+  window.scrollTo(0,0);
+}
+function goBack(){
+  var prev=state.history.pop();
+  if(prev){ state.route=prev.route; state.params=prev.params; state.selectedIds={}; render(); }
+  else nav("dashboard",{},{replace:true});
+}
+function flash(msg, type){
+  state.flash.push({id:uid("F"), msg:msg, type:type||"ok"});
+  render();
+  setTimeout(function(){ state.flash.shift(); renderFlashOnly(); }, 3200);
+}
+function renderFlashOnly(){
+  var el=qs("#flashHost"); if(el) el.outerHTML=flashHtml();
+}
+function flashHtml(){
+  return '<div class="flash" id="flashHost">'+state.flash.map(function(f){
+    return '<div class="msg '+f.type+'">'+escapeHtml(f.msg)+'</div>';
+  }).join("")+'</div>';
+}
+
+/* ========================= Render root ========================= */
+function render(){
+  var root=qs("#app");
+  if(!state.session){ root.innerHTML = viewLogin(); bindGlobalEvents(); return; }
+  var u=currentUser();
+  if(!u){ state.session=null; root.innerHTML=viewLogin(); bindGlobalEvents(); return; }
+  var body = renderRoute(u);
+  root.innerHTML =
+    '<div class="sidebar'+(state.sidebarOpen?' open':'')+'">'+renderSidebar(u)+'</div>'+
+    '<div class="main">'+
+      '<div class="topbar">'+
+        '<div class="topbar-left"><div class="topbar-title">'+pageTitle()+'</div></div>'+
+        '<div class="topbar-right">'+
+          '<div class="user-chip"><div class="av">'+escapeHtml((u.name||"?").slice(0,1))+'</div>'+
+            '<div><div class="nm">'+escapeHtml(u.name)+'</div><div class="rl">'+escapeHtml(ROLE_LABELS[u.role]||u.role)+'</div></div></div>'+
+          '<button class="btn-logout" data-action="logout">Đăng xuất</button>'+
+        '</div>'+
+      '</div>'+
+      '<div class="content">'+body+'</div>'+
+    '</div>'+
+    (state.history.length ? '<button class="fab-back" data-action="goback" title="Quay lại">←</button>' : '') +
+    flashHtml();
+  bindGlobalEvents();
+}
+
+function pageTitle(){
+  var map={dashboard:"Tổng quan", assets:"Sổ Tài sản / CCDC", asset_detail:"Chi tiết tài sản", asset_form:"Tài sản",
+    transfers:"Điều chuyển tài sản", transfer_new:"Lập lệnh điều chuyển", transfer_detail:"Chi tiết điều chuyển",
+    repairs:"Sửa chữa / Báo hỏng", repair_new:"Lập phiếu báo hỏng", repair_detail:"Chi tiết phiếu",
+    inventory:"Kiểm kê tài sản", admin_users:"Quản lý người dùng", admin_departments:"Quản lý phòng ban",
+    admin_categories:"Quản lý nhóm tài sản", admin_import:"Import dữ liệu từ Excel", admin_templates:"Quản lý mẫu biểu",
+    admin_settings:"Cài đặt / Sao lưu dữ liệu", admin_reset:"Hard Reset"};
+  return map[state.route]||"VTB-ASSETS";
+}
+
+function renderSidebar(u){
+  var html='<div class="sidebar-head"><div class="mark">VT</div><div><div class="name">VTB-ASSETS</div><div class="sub">QUẢN LÝ TÀI SẢN &amp; CCDC</div></div></div>';
+  html+='<div class="sidebar-nav">';
+  NAV_ITEMS.forEach(function(g){
+    var items=g.items.filter(function(it){ return !it.roles || it.roles.indexOf(u.role)>-1; });
+    if(!items.length) return;
+    html+='<div class="nav-group-label">'+g.group+'</div>';
+    items.forEach(function(it){
+      var active = state.route===it.route || (it.route==="assets"&&state.route==="asset_detail") || (it.route==="assets"&&state.route==="asset_form")
+        || (it.route==="transfers"&&(state.route==="transfer_new"||state.route==="transfer_detail"))
+        || (it.route==="repairs"&&(state.route==="repair_new"||state.route==="repair_detail"));
+      html+='<div class="nav-item'+(active?' active':'')+'" data-nav="'+it.route+'"><span class="ic">'+it.icon+'</span>'+it.label+'</div>';
+    });
+  });
+  html+='</div><div class="sidebar-foot">VTB-ASSETS v2.0<br>Offline • localStorage</div>';
+  return html;
+}
+
+function renderRoute(u){
+  try{
+    switch(state.route){
+      case "dashboard": return viewDashboard(u);
+      case "assets": return viewAssetsList(u);
+      case "asset_detail": return viewAssetDetail(u);
+      case "asset_form": return viewAssetForm(u);
+      case "transfers": return viewTransfersList(u);
+      case "transfer_new": return viewTransferNew(u);
+      case "transfer_detail": return viewTransferDetail(u);
+      case "repairs": return viewRepairsList(u);
+      case "repair_new": return viewRepairNew(u);
+      case "repair_detail": return viewRepairDetail(u);
+      case "inventory": return viewInventory(u);
+      case "admin_users": return hasRole("admin")?viewAdminUsers(u):forbidden();
+      case "admin_departments": return hasRole("admin","tcth")?viewAdminDepartments(u):forbidden();
+      case "admin_categories": return hasRole("admin","tcth")?viewAdminCategories(u):forbidden();
+      case "admin_import": return hasRole("admin","tcth")?viewAdminImport(u):forbidden();
+      case "admin_templates": return hasRole("admin","tcth")?viewAdminTemplates(u):forbidden();
+      case "admin_settings": return hasRole("admin")?viewAdminSettings(u):forbidden();
+      case "admin_reset": return hasRole("admin")?viewAdminReset(u):forbidden();
+      default: return viewDashboard(u);
+    }
+  }catch(e){
+    console.error(e);
+    return '<div class="card"><h3>Đã xảy ra lỗi khi hiển thị trang</h3><div class="pill">'+escapeHtml(e.message)+'</div></div>';
+  }
+}
+function forbidden(){ return '<div class="card"><h3>🚫 Không có quyền truy cập</h3><p>Tài khoản của bạn không có quyền xem trang này.</p></div>'; }
+
+/* ========================= Login ========================= */
+function viewLogin(){
+  var err = state.loginError;
+  return '<div class="login-wrap"><div class="login-card">'+
+    '<div class="login-logo"><div class="mark">VT</div><div class="name">VTB-ASSETS</div></div>'+
+    '<p class="login-sub">Hệ thống quản lý Tài sản cố định &amp; Công cụ dụng cụ</p>'+
+    '<form data-form="login">'+
+      '<label>Tên đăng nhập</label><input class="input" name="username" autocomplete="username" required>'+
+      '<label>Mật khẩu</label><input class="input" type="password" name="password" autocomplete="current-password" required>'+
+      (err?'<div class="login-error">'+escapeHtml(err)+'</div>':'')+
+      '<button class="btn-primary" type="submit">Đăng nhập</button>'+
+    '</form>'+
+    '<div class="login-hint"><b>Tài khoản demo:</b><br>admin/admin123 · tcth/tcth123 · it/it123 · ldp/ldp123 · nv1/nv123</div>'+
+  '</div></div>';
+}
+
+/* ========================= Dashboard ========================= */
+function statusCounts(list){
+  var m={}; STATUS_LIST.forEach(function(s){m[s]=0;}); list.forEach(function(a){ m[a.status]=(m[a.status]||0)+1; }); return m;
+}
+function scopedAssets(u){
+  if(hasRole("admin","tcth","it")) return DB.assets.slice();
+  if(hasRole("ldp")) return DB.assets.filter(function(a){ return a.deptId===u.deptId; });
+  return DB.assets.filter(function(a){ return a.userId===u.id || a.deptId===u.deptId; });
+}
+function viewDashboard(u){
+  var list = scopedAssets(u);
+  var counts = statusCounts(list);
+  var totalNguyenGia=0, totalConLai=0;
+  list.forEach(function(a){ totalNguyenGia+=Number(a.nguyenGia||0); totalConLai+=Number(a.giaTriConLai||0); });
+  var orphan = list.filter(function(a){ return !a.userId || !deptById(a.deptId); });
+
+  // inventory overdue check
+  var cadence = DB.inventoryCadenceMonths||6;
+  var overdue=[];
+  DB.departments.forEach(function(d){
+    var invs = DB.inventories.filter(function(i){ return i.deptId===d.id || i.scope==="ALL"; });
+    var last = invs.length ? invs.map(function(i){return i.date;}).sort().pop() : null;
+    var overdueFlag = false;
+    if(!last) overdueFlag=true;
+    else{
+      var months=(new Date()-new Date(last))/(1000*60*60*24*30);
+      if(months>cadence) overdueFlag=true;
+    }
+    if(overdueFlag) overdue.push({dept:d, last:last});
+  });
+
+  var pendingTransfers = DB.transfers.filter(function(t){ return t.step<4; }).length;
+  var pendingRepairs = DB.repairs.filter(function(r){ return r.step<3; }).length;
+
+  var html = '<p class="page-sub">Xin chào, '+escapeHtml(u.name)+' — tổng hợp nhanh tình trạng tài sản thuộc phạm vi của bạn.</p>';
+  html += '<div class="stat-grid">'+
+    statCard("Tổng số tài sản", list.length, "var(--primary)", "assets", {}) +
+    statCard("Đang sử dụng", counts[STATUS.USE], "var(--green)", "assets", {status:STATUS.USE}) +
+    statCard("Hỏng / Đề nghị SC", counts[STATUS.BROKEN], "var(--red)", "assets", {status:STATUS.BROKEN}) +
+    statCard("Đề nghị thanh lý", counts[STATUS.LIQ], "var(--gray)", "assets", {status:STATUS.LIQ}) +
+    statCard("Tổng nguyên giá", fmtMoney(totalNguyenGia), "var(--primary)", "assets", {}) +
+    statCard("Giá trị còn lại", fmtMoney(totalConLai), "var(--accent)", "assets", {}) +
+  '</div>';
+
+  html += '<div class="form-grid">';
+  html += '<div class="card"><h3>⏰ Cảnh báo kiểm kê định kỳ ('+cadence+' tháng/lần)</h3>';
+  if(!overdue.length) html+='<div class="empty">Không có phòng ban nào quá hạn kiểm kê 🎉</div>';
+  else overdue.forEach(function(o){
+    html+='<div class="warn-row" data-nav="inventory" data-nav-params=\'{"deptId":"'+o.dept.id+'"}\'>'+
+      '<span>⚠️</span><span>'+escapeHtml(o.dept.name)+' — '+(o.last?('lần kiểm kê gần nhất: '+fmtDate(o.last)):'chưa từng kiểm kê')+'</span></div>';
+  });
+  html+='</div>';
+
+  html += '<div class="card"><h3>❓ Tài sản thiếu thông tin ('+orphan.length+')</h3>';
+  if(!orphan.length) html+='<div class="empty">Không có tài sản nào thiếu người sử dụng / phòng ban</div>';
+  else orphan.slice(0,6).forEach(function(a){
+    html+='<div class="warn-row danger" data-nav="asset_detail" data-nav-params=\'{"id":"'+a.id+'"}\'>'+
+      '<span>❗</span><span>'+escapeHtml(a.code)+' - '+escapeHtml(a.name)+' '+(!a.userId?'(chưa gán người dùng)':'')+(!deptById(a.deptId)?' (phòng ban không hợp lệ)':'')+'</span></div>';
+  });
+  if(orphan.length>6) html+='<div class="pill">+'+(orphan.length-6)+' tài sản khác — xem tại Sổ Tài sản</div>';
+  html+='</div></div>';
+
+  html += '<div class="form-grid">';
+  html += '<div class="card"><h3>🔄 Điều chuyển đang xử lý: '+pendingTransfers+'</h3><div class="quickref">'+
+    '<button class="btn btn-sm" data-nav="transfers">Xem danh sách</button>'+
+    '<button class="btn btn-sm btn-blue" data-nav="transfer_new">+ Lập lệnh mới</button></div></div>';
+  html += '<div class="card"><h3>🛠️ Phiếu sửa chữa đang xử lý: '+pendingRepairs+'</h3><div class="quickref">'+
+    '<button class="btn btn-sm" data-nav="repairs">Xem danh sách</button>'+
+    '<button class="btn btn-sm btn-blue" data-nav="repair_new">+ Báo hỏng mới</button></div></div>';
+  html+='</div>';
+  return html;
+}
+function statCard(label,val,color,route,filters){
+  return '<div class="stat-card" data-nav="'+route+'" data-nav-params=\''+JSON.stringify({applyFilters:filters}).replace(/'/g,"&#39;")+'\'>'+
+    '<div class="bar" style="background:'+color+'"></div><div class="lab">'+escapeHtml(label)+'</div><div class="val">'+val+'</div></div>';
+}
+
+/* ========================= Assets list ========================= */
+function viewAssetsList(u){
+  if(state.params && state.params.applyFilters){
+    state.assetFilters.status = state.params.applyFilters.status || "";
+    state.params.applyFilters=null;
+  }
+  if(state.params && state.params.deptId){ state.assetFilters.deptId = state.params.deptId; }
+  if(state.params && state.params.catId){ state.assetFilters.catId = state.params.catId; state.assetFilters.q=""; }
+
+  var f=state.assetFilters;
+  var list = scopedAssets(u).filter(function(a){
+    if(f.type && a.type!==f.type) return false;
+    if(f.status && a.status!==f.status) return false;
+    if(f.catId && a.catId!==f.catId) return false;
+    if(f.deptId && a.deptId!==f.deptId) return false;
+    if(f.q){
+      var qn=normKey(f.q);
+      if(normKey(a.code).indexOf(qn)<0 && normKey(a.name).indexOf(qn)<0) return false;
+    }
+    return true;
+  });
+
+  var col=state.sortCol.assets||"code", dir=state.sortDir.assets||1;
+  list.sort(function(a,b){
+    var va,vb;
+    if(col==="deptName"){ va=deptName(a.deptId); vb=deptName(b.deptId); }
+    else if(col==="nguyenGia"||col==="giaTriConLai"){ va=Number(a[col]||0); vb=Number(b[col]||0); return (va-vb)*dir; }
+    else{ va=(a[col]||"").toString(); vb=(b[col]||"").toString(); }
+    return va.localeCompare(vb,"vi")*dir;
+  });
+
+  var canBulk = hasRole("admin","tcth");
+  var selCount = Object.keys(state.selectedIds).filter(function(k){return state.selectedIds[k];}).length;
+
+  var cols=[
+    {k:"code", label:"Mã"}, {k:"name", label:"Tên tài sản"}, {k:"type", label:"Loại"},
+    {k:"deptName", label:"Phòng ban"}, {k:"nguyenGia", label:"Nguyên giá"}, {k:"giaTriConLai", label:"Giá trị còn lại"},
+    {k:"status", label:"Trạng thái"}
+  ];
+
+  var html = '<p class="page-sub">Danh sách tài sản cố định &amp; công cụ dụng cụ. Nhấp tiêu đề cột để sắp xếp.</p>';
+  html += '<div class="toolbar">'+
+    '<div class="grow"><input class="input" id="f_q" placeholder="Tìm theo mã hoặc tên..." value="'+escapeHtml(f.q)+'"></div>'+
+    '<select class="select" id="f_type" style="width:140px"><option value="">-- Loại --</option>'+
+      '<option value="TSCD"'+(f.type==="TSCD"?' selected':'')+'>TSCĐ</option>'+
+      '<option value="CCDC"'+(f.type==="CCDC"?' selected':'')+'>CCDC</option></select>'+
+    '<select class="select" id="f_status" style="width:190px"><option value="">-- Trạng thái --</option>'+
+      STATUS_LIST.map(function(s){return '<option value="'+s+'"'+(f.status===s?' selected':'')+'>'+s+'</option>';}).join("")+
+    '</select>'+
+    '<select class="select" id="f_cat" style="width:200px"><option value="">-- Nhóm tài sản --</option>'+
+      DB.categories.map(function(c){return '<option value="'+c.id+'"'+(f.catId===c.id?' selected':'')+'>'+escapeHtml((c.code?c.code+" - ":"")+c.name)+'</option>';}).join("")+
+    '</select>'+
+    '<select class="select" id="f_dept" style="width:220px"><option value="">-- Phòng ban --</option>'+
+      DB.departments.map(function(d){return '<option value="'+d.id+'"'+(f.deptId===d.id?' selected':'')+'>'+escapeHtml(d.name)+'</option>';}).join("")+
+    '</select>'+
+    (hasRole("admin","tcth")?'<button class="btn btn-blue" data-nav="asset_form">+ Thêm tài sản</button>':'')+
+    '<button class="btn" data-action="export-assets-csv">⬇ Xuất Excel</button>'+
+  '</div>';
+
+  html += '<div class="table-wrap">';
+  if(selCount>0 && canBulk){
+    html += '<div class="selbanner"><span class="sp">✅ Đã chọn '+selCount+' thiết bị</span>'+
+      '<button data-action="bulk-status" data-status="'+STATUS.LIQ+'">Chuyển trạng thái → Đề nghị thanh lý</button>'+
+      '<button data-action="bulk-status" data-status="'+STATUS.BROKEN+'">→ Hỏng đề nghị sửa chữa</button>'+
+      '<button data-action="bulk-status" data-status="'+STATUS.USE+'">→ Đang sử dụng</button>'+
+      '<button data-action="export-liquidation">🖨️ Xuất biên bản đề nghị thanh lý</button>'+
+      '<button data-action="clear-selection">Bỏ chọn</button>'+
+    '</div>';
+  }
+  html += '<table><thead><tr>';
+  if(canBulk) html+='<th style="width:30px"><input type="checkbox" id="selAll"></th>';
+  cols.forEach(function(c){
+    var arrow = col===c.k ? (dir===1?'▲':'▼') : '';
+    html+='<th class="sortable" data-sort="'+c.k+'">'+c.label+' <span class="arrow">'+arrow+'</span></th>';
+  });
+  html+='</tr></thead><tbody>';
+  if(!list.length){ html+='<tr><td colspan="'+(cols.length+1)+'"><div class="empty">Không có tài sản phù hợp bộ lọc</div></td></tr>'; }
+  list.forEach(function(a){
+    html+='<tr data-nav="asset_detail" data-nav-params=\'{"id":"'+a.id+'"}\' data-rowid="'+a.id+'">';
+    if(canBulk) html+='<td data-stop="1"><input type="checkbox" class="rowchk" data-id="'+a.id+'" '+(state.selectedIds[a.id]?'checked':'')+'></td>';
+    html+='<td><b>'+escapeHtml(a.code)+'</b></td><td>'+escapeHtml(a.name)+'</td><td>'+(a.type==="TSCD"?"TSCĐ":"CCDC")+'</td>'+
+      '<td>'+escapeHtml(deptName(a.deptId))+'</td><td>'+fmtMoney(a.nguyenGia)+'</td><td>'+fmtMoney(a.giaTriConLai)+'</td>'+
+      '<td><span class="badge '+(STATUS_BADGE[a.status]||'badge-gray')+'">'+a.status+'</span></td></tr>';
+  });
+  html+='</tbody></table></div>';
+  return html;
+}
+
+/* ========================= Asset detail / form ========================= */
+function viewAssetDetail(u){
+  var a=byId(state.params.id);
+  if(!a) return '<div class="empty">Không tìm thấy tài sản.</div>';
+  var canEdit = hasRole("admin","tcth");
+  var html = '<div class="form-grid">';
+  html+='<div class="card full" style="grid-column:1/-1"><h3>'+escapeHtml(a.code)+' — '+escapeHtml(a.name)+
+    ' <span class="badge '+(STATUS_BADGE[a.status]||'')+'">'+a.status+'</span></h3>'+
+    '<div class="kv">'+
+      kv("Loại", a.type==="TSCD"?"TSCĐ":"CCDC")+
+      kv("Nhóm tài sản", catName(a.catId))+
+      kv("Phòng ban quản lý", deptName(a.deptId))+
+      kv("Người sử dụng", a.userId?escapeHtml(userById(a.userId)?userById(a.userId).name:"—"):'<span class="pill">Chưa gán</span>')+
+      kv("Nguyên giá", fmtMoney(a.nguyenGia))+
+      kv("Giá trị còn lại", fmtMoney(a.giaTriConLai))+
+      kv("Ngày ghi nhận", fmtDate(a.ngayGhiNhan))+
+    '</div>'+
+    '<div class="quickref">'+
+      (canEdit?'<button class="btn btn-sm" data-nav="asset_form" data-nav-params=\'{"id":"'+a.id+'"}\'>✏️ Chỉnh sửa</button>':'')+
+      '<button class="btn btn-sm btn-blue" data-nav="repair_new" data-nav-params=\'{"assetId":"'+a.id+'"}\'>🛠️ Báo hỏng tài sản này</button>'+
+      '<button class="btn btn-sm btn-blue" data-nav="transfer_new" data-nav-params=\'{"assetId":"'+a.id+'"}\'>🔄 Điều chuyển tài sản này</button>'+
+      '<button class="btn btn-sm" data-nav="assets" data-nav-params=\'{"deptId":"'+a.deptId+'"}\'>🏢 Xem tài sản cùng phòng ban</button>'+
+    '</div></div>';
+  html+='</div>';
+  html+='<div class="card"><h3>📜 Lịch sử thay đổi trạng thái</h3>';
+  (a.history||[]).slice().reverse().forEach(function(h){
+    html+='<div class="hist-item"><div class="dot"></div><div><div><span class="badge '+(STATUS_BADGE[h.status]||'')+'">'+h.status+'</span> '+escapeHtml(h.note||"")+'</div>'+
+      '<div class="t">'+fmtDate(h.date)+' • '+escapeHtml(h.by||"")+'</div></div></div>';
+  });
+  html+='</div>';
+  return html;
+}
+
+function viewAssetForm(u){
+  var editing = state.params.id ? byId(state.params.id) : null;
+  var a = editing || {code:"", name:"", type:"CCDC", catId:"", deptId:u.deptId, userId:"", nguyenGia:0, giaTriConLai:0, ngayGhiNhan:todayStr(), status:STATUS.USE};
+  var html='<form class="card" data-form="asset-save" data-id="'+(editing?editing.id:'')+'">'+
+    '<h3>'+(editing?'Chỉnh sửa tài sản':'Thêm tài sản mới')+'</h3><div class="form-grid">'+
+    field("Mã tài sản","code",a.code,"text",true)+
+    field("Tên tài sản","name",a.name,"text",true)+
+    selectField("Loại","type",a.type,[["TSCD","TSCĐ"],["CCDC","CCDC"]])+
+    selectField("Nhóm tài sản","catId",a.catId,[["",""]].concat(DB.categories.map(function(c){return [c.id,(c.code?c.code+" - ":"")+c.name];})))+
+    selectField("Phòng ban quản lý","deptId",a.deptId,DB.departments.map(function(d){return [d.id,d.name];}))+
+    selectField("Người sử dụng","userId",a.userId||"",[["","-- Chưa gán --"]].concat(DB.users.map(function(x){return [x.id,x.name];})))+
+    field("Nguyên giá","nguyenGia",a.nguyenGia,"number")+
+    field("Giá trị còn lại","giaTriConLai",a.giaTriConLai,"number")+
+    field("Ngày ghi nhận","ngayGhiNhan",a.ngayGhiNhan,"date")+
+    selectField("Trạng thái","status",a.status,STATUS_LIST.map(function(s){return [s,s];}))+
+    '</div><div class="form-actions"><button class="btn btn-blue" type="submit">💾 Lưu</button>'+
+    '<button class="btn" type="button" data-action="goback">Hủy</button></div></form>';
+  return html;
+}
+function field(label,name,val,type,req){
+  return '<div class="form-field"><label>'+label+(req?' *':'')+'</label><input class="input" name="'+name+'" type="'+(type||'text')+'" value="'+escapeHtml(val===undefined?"":val)+'" '+(req?'required':'')+'></div>';
+}
+function selectField(label,name,val,options){
+  return '<div class="form-field"><label>'+label+'</label><select class="select" name="'+name+'">'+
+    options.map(function(o){return '<option value="'+o[0]+'"'+(String(val)===String(o[0])?' selected':'')+'>'+escapeHtml(o[1])+'</option>';}).join("")+
+    '</select></div>';
+}
+function kv(k,v){ return '<div class="k">'+k+'</div><div>'+v+'</div>'; }
+
+/* ========================= Transfers ========================= */
+function transfersScope(u){
+  if(hasRole("admin","tcth")) return DB.transfers.slice();
+  if(hasRole("ldp")) return DB.transfers.filter(function(t){ return t.fromDeptId===u.deptId || t.toDeptId===u.deptId; });
+  return DB.transfers.filter(function(t){ return t.createdBy===u.id; });
+}
+function viewTransfersList(u){
+  var list = transfersScope(u).slice().sort(function(a,b){return (b.createdAt||"").localeCompare(a.createdAt||"");});
+  var html='<div class="toolbar"><div class="grow"></div><button class="btn btn-blue" data-nav="transfer_new">+ Lập lệnh điều chuyển</button></div>';
+  html+='<div class="table-wrap"><table><thead><tr><th>Mã lệnh</th><th>Tài sản</th><th>Từ phòng ban</th><th>Đến phòng ban</th><th>Bước hiện tại</th><th>Ngày tạo</th></tr></thead><tbody>';
+  if(!list.length) html+='<tr><td colspan="6"><div class="empty">Chưa có lệnh điều chuyển nào</div></td></tr>';
+  list.forEach(function(t){
+    var a=byId(t.assetId);
+    html+='<tr data-nav="transfer_detail" data-nav-params=\'{"id":"'+t.id+'"}\'>'+
+      '<td><b>'+t.id+'</b></td><td>'+(a?escapeHtml(a.code+" - "+a.name):"—")+'</td>'+
+      '<td>'+escapeHtml(deptName(t.fromDeptId))+'</td><td>'+escapeHtml(deptName(t.toDeptId))+'</td>'+
+      '<td><span class="badge badge-blue">'+TRANSFER_STEPS[t.step]+'</span></td><td>'+fmtDate(t.createdAt)+'</td></tr>';
+  });
+  html+='</tbody></table></div>';
+  return html;
+}
+function viewTransferNew(u){
+  var presetAsset = state.params.assetId ? byId(state.params.assetId) : null;
+  var html='<form class="card" data-form="transfer-new"><h3>Lập lệnh điều chuyển tài sản</h3><div class="form-grid">'+
+    selectField("Tài sản","assetId",presetAsset?presetAsset.id:"",[["","-- Chọn tài sản --"]].concat(scopedAssets(u).map(function(a){return [a.id,a.code+" - "+a.name];})))+
+    selectField("Phòng ban đích","toDeptId","",[["","-- Chọn phòng ban --"]].concat(DB.departments.map(function(d){return [d.id,d.name];})))+
+    field("Ghi chú","note","","text")+
+    '</div><div class="form-actions"><button class="btn btn-blue" type="submit">Lập lệnh</button><button class="btn" type="button" data-action="goback">Hủy</button></div></form>';
+  return html;
+}
+function viewTransferDetail(u){
+  var t = DB.transfers.filter(function(x){return x.id===state.params.id;})[0];
+  if(!t) return '<div class="empty">Không tìm thấy lệnh điều chuyển.</div>';
+  var a=byId(t.assetId);
+  var html = stepsHtml(TRANSFER_STEPS, t.step);
+  html+='<div class="form-grid"><div class="card"><h3>Thông tin lệnh '+t.id+'</h3><div class="kv">'+
+    kv("Tài sản", a?('<a data-nav="asset_detail" data-nav-params=\'{"id":"'+a.id+'"}\'>'+escapeHtml(a.code+" - "+a.name)+'</a>'):"—")+
+    kv("Từ phòng ban", escapeHtml(deptName(t.fromDeptId)))+
+    kv("Đến phòng ban", escapeHtml(deptName(t.toDeptId)))+
+    kv("Người lập lệnh", escapeHtml(userById(t.createdBy)?userById(t.createdBy).name:""))+
+    kv("Ghi chú", escapeHtml(t.note||"—"))+
+    '</div>'+transferActions(u,t)+
+    '<div class="quickref"><button class="btn btn-sm" data-action="print-transfer" data-id="'+t.id+'">🖨️ In/Xuất lệnh</button></div>'+
+  '</div>';
+  html+='<div class="card"><h3>📜 Lịch sử xử lý</h3>'+(t.history||[]).slice().reverse().map(function(h){
+    return '<div class="hist-item"><div class="dot"></div><div><div>'+escapeHtml(h.action)+'</div><div class="t">'+fmtDate(h.date)+' • '+escapeHtml(h.by||"")+'</div></div></div>';
+  }).join("")+'</div></div>';
+  return html;
+}
+function stepsHtml(steps, cur){
+  return '<div class="steps">'+steps.map(function(s,i){
+    var cls = i<cur?"done":(i===cur?"current":"");
+    return '<div class="step '+cls+'"><span class="n">'+(i<cur?'✓':(i+1))+'</span>'+s+'</div>';
+  }).join("")+'</div>';
+}
+function transferActions(u,t){
+  var html='<div class="quickref">';
+  if(t.step===0 && hasRole("admin","tcth","ldp")) html+='<button class="btn btn-sm btn-blue" data-action="transfer-step" data-id="'+t.id+'" data-to="1">✔ LĐP đích xác nhận</button>';
+  if(t.step===1 && hasRole("admin","tcth")) html+='<button class="btn btn-sm btn-blue" data-action="transfer-step" data-id="'+t.id+'" data-to="2">✔ TCTH/Admin phê duyệt</button>';
+  if(t.step===2 && hasRole("admin","tcth")) html+='<button class="btn btn-sm btn-blue" data-action="transfer-step" data-id="'+t.id+'" data-to="3">✔ Thủ kho/Admin thực hiện</button>';
+  if(t.step===3 && hasRole("admin","tcth")) html+='<button class="btn btn-sm btn-green" data-action="transfer-step" data-id="'+t.id+'" data-to="4">✔ Hoàn thành</button>';
+  html+='</div>';
+  return html;
+}
+
+/* ========================= Repairs ========================= */
+function repairsScope(u){
+  if(hasRole("admin","tcth","it")) return DB.repairs.slice();
+  if(hasRole("ldp")) return DB.repairs.filter(function(r){ return r.deptId===u.deptId; });
+  return DB.repairs.filter(function(r){ return r.createdBy===u.id; });
+}
+function viewRepairsList(u){
+  var list = repairsScope(u).slice().sort(function(a,b){return (b.createdAt||"").localeCompare(a.createdAt||"");});
+  var html='<div class="toolbar"><div class="grow"></div><button class="btn btn-blue" data-nav="repair_new">+ Báo hỏng / sự cố</button></div>';
+  html+='<div class="table-wrap"><table><thead><tr><th>Mã phiếu</th><th>Tài sản</th><th>Phòng ban</th><th>Bước hiện tại</th><th>Ngày tạo</th></tr></thead><tbody>';
+  if(!list.length) html+='<tr><td colspan="5"><div class="empty">Chưa có phiếu báo hỏng nào</div></td></tr>';
+  list.forEach(function(r){
+    var a=byId(r.assetId);
+    html+='<tr data-nav="repair_detail" data-nav-params=\'{"id":"'+r.id+'"}\'>'+
+      '<td><b>'+r.id+'</b></td><td>'+(a?escapeHtml(a.code+" - "+a.name):"—")+'</td><td>'+escapeHtml(deptName(r.deptId))+'</td>'+
+      '<td><span class="badge badge-blue">'+REPAIR_STEPS[r.step]+'</span></td><td>'+fmtDate(r.createdAt)+'</td></tr>';
+  });
+  html+='</tbody></table></div>';
+  return html;
+}
+function viewRepairNew(u){
+  var presetAsset = state.params.assetId ? byId(state.params.assetId) : null;
+  var html='<form class="card" data-form="repair-new"><h3>Lập phiếu báo hỏng / sự cố</h3><div class="form-grid">'+
+    selectField("Tài sản","assetId",presetAsset?presetAsset.id:"",[["","-- Chọn tài sản --"]].concat(scopedAssets(u).map(function(a){return [a.id,a.code+" - "+a.name];})))+
+    field("Mô tả sự cố","note","","text")+
+    '</div><div class="form-actions"><button class="btn btn-blue" type="submit">Lập phiếu</button><button class="btn" type="button" data-action="goback">Hủy</button></div></form>';
+  return html;
+}
+function viewRepairDetail(u){
+  var r = DB.repairs.filter(function(x){return x.id===state.params.id;})[0];
+  if(!r) return '<div class="empty">Không tìm thấy phiếu.</div>';
+  var a=byId(r.assetId);
+  var html=stepsHtml(REPAIR_STEPS, r.step);
+  html+='<div class="form-grid"><div class="card"><h3>Thông tin phiếu '+r.id+'</h3><div class="kv">'+
+    kv("Tài sản", a?('<a data-nav="asset_detail" data-nav-params=\'{"id":"'+a.id+'"}\'>'+escapeHtml(a.code+" - "+a.name)+'</a>'):"—")+
+    kv("Phòng ban", escapeHtml(deptName(r.deptId)))+
+    kv("Người báo hỏng", escapeHtml(userById(r.createdBy)?userById(r.createdBy).name:""))+
+    kv("Mô tả", escapeHtml(r.note||"—"))+
+    '</div>'+repairActions(u,r)+
+    '<div class="quickref"><button class="btn btn-sm" data-action="print-repair" data-id="'+r.id+'">🖨️ In/Xuất phiếu</button></div>'+
+  '</div>';
+  html+='<div class="card"><h3>📜 Lịch sử xử lý</h3>'+(r.history||[]).slice().reverse().map(function(h){
+    return '<div class="hist-item"><div class="dot"></div><div><div>'+escapeHtml(h.action)+'</div><div class="t">'+fmtDate(h.date)+' • '+escapeHtml(h.by||"")+'</div></div></div>';
+  }).join("")+'</div></div>';
+  return html;
+}
+function repairActions(u,r){
+  var html='<div class="quickref">';
+  if(r.step===0 && hasRole("admin","tcth","ldp")) html+='<button class="btn btn-sm btn-blue" data-action="repair-step" data-id="'+r.id+'" data-to="1">✔ LĐP duyệt</button>';
+  if(r.step===1 && hasRole("admin","tcth")) html+='<button class="btn btn-sm btn-blue" data-action="repair-step" data-id="'+r.id+'" data-to="2">✔ TCTH tiếp nhận &amp; điều phối</button>';
+  if(r.step===2 && hasRole("admin","it")) html+='<button class="btn btn-sm btn-green" data-action="repair-step" data-id="'+r.id+'" data-to="3">✔ IT khắc phục xong</button>';
+  html+='</div>';
+  return html;
+}
+
+/* ========================= Inventory ========================= */
+function viewInventory(u){
+  var presetDept = state.params.deptId || "";
+  var list = DB.inventories.slice().sort(function(a,b){return (b.date||"").localeCompare(a.date||"");});
+  var html='<form class="card" data-form="inventory-new"><h3>Lập biên bản kiểm kê</h3><div class="form-grid">'+
+    selectField("Phạm vi","deptId",presetDept,[["ALL","-- Toàn chi nhánh --"]].concat(DB.departments.map(function(d){return [d.id,d.name];})))+
+    field("Ngày kiểm kê","date",todayStr(),"date")+
+    '</div><div class="form-actions"><button class="btn btn-blue" type="submit">Lập biên bản</button></div></form>';
+  html+='<div class="table-wrap"><table><thead><tr><th>Mã BB</th><th>Phạm vi</th><th>Ngày</th><th>Số tài sản</th><th></th></tr></thead><tbody>';
+  if(!list.length) html+='<tr><td colspan="5"><div class="empty">Chưa có biên bản kiểm kê nào</div></td></tr>';
+  list.forEach(function(iv){
+    html+='<tr><td><b>'+iv.id+'</b></td><td>'+(iv.scope==="ALL"?"Toàn chi nhánh":escapeHtml(deptName(iv.deptId)))+'</td>'+
+      '<td>'+fmtDate(iv.date)+'</td><td>'+iv.assetIds.length+'</td>'+
+      '<td data-stop="1"><button class="btn btn-sm" data-action="print-inventory" data-id="'+iv.id+'">🖨️ Xuất biên bản</button></td></tr>';
+  });
+  html+='</tbody></table></div>';
+  return html;
+}
+
+/* ========================= Admin: Users ========================= */
+function viewAdminUsers(u){
+  if(state.params && state.params.editId){
+    var eu=userById(state.params.editId);
+    return viewUserEditForm(eu);
+  }
+  var html='<div class="toolbar"><div class="grow"></div><button class="btn btn-blue" data-action="show-user-new">+ Thêm người dùng</button></div>';
+  if(state.showUserNew) html+=userNewForm();
+  html+='<div class="table-wrap"><table><thead><tr><th>Mã NV</th><th>Họ tên</th><th>Tài khoản</th><th>Phòng ban</th><th>Vai trò</th><th></th></tr></thead><tbody>';
+  DB.users.forEach(function(x){
+    html+='<tr><td>'+escapeHtml(x.empCode||"")+'</td><td>'+escapeHtml(x.name)+'</td><td>'+escapeHtml(x.username)+'</td>'+
+      '<td>'+escapeHtml(deptName(x.deptId))+'</td><td><span class="badge badge-blue">'+ROLE_LABELS[x.role]+'</span></td>'+
+      '<td data-stop="1"><button class="btn btn-sm" data-action="edit-user" data-id="'+x.id+'">✏️ Sửa</button> '+
+      '<button class="btn btn-sm" data-action="reset-pw" data-id="'+x.id+'">🔑 Reset MK</button> '+
+      '<button class="btn btn-sm btn-red" data-action="delete-user" data-id="'+x.id+'">🗑️ Xóa</button></td></tr>';
+  });
+  html+='</tbody></table></div>';
+  return html;
+}
+function userNewForm(){
+  return '<form class="card" data-form="user-new"><h3>Thêm người dùng mới</h3><div class="form-grid">'+
+    field("Mã số NV","empCode","","text",true)+field("Họ tên","name","","text",true)+
+    field("Tài khoản đăng nhập","username","","text",true)+field("Mật khẩu","password","123456","text",true)+
+    selectField("Phòng ban","deptId","",DB.departments.map(function(d){return [d.id,d.name];}))+
+    selectField("Vai trò","role","user",Object.keys(ROLE_LABELS).map(function(r){return [r,ROLE_LABELS[r]];}))+
+    '</div><div class="form-actions"><button class="btn btn-blue" type="submit">Lưu</button><button class="btn" type="button" data-action="hide-user-new">Hủy</button></div></form>';
+}
+function viewUserEditForm(x){
+  if(!x) return '<div class="empty">Không tìm thấy người dùng.</div>';
+  return '<form class="card" data-form="user-edit" data-id="'+x.id+'"><h3>Chỉnh sửa người dùng: '+escapeHtml(x.name)+'</h3><div class="form-grid">'+
+    field("Mã số NV","empCode",x.empCode,"text",true)+field("Họ tên","name",x.name,"text",true)+
+    selectField("Phòng ban","deptId",x.deptId,DB.departments.map(function(d){return [d.id,d.name];}))+
+    selectField("Vai trò","role",x.role,Object.keys(ROLE_LABELS).map(function(r){return [r,ROLE_LABELS[r]];}))+
+    '</div><div class="form-actions"><button class="btn btn-blue" type="submit">Lưu thay đổi</button><button class="btn" type="button" data-action="goback-users">Hủy</button></div></form>';
+}
+
+/* ========================= Admin: Departments ========================= */
+function viewAdminDepartments(u){
+  var html='<form class="card" data-form="dept-new"><h3>Thêm phòng ban</h3><div class="form-grid">'+
+    field("Mã phòng ban","code","","text",true)+field("Tên phòng ban","name","","text",true)+field("Địa chỉ","address","","text")+
+    '</div><div class="form-actions"><button class="btn btn-blue" type="submit">Thêm</button></div></form>';
+  html+='<div class="table-wrap"><table><thead><tr><th>Mã</th><th>Tên phòng ban</th><th>Địa chỉ</th><th>Số tài sản</th><th></th></tr></thead><tbody>';
+  DB.departments.forEach(function(d){
+    var cnt = DB.assets.filter(function(a){return a.deptId===d.id;}).length;
+    html+='<tr data-nav="assets" data-nav-params=\'{"deptId":"'+d.id+'"}\'><td>'+escapeHtml(d.code)+'</td><td>'+escapeHtml(d.name)+'</td>'+
+      '<td>'+escapeHtml(d.address||"")+'</td><td>'+cnt+'</td>'+
+      '<td data-stop="1"><button class="btn btn-sm btn-red" data-action="delete-dept" data-id="'+d.id+'">🗑️ Xóa</button></td></tr>';
+  });
+  html+='</tbody></table></div>';
+  return html;
+}
+
+/* ========================= Admin: Categories ========================= */
+function viewAdminCategories(u){
+  var html='<form class="card" data-form="cat-new"><h3>Thêm nhóm tài sản</h3><div class="form-grid">'+
+    field("Mã nhóm","code","","text",true)+field("Tên nhóm","name","","text",true)+
+    selectField("Loại","type","CCDC",[["TSCD","TSCĐ"],["CCDC","CCDC"]])+
+    '</div><div class="form-actions"><button class="btn btn-blue" type="submit">Thêm</button></div></form>';
+  html+='<div class="table-wrap"><table><thead><tr><th>Mã nhóm</th><th>Tên nhóm</th><th>Loại</th><th>Số tài sản</th></tr></thead><tbody>';
+  DB.categories.forEach(function(c){
+    var cnt = DB.assets.filter(function(a){return a.catId===c.id;}).length;
+    html+='<tr data-dblclick="cat-drill" data-id="'+c.id+'" title="Nhấp đúp để xem chi tiết tài sản nhóm này"><td><b>'+escapeHtml(c.code)+'</b></td><td>'+escapeHtml(c.name)+'</td>'+
+      '<td>'+(c.type==="TSCD"?"TSCĐ":"CCDC")+'</td><td>'+cnt+'</td></tr>';
+  });
+  html+='</tbody></table></div><p class="pill">💡 Mẹo: nhấp đúp vào một dòng để xem danh sách tài sản thuộc nhóm đó.</p>';
+  return html;
+}
+
+/* ========================= Admin: Import ========================= */
+function viewAdminImport(u){
+  var html='<div class="card"><h3>📥 Import dữ liệu từ file Excel ngân hàng (FA0203 / CC0203 / nhiều sheet)</h3>'+
+    '<p class="page-sub">Chọn file .xlsx xuất từ hệ thống Core để import Tài sản cố định / CCDC. Hệ thống tự nhận diện sheet danh mục phòng ban (DS_PhongBan) và sheet mã nhóm (Mã nhóm) nếu có trong file để chuẩn hoá dữ liệu.</p>'+
+    '<input type="file" id="importFile" accept=".xlsx"></div>';
+  html+='<div id="importPreview"></div>';
+  return html;
+}
+
+/* ========================= Admin: Templates ========================= */
+function viewAdminTemplates(u){
+  var html='<div class="card"><h3>📄 Quản lý mẫu biểu (upload file Word/Excel mẫu)</h3>'+
+    '<p class="page-sub">Tải lên file mẫu (.docx) cho từng loại biểu mẫu. Khi xuất biên bản/lệnh, hệ thống sẽ tự động điền (mail-merge) vào mẫu đã tải lên. Dùng các placeholder dạng {{TEN_TRUONG}} trong file Word.</p>';
+  html+='<div class="filegrid">';
+  Object.keys(TEMPLATE_TYPES).forEach(function(k){
+    var f = DB.templateConfig.files[k];
+    html+='<div class="filecard'+(f?' has':'')+'"><h4>'+TEMPLATE_TYPES[k].label+'</h4>'+
+      (f?('<div class="fn">✅ '+escapeHtml(f.filename)+'</div><button class="btn btn-sm" style="margin-top:8px" data-action="remove-template" data-k="'+k+'">Xóa mẫu</button>'):
+         '<div class="fn">Chưa có mẫu</div>')+
+      '<div style="margin-top:8px"><input type="file" accept=".docx" data-template-upload="'+k+'"></div></div>';
+  });
+  html+='</div>';
+  return html;
+}
+
+/* ========================= Admin: Settings / Backup ========================= */
+function viewAdminSettings(u){
+  var html='<div class="card"><h3>⚙️ Sao lưu / Phục hồi dữ liệu</h3>'+
+    '<p class="page-sub">Toàn bộ dữ liệu được lưu trong trình duyệt (localStorage). Hãy sao lưu định kỳ để tránh mất dữ liệu.</p>'+
+    '<div class="quickref"><button class="btn btn-blue" data-action="backup-export">⬇ Xuất file sao lưu (.json)</button>'+
+    '<label class="btn" style="display:inline-block">⬆ Phục hồi từ file sao lưu<input type="file" accept=".json" id="restoreFile" style="display:none"></label></div></div>';
+  html+='<div class="card"><h3>Chu kỳ kiểm kê định kỳ</h3><form data-form="cadence"><div class="form-grid">'+
+    field("Số tháng giữa 2 lần kiểm kê","months",DB.inventoryCadenceMonths,"number")+
+    '</div><div class="form-actions"><button class="btn btn-blue" type="submit">Lưu</button></div></form></div>';
+  return html;
+}
+
+/* ========================= Admin: Hard reset ========================= */
+function viewAdminReset(u){
+  return '<div class="card"><h3>⚠️ Hard Reset — Xóa toàn bộ dữ liệu</h3>'+
+    '<p class="page-sub">Thao tác này sẽ xóa toàn bộ dữ liệu hiện tại và khôi phục về dữ liệu mẫu ban đầu. Không thể hoàn tác.</p>'+
+    '<form data-form="hard-reset"><div class="form-field"><label>Nhập "XÁC NHẬN" để tiếp tục</label>'+
+    '<input class="input" name="confirmText" placeholder="XÁC NHẬN"></div>'+
+    '<div class="form-actions"><button class="btn btn-red" type="submit">🗑️ Xóa toàn bộ dữ liệu</button></div></form></div>';
+}
+
+/* ========================= Export: CSV / liquidation / print ========================= */
+function exportAssetsCSV(list){
+  var rows=[["Mã","Tên","Loại","Nhóm","Phòng ban","Nguyên giá","Giá trị còn lại","Trạng thái"]];
+  list.forEach(function(a){ rows.push([a.code,a.name,a.type,catName(a.catId),deptName(a.deptId),a.nguyenGia,a.giaTriConLai,a.status]); });
+  var csv = "﻿"+rows.map(function(r){ return r.map(function(c){ var s=String(c===undefined?"":c); if(/[",\n]/.test(s)) s='"'+s.replace(/"/g,'""')+'"'; return s; }).join(","); }).join("\r\n");
+  downloadBlob(new Blob([csv],{type:"text/csv;charset=utf-8"}), "SoTaiSan_VTB-ASSETS_"+todayStr()+".csv");
+}
+function openPrintWindow(title, bodyHtml){
+  var w=window.open("", "_blank");
+  if(!w){ flash("Trình duyệt đã chặn cửa sổ in. Vui lòng cho phép popup.", "err"); return; }
+  w.document.write('<html><head><meta charset="utf-8"><title>'+escapeHtml(title)+'</title>'+
+    '<style>body{font-family:Arial,sans-serif;padding:30px;color:#111} h1{font-size:18px} table{border-collapse:collapse;width:100%;margin-top:14px} td,th{border:1px solid #333;padding:6px 8px;font-size:12px} .sig{display:flex;justify-content:space-between;margin-top:60px} .sig div{text-align:center;width:30%}</style></head><body>'+bodyHtml+'</body></html>');
+  w.document.close(); w.focus();
+  setTimeout(function(){ w.print(); }, 300);
+}
+function reportLetterheadHtml(title){
+  return '<div style="text-align:center"><b>NGÂN HÀNG TMCP VIETINBANK</b><br>CHI NHÁNH / PHÒNG GIAO DỊCH</div><h1 style="text-align:center;margin-top:18px">'+escapeHtml(title)+'</h1>'+
+    '<p style="text-align:right">Ngày '+new Date().getDate()+' tháng '+(new Date().getMonth()+1)+' năm '+new Date().getFullYear()+'</p>';
+}
+function reportSignatureHtml(){
+  return '<div class="sig"><div><b>Người lập</b><br><br><br>_____________</div><div><b>Trưởng phòng</b><br><br><br>_____________</div><div><b>Phê duyệt</b><br><br><br>_____________</div></div>';
+}
+
+/* ========================= Import algorithm (XLSX, zero-dep) ========================= */
+// --- Minimal ZIP central-directory reader using native DecompressionStream for inflate ---
+function readUint16LE(b,o){ return b[o] | (b[o+1]<<8); }
+function readUint32LE(b,o){ return (b[o] | (b[o+1]<<8) | (b[o+2]<<16) | (b[o+3]<<24))>>>0; }
+
+async function inflateRawBytes(bytes){
+  var ds = new DecompressionStream("deflate-raw");
+  var stream = new Blob([bytes]).stream().pipeThrough(ds);
+  var buf = await new Response(stream).arrayBuffer();
+  return new Uint8Array(buf);
+}
+async function deflateRawBytes(bytes){
+  var cs = new CompressionStream("deflate-raw");
+  var stream = new Blob([bytes]).stream().pipeThrough(cs);
+  var buf = await new Response(stream).arrayBuffer();
+  return new Uint8Array(buf);
+}
+
+async function readZipEntries(arrayBuffer){
+  var bytes = new Uint8Array(arrayBuffer);
+  // find End Of Central Directory
+  var eocd=-1;
+  for(var i=bytes.length-22; i>=0 && i>bytes.length-22-65557; i--){
+    if(readUint32LE(bytes,i)===0x06054b50){ eocd=i; break; }
+  }
+  if(eocd<0) throw new Error("Không tìm thấy EOCD trong file ZIP/XLSX (file có thể bị hỏng)");
+  var cdOffset = readUint32LE(bytes, eocd+16);
+  var cdCount = readUint16LE(bytes, eocd+10);
+  var entries = {};
+  var p = cdOffset;
+  for(var e=0; e<cdCount; e++){
+    if(readUint32LE(bytes,p)!==0x02014b50) break;
+    var method = readUint16LE(bytes,p+10);
+    var compSize = readUint32LE(bytes,p+20);
+    var uncompSize = readUint32LE(bytes,p+24);
+    var nameLen = readUint16LE(bytes,p+28);
+    var extraLen = readUint16LE(bytes,p+30);
+    var commentLen = readUint16LE(bytes,p+32);
+    var localOffset = readUint32LE(bytes,p+42);
+    var name = bytesToUtf8(bytes.subarray(p+46, p+46+nameLen));
+    entries[name] = {method:method, compSize:compSize, uncompSize:uncompSize, localOffset:localOffset};
+    p += 46 + nameLen + extraLen + commentLen;
+  }
+  var result = {};
+  for(var name in entries){
+    var ent = entries[name];
+    var lp = ent.localOffset;
+    if(readUint32LE(bytes,lp)!==0x04034b50) continue;
+    var lNameLen = readUint16LE(bytes,lp+26);
+    var lExtraLen = readUint16LE(bytes,lp+28);
+    var dataStart = lp + 30 + lNameLen + lExtraLen;
+    var raw = bytes.subarray(dataStart, dataStart+ent.compSize);
+    if(ent.method===0){ result[name]=raw.slice(); }
+    else if(ent.method===8){ result[name]=await inflateRawBytes(raw); }
+    else { result[name]=raw.slice(); }
+  }
+  return result;
+}
+function bytesToUtf8(bytes){
+  if(typeof TextDecoder!=="undefined") return new TextDecoder("utf-8").decode(bytes);
+  var s=""; for(var i=0;i<bytes.length;i++) s+=String.fromCharCode(bytes[i]); return decodeURIComponent(escape(s));
+}
+function utf8ToBytes(str){
+  if(typeof TextEncoder!=="undefined") return new TextEncoder().encode(str);
+  var s=unescape(encodeURIComponent(str)), arr=new Uint8Array(s.length);
+  for(var i=0;i<s.length;i++) arr[i]=s.charCodeAt(i); return arr;
+}
+
+function decodeXmlEntities(s){
+  if(!s) return "";
+  return s.replace(/&lt;/g,"<").replace(/&gt;/g,">").replace(/&quot;/g,'"').replace(/&apos;/g,"'")
+    .replace(/&#x([0-9a-fA-F]+);/g,function(m,h){return String.fromCodePoint(parseInt(h,16));})
+    .replace(/&#(\d+);/g,function(m,d){return String.fromCodePoint(parseInt(d,10));})
+    .replace(/&amp;/g,"&");
+}
+function parseSharedStrings(xml){
+  if(!xml) return [];
+  var out=[]; var re=/<si\b[^>]*>([\s\S]*?)<\/si>/g, m;
+  while((m=re.exec(xml))){
+    var frag=m[1];
+    var text="";
+    var tre=/<t\b[^>]*>([\s\S]*?)<\/t>/g, tm;
+    while((tm=tre.exec(frag))){ text+=decodeXmlEntities(tm[1]); }
+    out.push(text);
+  }
+  return out;
+}
+var BUILTIN_DATE_FMT_IDS = {14:1,15:1,16:1,17:1,22:1};
+function parseStyles(xml){
+  if(!xml) return {cellXfs:[], customDateFmts:{}};
+  var customDateFmts={};
+  var nfRe=/<numFmt\b[^>]*numFmtId="(\d+)"[^>]*formatCode="([^"]*)"/g, nm;
+  while((nm=nfRe.exec(xml))){
+    var code=decodeXmlEntities(nm[2]);
+    if(/[ymdhs]/i.test(code) && !/general/i.test(code)) customDateFmts[nm[1]]=true;
+  }
+  var cellXfs=[];
+  var xfsBlockM = xml.match(/<cellXfs[^>]*>([\s\S]*?)<\/cellXfs>/);
+  if(xfsBlockM){
+    var xfRe=/<xf\b([^>]*)\/?>/g, xm;
+    while((xm=xfRe.exec(xfsBlockM[1]))){
+      var attrs=xm[1]; var idM=attrs.match(/numFmtId="(\d+)"/);
+      cellXfs.push(idM?idM[1]:"0");
+    }
+  }
+  return {cellXfs:cellXfs, customDateFmts:customDateFmts};
+}
+function isDateFormat(numFmtId, styleInfo){
+  if(BUILTIN_DATE_FMT_IDS[numFmtId]) return true;
+  if(styleInfo.customDateFmts[String(numFmtId)]) return true;
+  return false;
+}
+function excelSerialToISODate(serial){
+  var utcDays = Math.floor(serial - 25569);
+  var utcValue = utcDays*86400;
+  var d = new Date(utcValue*1000);
+  return d.toISOString().slice(0,10);
+}
+function colLettersToIndex(letters){
+  var n=0; for(var i=0;i<letters.length;i++){ n=n*26 + (letters.charCodeAt(i)-64); } return n-1;
+}
+function parseWorksheetRows(xml, sharedStrings, styleInfo){
+  var rows=[];
+  var rowRe=/<row\b[^>]*r="(\d+)"[^>]*>([\s\S]*?)<\/row>/g, rm;
+  var cellRe=/<c\b([^>]*?)\/>|<c\b([^>]*?)>([\s\S]*?)<\/c>/g;
+  while((rm=rowRe.exec(xml))){
+    var rowIdx = parseInt(rm[1],10)-1;
+    var rowXml = rm[2];
+    var rowArr=[];
+    cellRe.lastIndex=0;
+    var cm;
+    while((cm=cellRe.exec(rowXml))){
+      var attrs = cm[1]!==undefined ? cm[1] : cm[2];
+      var content = cm[1]!==undefined ? "" : cm[3];
+      var rM = attrs.match(/r="([A-Z]+)\d+"/);
+      if(!rM) continue;
+      var colIdx = colLettersToIndex(rM[1]);
+      var typeM = attrs.match(/t="([^"]+)"/);
+      var cellType = typeM ? typeM[1] : null;
+      var styleM = attrs.match(/s="(\d+)"/);
+      var styleIdx = styleM ? parseInt(styleM[1],10) : 0;
+      var val=null;
+      if(cellType==="inlineStr"){
+        var isM = content.match(/<t\b[^>]*>([\s\S]*?)<\/t>/);
+        val = isM?decodeXmlEntities(isM[1]):"";
+      } else if(cellType==="str"){
+        var vM=content.match(/<v>([\s\S]*?)<\/v>/);
+        val = vM?decodeXmlEntities(vM[1]):"";
+      } else {
+        var vM2=content.match(/<v>([\s\S]*?)<\/v>/);
+        var raw = vM2?vM2[1]:null;
+        if(raw===null){ val=null; }
+        else if(cellType==="s"){ val = sharedStrings[parseInt(raw,10)] || ""; }
+        else if(cellType==="b"){ val = raw==="1"; }
+        else {
+          var num = parseFloat(raw);
+          var numFmtId = styleInfo.cellXfs[styleIdx] || "0";
+          if(isDateFormat(numFmtId, styleInfo) && !isNaN(num)) val = excelSerialToISODate(num);
+          else val = isNaN(num)?raw:num;
+        }
+      }
+      rowArr[colIdx]=val;
+    }
+    rows[rowIdx]=rowArr;
+  }
+  var maxLen=rows.length;
+  for(var i=0;i<maxLen;i++) if(!rows[i]) rows[i]=[];
+  return rows;
+}
+function sheetFileList(zip){
+  var wbXml = bytesToUtf8(zip["xl/workbook.xml"]||new Uint8Array());
+  var relsXml = bytesToUtf8(zip["xl/_rels/workbook.xml.rels"]||new Uint8Array());
+  var relMap={};
+  var relRe=/<Relationship\b[^>]*Id="([^"]+)"[^>]*Target="([^"]+)"/g, rm;
+  while((rm=relRe.exec(relsXml))){ relMap[rm[1]] = "xl/"+rm[2].replace(/^\.?\/?/,""); }
+  var sheets=[];
+  var shRe=/<sheet\b[^>]*name="([^"]+)"[^>]*r:id="([^"]+)"/g, sm;
+  while((sm=shRe.exec(wbXml))){
+    var name=decodeXmlEntities(sm[1]);
+    var path = relMap[sm[2]] || ("xl/worksheets/sheet"+(sheets.length+1)+".xml");
+    sheets.push({name:name, path:path});
+  }
+  if(!sheets.length){
+    Object.keys(zip).forEach(function(k){ if(/^xl\/worksheets\/sheet\d+\.xml$/.test(k)) sheets.push({name:k, path:k}); });
+  }
+  return sheets;
+}
+async function readAllXlsxSheets(arrayBuffer){
+  var zip = await readZipEntries(arrayBuffer);
+  var sharedStrings = parseSharedStrings(zip["xl/sharedStrings.xml"]?bytesToUtf8(zip["xl/sharedStrings.xml"]):"");
+  var styleInfo = parseStyles(zip["xl/styles.xml"]?bytesToUtf8(zip["xl/styles.xml"]):"");
+  var sheetDefs = sheetFileList(zip);
+  var out=[];
+  sheetDefs.forEach(function(sd){
+    var xmlBytes = zip[sd.path];
+    if(!xmlBytes) return;
+    var rows = parseWorksheetRows(bytesToUtf8(xmlBytes), sharedStrings, styleInfo);
+    out.push({name:sd.name, rows:rows});
+  });
+  return out;
+}
+
+/* --- Import business logic --- */
+function looksLikeIndexColumn(rows, headerRowIdx, col){
+  var vals=[];
+  for(var i=headerRowIdx+1; i<rows.length && vals.length<6; i++){
+    var v=rows[i]&&rows[i][col];
+    if(v===undefined||v===null||v==="") continue;
+    vals.push(v);
+  }
+  if(vals.length<3) return false;
+  for(var k=0;k<vals.length;k++){
+    if(typeof vals[k]!=="number" || vals[k]!==Math.floor(vals[k])) return false;
+    if(k>0 && vals[k]!==vals[k-1]+1) return false;
+  }
+  return true;
+}
+function isDeptReferenceHeader(row){
+  return row && typeof row[0]==="string" && normKey(row[0]).indexOf("phong ban")===0;
+}
+function parseDeptReferenceRows(rows){
+  var map={};
+  for(var i=0;i<rows.length;i++){
+    var row=rows[i]; if(!row) continue;
+    var rawKey=row[0], name=row[1];
+    if(rawKey && name && typeof rawKey==="string" && !isDeptReferenceHeader(row)){
+      map[rawKey.trim()] = String(name).trim();
+    }
+  }
+  return map;
+}
+function isCategoryReferenceHeader(row){
+  return row && typeof row[0]==="string" && /ma nhom/i.test(normKey(row[0]));
+}
+function parseCategoryReferenceRows(rows){
+  var out=[];
+  for(var i=0;i<rows.length;i++){
+    var row=rows[i]; if(!row) continue;
+    if(isCategoryReferenceHeader(row)) continue;
+    var code=row[0], name=row[1];
+    if(code && name) out.push({code:String(code).trim(), name:String(name).trim()});
+  }
+  return out;
+}
+function findHeaderCell(rows, maxScan){
+  maxScan = maxScan || Math.min(rows.length, 15);
+  for(var r=0;r<maxScan;r++){
+    var row=rows[r]; if(!row) continue;
+    for(var c=0;c<row.length;c++){
+      var v=row[c];
+      if(typeof v==="string"){
+        var nk=normKey(v);
+        if(nk.indexOf("ma ts")===0 || nk.indexOf("ma tscd")===0 || nk==="ma" || nk.indexOf("ma ccdc")===0 || nk.indexOf("ma cc")===0){
+          if(!looksLikeIndexColumn(rows, r, c)) return {row:r, col:c, label:v};
+        }
+      }
+    }
+  }
+  return null;
+}
+function classifySheet(rows){
+  if(!rows || !rows.length) return {kind:"unknown"};
+  for(var r=0;r<Math.min(rows.length,5);r++){
+    if(isDeptReferenceHeader(rows[r])) return {kind:"dept_ref"};
+    if(isCategoryReferenceHeader(rows[r])) return {kind:"cat_ref"};
+  }
+  var hc = findHeaderCell(rows);
+  if(hc){
+    var isTSCD = normKey(hc.label).indexOf("ts")>=0 && normKey(hc.label).indexOf("cc")<0;
+    return {kind: isTSCD?"data_fa":"data_cc", header:hc};
+  }
+  return {kind:"unknown"};
+}
+function findColByKeywords(row, keywords){
+  if(!row) return -1;
+  for(var c=0;c<row.length;c++){
+    if(typeof row[c]==="string"){
+      var nk=normKey(row[c]);
+      for(var k=0;k<keywords.length;k++) if(nk.indexOf(keywords[k])>=0) return c;
+    }
+  }
+  return -1;
+}
+function normDeptKeyLoose(raw){
+  // extract the LAST run of 5+ digits (branch/PGD numeric code), normalized to its last 6 digits,
+  // so different compound-key formats sharing the same branch code resolve to the same lookup key.
+  if(!raw) return "";
+  var runs = String(raw).match(/\d{5,}/g);
+  if(!runs || !runs.length) return "";
+  var last = runs[runs.length-1];
+  return last.length>6 ? last.slice(-6) : last;
+}
+function isValidDeptNameGuess(s){
+  if(!s) return false;
+  s=String(s).trim();
+  if(s.length<2) return false;
+  var nk=normKey(s);
+  if(nk==="khong xac dinh") return false;
+  return true;
+}
+function parseDepartmentField(raw, deptRefMap, deptRefLooseIndex){
+  if(raw===undefined||raw===null) return {name:"(Không xác định)", rawKey:raw};
+  var rawStr=String(raw).trim();
+  if(deptRefMap && deptRefMap[rawStr]) return {name:deptRefMap[rawStr], rawKey:rawStr};
+  var loose = normDeptKeyLoose(rawStr);
+  if(deptRefLooseIndex && loose && deptRefLooseIndex[loose]) return {name:deptRefLooseIndex[loose], rawKey:rawStr};
+  // heuristic: compound key "org.midSegment.lastSegment" where either the mid segment (after its
+  // own "-") or the last segment (after " - ") may hold a human-readable department/branch name.
+  var parts = rawStr.split(".");
+  if(parts.length>=3){
+    var mid = parts[1];
+    var midDash = mid.indexOf("-");
+    var cand1 = midDash>=0 ? mid.slice(midDash+1).trim() : "";
+    var last = parts.slice(2).join(".");
+    // only strip a leading "<digits> - " branch-code prefix, not every " - " in the text
+    // (a clean branch name like "CN Bến Lức - PGD Thủ Thừa" also contains " - ")
+    var codePrefixM = /^\d+\s*-\s*/.exec(last);
+    var cand2 = codePrefixM ? last.slice(codePrefixM[0].length).trim() : last.trim();
+    if(isValidDeptNameGuess(cand1)) return {name:cand1, rawKey:rawStr};
+    if(isValidDeptNameGuess(cand2)) return {name:cand2, rawKey:rawStr};
+  } else if(parts.length===2){
+    var mid2 = parts[1];
+    var dashIdx = mid2.indexOf("-");
+    if(dashIdx>=0){
+      var nameGuess = mid2.slice(dashIdx+1).trim();
+      if(isValidDeptNameGuess(nameGuess)) return {name:nameGuess, rawKey:rawStr};
+    }
+  }
+  if(loose) return {name:"Chi nhánh/PGD ("+loose+")", rawKey:rawStr};
+  return {name: rawStr || "(Không xác định)", rawKey:rawStr};
+}
+function isLegendRow(row){
+  if(!row) return false;
+  var defined=0, matches=0;
+  for(var c=0;c<row.length;c++){
+    if(row[c]===null||row[c]===undefined||row[c]==="") continue;
+    defined++;
+    if(row[c]===c+1) matches++;
+  }
+  return defined>=3 && matches>=Math.min(5,defined) && (matches/defined)>0.8;
+}
+function categoryLevelOf(code){
+  var s=String(code||"").trim();
+  var m=s.match(/^(\d+)/);
+  if(!m) return 0;
+  return Math.ceil(m[1].length/2);
+}
+function extractAssetRows(rows, deptRefMap, catRefList, typeHint){
+  var hc = findHeaderCell(rows);
+  if(!hc) return [];
+  var headerRow = rows[hc.row];
+  var colCode = hc.col;
+  var colName = findColByKeywords(headerRow, ["ten"]);
+  if(colName<0) colName = colCode+1;
+  var colDept = findColByKeywords(headerRow, ["phong ban","don vi","chi nhanh"]);
+  var colNguyenGia = findColByKeywords(headerRow, ["nguyen gia"]);
+  var colConLai = findColByKeywords(headerRow, ["gia tri con lai","con lai"]);
+  var colDate = findColByKeywords(headerRow, ["ngay ghi nhan","ngay"]);
+  var colCat = findColByKeywords(headerRow, ["nhom","ma nhom","loai"]);
+
+  var deptRefLooseIndex={};
+  if(deptRefMap) Object.keys(deptRefMap).forEach(function(k){ var l=normDeptKeyLoose(k); if(l) deptRefLooseIndex[l]=deptRefMap[k]; });
+
+  var out=[];
+  var lastCategoryLabel=null;
+  for(var i=hc.row+1;i<rows.length;i++){
+    var row=rows[i]; if(!row || !row.length) continue;
+    if(isLegendRow(row)) continue;
+    var codeVal = row[colCode];
+    var nameVal = colName>=0 ? row[colName] : undefined;
+    var codeLooksLikeGroupLabel = typeof codeVal==="string" && /^\d+(\.\d+)*\./.test(codeVal.trim()) && (nameVal===undefined||nameVal===null||String(nameVal).trim()==="");
+    if(codeVal===undefined||codeVal===null||String(codeVal).trim()===""||codeLooksLikeGroupLabel){
+      // group/subtotal row carrying a category label (either in the code column itself, or colCat)
+      var maybeCat = codeLooksLikeGroupLabel ? codeVal : row[colCat>=0?colCat:0];
+      if(typeof maybeCat==="string" && /^\d+(\.\d+)*\./.test(maybeCat.trim())){
+        lastCategoryLabel = maybeCat.trim();
+      }
+      continue;
+    }
+    var deptInfo = colDept>=0 ? parseDepartmentField(row[colDept], deptRefMap, deptRefLooseIndex) : {name:"(Không xác định)"};
+    var catInfo = null;
+    if(colCat>=0 && typeof row[colCat]==="string" && row[colCat].trim()){
+      var raw = row[colCat].trim();
+      var codeM = raw.match(/^([A-Za-z0-9.]+)\s*-?\s*(.*)$/);
+      catInfo = {code: codeM?codeM[1]:raw, name: codeM&&codeM[2]?codeM[2]:raw};
+    } else if(lastCategoryLabel){
+      var dotIdx=lastCategoryLabel.indexOf(".");
+      catInfo = {code: dotIdx>0?lastCategoryLabel.slice(0,dotIdx):lastCategoryLabel, name: dotIdx>0?lastCategoryLabel.slice(dotIdx+1):lastCategoryLabel};
+    }
+    out.push({
+      code: String(codeVal).trim(),
+      name: colName>=0 ? String(row[colName]||"").trim() : "",
+      type: typeHint,
+      dept: deptInfo,
+      category: catInfo,
+      nguyenGia: colNguyenGia>=0 ? Number(row[colNguyenGia])||0 : 0,
+      giaTriConLai: colConLai>=0 ? Number(row[colConLai])||0 : 0,
+      ngayGhiNhan: colDate>=0 ? row[colDate] : null
+    });
+  }
+  return out;
+}
+
+async function runBankImport(arrayBuffer){
+  var sheets = await readAllXlsxSheets(arrayBuffer);
+  var deptRefMap=null, catRefList=null;
+  var dataSheets=[];
+  sheets.forEach(function(sh){
+    var cls = classifySheet(sh.rows);
+    if(cls.kind==="dept_ref") deptRefMap = Object.assign(deptRefMap||{}, parseDeptReferenceRows(sh.rows));
+    else if(cls.kind==="cat_ref") catRefList = (catRefList||[]).concat(parseCategoryReferenceRows(sh.rows));
+    else if(cls.kind==="data_fa" || cls.kind==="data_cc") dataSheets.push({sheet:sh, kind:cls.kind});
+  });
+  var allRows=[];
+  dataSheets.forEach(function(d){
+    var typeHint = d.kind==="data_fa"?"TSCD":"CCDC";
+    var rows = extractAssetRows(d.sheet.rows, deptRefMap, catRefList, typeHint);
+    rows.forEach(function(r){ r.sourceSheet=d.sheet.name; });
+    allRows = allRows.concat(rows);
+  });
+  return {rows:allRows, deptRefCount: deptRefMap?Object.keys(deptRefMap).length:0, catRefCount: catRefList?catRefList.length:0, sheetSummary: dataSheets.map(function(d){return d.sheet.name+": "+extractAssetRows(d.sheet.rows, deptRefMap, catRefList, d.kind==="data_fa"?"TSCD":"CCDC").length+" dòng";})};
+}
+
+function commitImportRows(rows){
+  var deptByName={}; DB.departments.forEach(function(d){ deptByName[normKey(d.name)]=d.id; });
+  var catByCode={}; DB.categories.forEach(function(c){ catByCode[normKey(c.code)]=c.id; });
+  var added=0, updated=0;
+  rows.forEach(function(r){
+    var deptId=null;
+    if(r.dept && r.dept.name){
+      var nk=normKey(r.dept.name);
+      if(deptByName[nk]) deptId=deptByName[nk];
+      else{
+        var nd={id:uid("D"), code:uid("DC"), name:r.dept.name, address:""};
+        DB.departments.push(nd); deptByName[nk]=nd.id; deptId=nd.id;
+      }
+    }
+    var catId=null;
+    if(r.category && r.category.code){
+      var ck=normKey(r.category.code);
+      if(catByCode[ck]) catId=catByCode[ck];
+      else{
+        var nc={id:uid("C"), code:r.category.code.toUpperCase(), name:r.category.name||r.category.code, type:r.type};
+        DB.categories.push(nc); catByCode[ck]=nc.id; catId=nc.id;
+      }
+    }
+    var existing = DB.assets.filter(function(a){return a.code===r.code;})[0];
+    if(existing){
+      existing.name=r.name||existing.name; existing.deptId=deptId||existing.deptId; existing.catId=catId||existing.catId;
+      existing.nguyenGia=r.nguyenGia||existing.nguyenGia; existing.giaTriConLai=r.giaTriConLai||existing.giaTriConLai;
+      updated++;
+    } else {
+      DB.assets.push({
+        id:r.code, code:r.code, name:r.name||"(Chưa đặt tên)", type:r.type, catId:catId, deptId:deptId, userId:null,
+        nguyenGia:r.nguyenGia||0, giaTriConLai:r.giaTriConLai||0, ngayGhiNhan: r.ngayGhiNhan||todayStr(), status:STATUS.USE,
+        history:[{status:STATUS.USE, date:todayStr(), note:"Import từ file Excel", by: currentUser()?currentUser().username:"system"}]
+      });
+      added++;
+    }
+  });
+  saveDB();
+  return {added:added, updated:updated};
+}
+
+/* ========================= ZIP writer (STORED) + DOCX mail-merge ========================= */
+var CRC_TABLE = (function(){
+  var t=[]; for(var n=0;n<256;n++){ var c=n; for(var k=0;k<8;k++){ c = (c&1)?(0xEDB88320 ^ (c>>>1)):(c>>>1); } t[n]=c>>>0; } return t;
+})();
+function crc32(bytes){
+  var c=0xFFFFFFFF;
+  for(var i=0;i<bytes.length;i++) c = CRC_TABLE[(c ^ bytes[i]) & 0xFF] ^ (c>>>8);
+  return (c ^ 0xFFFFFFFF)>>>0;
+}
+function writeUint32LE(arr, v){ arr.push(v&0xFF,(v>>>8)&0xFF,(v>>>16)&0xFF,(v>>>24)&0xFF); }
+function writeUint16LE(arr, v){ arr.push(v&0xFF,(v>>>8)&0xFF); }
+function buildZipStored(entries){
+  // entries: [{name, bytes}]
+  var localChunks=[], central=[], offset=0;
+  entries.forEach(function(ent){
+    var nameBytes = utf8ToBytes(ent.name);
+    var crc = crc32(ent.bytes);
+    var lh=[]; writeUint32LE(lh,0x04034b50); writeUint16LE(lh,20); writeUint16LE(lh,0); writeUint16LE(lh,0);
+    writeUint16LE(lh,0); writeUint16LE(lh,0); writeUint32LE(lh,crc); writeUint32LE(lh,ent.bytes.length); writeUint32LE(lh,ent.bytes.length);
+    writeUint16LE(lh,nameBytes.length); writeUint16LE(lh,0);
+    var localHeader = new Uint8Array(lh.concat(Array.from(nameBytes)));
+    var entryOffset = offset;
+    localChunks.push(localHeader, ent.bytes);
+    offset += localHeader.length + ent.bytes.length;
+
+    var ch=[]; writeUint32LE(ch,0x02014b50); writeUint16LE(ch,20); writeUint16LE(ch,20); writeUint16LE(ch,0);
+    writeUint16LE(ch,0); writeUint16LE(ch,0); writeUint16LE(ch,0); writeUint32LE(ch,crc);
+    writeUint32LE(ch,ent.bytes.length); writeUint32LE(ch,ent.bytes.length);
+    writeUint16LE(ch,nameBytes.length); writeUint16LE(ch,0); writeUint16LE(ch,0); writeUint16LE(ch,0); writeUint16LE(ch,0);
+    writeUint32LE(ch,0); writeUint32LE(ch,entryOffset);
+    central.push(new Uint8Array(ch.concat(Array.from(nameBytes))));
+  });
+  var cdStart=offset, cdSize=0;
+  central.forEach(function(c){ cdSize+=c.length; });
+  var eocd=[]; writeUint32LE(eocd,0x06054b50); writeUint16LE(eocd,0); writeUint16LE(eocd,0);
+  writeUint16LE(eocd,entries.length); writeUint16LE(eocd,entries.length);
+  writeUint32LE(eocd,cdSize); writeUint32LE(eocd,cdStart); writeUint16LE(eocd,0);
+  var all = localChunks.concat(central, [new Uint8Array(eocd)]);
+  var total=0; all.forEach(function(a){total+=a.length;});
+  var out=new Uint8Array(total), p=0;
+  all.forEach(function(a){ out.set(a,p); p+=a.length; });
+  return out;
+}
+function flattenRuns(fragment){
+  var text=""; var tre=/<w:t\b[^>]*>([\s\S]*?)<\/w:t>/g, tm;
+  while((tm=tre.exec(fragment))) text+=decodeXmlEntities(tm[1]);
+  return text;
+}
+function escapeXml(s){ return String(s===undefined||s===null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+function replaceScalarsInXml(xml, dict){
+  var paraRe=/<w:p\b[^>]*\/>|<w:p\b[^>]*>[\s\S]*?<\/w:p>/g;
+  return xml.replace(paraRe, function(para){
+    var flat = flattenRuns(para);
+    var hasPlaceholder=false;
+    Object.keys(dict).forEach(function(k){ if(flat.indexOf("{{"+k+"}}")>=0) hasPlaceholder=true; });
+    if(!hasPlaceholder) return para;
+    // collapse all runs' text into first run, clear rest, then substitute
+    var firstRPr=null;
+    var runRe=/<w:r\b[^>]*>[\s\S]*?<\/w:r>|<w:r\b[^>]*\/>/g;
+    var merged="";
+    var newPara = para.replace(runRe, function(run){
+      var rprM = run.match(/<w:rPr\b[^>]*>[\s\S]*?<\/w:rPr>/);
+      if(rprM && !firstRPr) firstRPr=rprM[0];
+      var t = flattenRuns(run);
+      merged += t;
+      return "";
+    });
+    Object.keys(dict).forEach(function(k){
+      merged = merged.split("{{"+k+"}}").join(escapeXml(dict[k]));
+    });
+    var openTagM = para.match(/^<w:p\b[^>]*>/);
+    var openTag = openTagM?openTagM[0]:"<w:p>";
+    var runXml = "<w:r>"+(firstRPr||"")+"<w:t xml:space=\"preserve\">"+merged+"</w:t></w:r>";
+    return openTag + runXml + "</w:p>";
+  });
+}
+function repeatTableRows(xml, rowsData, keys){
+  var rowRe=/<w:tr\b[^>]*>[\s\S]*?<\/w:tr>/g;
+  return xml.replace(rowRe, function(trXml){
+    var flat=flattenRuns(trXml);
+    var isTemplateRow = keys.some(function(k){ return flat.indexOf("{{"+k+"}}")>=0; });
+    if(!isTemplateRow) return trXml;
+    return rowsData.map(function(rowDict){
+      return replaceScalarsInXml(trXml, rowDict);
+    }).join("");
+  });
+}
+async function mergeDocxTemplate(templateBytes, scalarDict, rowDicts, rowKeys){
+  var zip = await readZipEntries(templateBytes.buffer ? templateBytes.buffer : templateBytes);
+  var docXmlBytes = zip["word/document.xml"];
+  if(!docXmlBytes) throw new Error("File mẫu không hợp lệ (thiếu word/document.xml)");
+  var xml = bytesToUtf8(docXmlBytes);
+  if(rowDicts && rowDicts.length) xml = repeatTableRows(xml, rowDicts, rowKeys||Object.keys(rowDicts[0]||{}));
+  xml = replaceScalarsInXml(xml, scalarDict);
+  var newEntries=[];
+  Object.keys(zip).forEach(function(name){
+    var bytes = name==="word/document.xml" ? utf8ToBytes(xml) : zip[name];
+    newEntries.push({name:name, bytes:bytes});
+  });
+  return buildZipStored(newEntries);
+}
+
+/* ========================= Actions / events ========================= */
+async function doExportDocx(templateKey, scalarDict, rowDicts, rowKeys, filename, fallbackHtml, fallbackTitle){
+  var tpl = DB.templateConfig.files[templateKey];
+  if(tpl){
+    try{
+      var bytes = base64ToUint8Array(tpl.base64);
+      var outBytes = await mergeDocxTemplate(bytes, scalarDict, rowDicts, rowKeys);
+      downloadBlob(new Blob([outBytes],{type:"application/vnd.openxmlformats-officedocument.wordprocessingml.document"}), filename);
+      return;
+    }catch(e){ console.error(e); flash("Không dùng được mẫu đã tải lên ("+e.message+"), chuyển sang in HTML.", "err"); }
+  }
+  openPrintWindow(fallbackTitle, fallbackHtml);
+}
+
+function assetRowDict(a, idx){
+  return {STT:String(idx+1), MA:a.code, TEN:a.name, NHOM:catName(a.catId), PHONG_BAN:deptName(a.deptId),
+    NGUYEN_GIA:fmtMoney(a.nguyenGia), GIA_TRI_CON_LAI:fmtMoney(a.giaTriConLai), TRANG_THAI:a.status};
+}
+
+function bindGlobalEvents(){
+  var root=qs("#app");
+
+  qsa("[data-nav]", root).forEach(function(elx){
+    elx.addEventListener("click", function(ev){
+      if(ev.target.closest && ev.target.closest("[data-stop]")) return;
+      var route=this.getAttribute("data-nav");
+      var paramsAttr=this.getAttribute("data-nav-params");
+      var params = paramsAttr ? JSON.parse(paramsAttr) : {};
+      nav(route, params);
+    });
+  });
+  qsa("[data-action='goback']", root).forEach(function(b){ b.addEventListener("click", goBack); });
+
+  var loginForm = qs("[data-form='login']", root);
+  if(loginForm) loginForm.addEventListener("submit", function(ev){
+    ev.preventDefault();
+    var fd=new FormData(this);
+    var uname=fd.get("username"), pw=fd.get("password");
+    var u = DB.users.filter(function(x){return x.username===uname && x.password===pw;})[0];
+    if(!u){ state.loginError="Sai tên đăng nhập hoặc mật khẩu."; render(); return; }
+    state.loginError=null; state.session={userId:u.id}; state.history=[];
+    nav("dashboard",{},{replace:true});
+  });
+
+  var logoutBtn = qs("[data-action='logout']", root);
+  if(logoutBtn) logoutBtn.addEventListener("click", function(){ state.session=null; state.history=[]; render(); });
+
+  var fab = qs(".fab-back", root);
+  if(fab) fab.addEventListener("click", goBack);
+
+  // Assets list filters
+  ["f_q","f_type","f_status","f_cat","f_dept"].forEach(function(id){
+    var e=qs("#"+id, root); if(!e) return;
+    var ev = (id==="f_q")?"input":"change";
+    e.addEventListener(ev, function(){
+      state.assetFilters.q = qs("#f_q",root)?qs("#f_q",root).value:state.assetFilters.q;
+      state.assetFilters.type = qs("#f_type",root)?qs("#f_type",root).value:state.assetFilters.type;
+      state.assetFilters.status = qs("#f_status",root)?qs("#f_status",root).value:state.assetFilters.status;
+      state.assetFilters.catId = qs("#f_cat",root)?qs("#f_cat",root).value:state.assetFilters.catId;
+      state.assetFilters.deptId = qs("#f_dept",root)?qs("#f_dept",root).value:state.assetFilters.deptId;
+      render();
+    });
+  });
+  qsa("th.sortable", root).forEach(function(th){
+    th.addEventListener("click", function(){
+      var col=this.getAttribute("data-sort");
+      if(state.sortCol.assets===col) state.sortDir.assets = -(state.sortDir.assets||1);
+      else { state.sortCol.assets=col; state.sortDir.assets=1; }
+      render();
+    });
+  });
+  var selAll = qs("#selAll", root);
+  if(selAll) selAll.addEventListener("change", function(){
+    qsa(".rowchk", root).forEach(function(c){ c.checked=selAll.checked; state.selectedIds[c.getAttribute("data-id")] = selAll.checked; });
+    render();
+  });
+  qsa(".rowchk", root).forEach(function(c){
+    c.addEventListener("click", function(ev){ ev.stopPropagation(); });
+    c.addEventListener("change", function(){
+      state.selectedIds[this.getAttribute("data-id")] = this.checked;
+      render();
+    });
+  });
+  var clearSelBtn = qs("[data-action='clear-selection']", root);
+  if(clearSelBtn) clearSelBtn.addEventListener("click", function(){ state.selectedIds={}; render(); });
+
+  var bulkBtns = qsa("[data-action='bulk-status']", root);
+  bulkBtns.forEach(function(b){
+    b.addEventListener("click", function(){
+      var status=this.getAttribute("data-status");
+      var ids=Object.keys(state.selectedIds).filter(function(k){return state.selectedIds[k];});
+      if(!confirm("Bạn có chắc chắn muốn chuyển trạng thái "+ids.length+" tài sản sang \""+status+"\"?")) return;
+      ids.forEach(function(id){
+        var a=byId(id); if(!a) return;
+        a.status=status; a.history=a.history||[];
+        a.history.push({status:status, date:todayStr(), note:"Chuyển trạng thái hàng loạt", by:currentUser().username});
+      });
+      saveDB(); state.selectedIds={}; flash("Đã cập nhật trạng thái "+ids.length+" tài sản.");
+    });
+  });
+  var exportCsvBtn = qs("[data-action='export-assets-csv']", root);
+  if(exportCsvBtn) exportCsvBtn.addEventListener("click", function(){
+    if(!confirm("Bạn có chắc chắn muốn xuất danh sách tài sản ra Excel/CSV?")) return;
+    exportAssetsCSV(scopedAssets(currentUser()));
+  });
+  var exportLiqBtn = qs("[data-action='export-liquidation']", root);
+  if(exportLiqBtn) exportLiqBtn.addEventListener("click", async function(){
+    var ids=Object.keys(state.selectedIds).filter(function(k){return state.selectedIds[k];});
+    if(!ids.length) return;
+    if(!confirm("Xuất biên bản đề nghị thanh lý cho "+ids.length+" tài sản đã chọn?")) return;
+    var list = ids.map(byId).filter(Boolean);
+    var rowDicts = list.map(assetRowDict);
+    var tableRows = list.map(function(a,i){ return '<tr><td>'+(i+1)+'</td><td>'+escapeHtml(a.code)+'</td><td>'+escapeHtml(a.name)+'</td><td>'+fmtMoney(a.nguyenGia)+'</td><td>'+fmtMoney(a.giaTriConLai)+'</td></tr>'; }).join("");
+    var fallback = reportLetterheadHtml("BIÊN BẢN ĐỀ NGHỊ THANH LÝ TÀI SẢN")+
+      '<table><tr><th>STT</th><th>Mã</th><th>Tên tài sản</th><th>Nguyên giá</th><th>Giá trị còn lại</th></tr>'+tableRows+'</table>'+reportSignatureHtml();
+    await doExportDocx("rotation", {NGAY:fmtDate(todayStr()), SO_LUONG:String(list.length)}, rowDicts, ["STT","MA","TEN","NHOM","PHONG_BAN","NGUYEN_GIA","GIA_TRI_CON_LAI","TRANG_THAI"],
+      "BienBanThanhLy_"+todayStr()+".docx", fallback, "Biên bản đề nghị thanh lý");
+  });
+
+  var assetForm = qs("[data-form='asset-save']", root);
+  if(assetForm) assetForm.addEventListener("submit", function(ev){
+    ev.preventDefault();
+    var fd=new FormData(this); var id=this.getAttribute("data-id");
+    var data={}; fd.forEach(function(v,k){ data[k]=v; });
+    if(id){
+      var a=byId(id);
+      Object.assign(a, {name:data.name, type:data.type, catId:data.catId, deptId:data.deptId, userId:data.userId||null,
+        nguyenGia:Number(data.nguyenGia)||0, giaTriConLai:Number(data.giaTriConLai)||0, ngayGhiNhan:data.ngayGhiNhan});
+      if(a.status!==data.status){
+        a.status=data.status; a.history=a.history||[];
+        a.history.push({status:data.status, date:todayStr(), note:"Cập nhật thủ công", by:currentUser().username});
+      }
+      saveDB(); flash("Đã lưu thay đổi."); goBack();
+    } else {
+      if(DB.assets.filter(function(x){return x.code===data.code;}).length){ flash("Mã tài sản đã tồn tại!","err"); return; }
+      var na={id:data.code, code:data.code, name:data.name, type:data.type, catId:data.catId, deptId:data.deptId, userId:data.userId||null,
+        nguyenGia:Number(data.nguyenGia)||0, giaTriConLai:Number(data.giaTriConLai)||0, ngayGhiNhan:data.ngayGhiNhan, status:data.status,
+        history:[{status:data.status, date:todayStr(), note:"Ghi nhận mới", by:currentUser().username}]};
+      DB.assets.push(na); saveDB(); flash("Đã thêm tài sản mới."); nav("asset_detail",{id:na.id},{replace:true});
+    }
+  });
+
+  // Transfers
+  var tForm = qs("[data-form='transfer-new']", root);
+  if(tForm) tForm.addEventListener("submit", function(ev){
+    ev.preventDefault();
+    var fd=new FormData(this); var data={}; fd.forEach(function(v,k){data[k]=v;});
+    var a=byId(data.assetId); if(!a){ flash("Vui lòng chọn tài sản.","err"); return; }
+    var t={id:uid("DC"), assetId:a.id, fromDeptId:a.deptId, toDeptId:data.toDeptId, note:data.note, step:0,
+      createdBy:currentUser().id, createdAt:nowISO(), history:[{action:"Lập lệnh điều chuyển", date:todayStr(), by:currentUser().username}]};
+    DB.transfers.push(t); saveDB(); flash("Đã lập lệnh điều chuyển."); nav("transfer_detail",{id:t.id},{replace:true});
+  });
+  qsa("[data-action='transfer-step']", root).forEach(function(b){
+    b.addEventListener("click", function(){
+      var t=DB.transfers.filter(function(x){return x.id===this.getAttribute("data-id");}.bind(this))[0];
+      var to=Number(this.getAttribute("data-to"));
+      t.step=to; t.history.push({action:TRANSFER_STEPS[to], date:todayStr(), by:currentUser().username});
+      if(to===4){ var a=byId(t.assetId); if(a){ a.deptId=t.toDeptId; } }
+      saveDB(); flash("Đã cập nhật trạng thái lệnh điều chuyển.");
+    });
+  });
+  qsa("[data-action='print-transfer']", root).forEach(function(b){
+    b.addEventListener("click", async function(){
+      if(!confirm("Bạn có chắc chắn muốn xuất lệnh điều chuyển?")) return;
+      var t=DB.transfers.filter(function(x){return x.id===this.getAttribute("data-id");}.bind(this))[0];
+      var a=byId(t.assetId);
+      var fallback=reportLetterheadHtml("LỆNH ĐIỀU CHUYỂN TÀI SẢN")+'<table><tr><th>Mã tài sản</th><td>'+escapeHtml(a?a.code:"")+'</td></tr>'+
+        '<tr><th>Tên tài sản</th><td>'+escapeHtml(a?a.name:"")+'</td></tr><tr><th>Từ phòng ban</th><td>'+escapeHtml(deptName(t.fromDeptId))+'</td></tr>'+
+        '<tr><th>Đến phòng ban</th><td>'+escapeHtml(deptName(t.toDeptId))+'</td></tr><tr><th>Ghi chú</th><td>'+escapeHtml(t.note||"")+'</td></tr></table>'+reportSignatureHtml();
+      await doExportDocx("transfer", {MA_LENH:t.id, MA_TS:a?a.code:"", TEN_TS:a?a.name:"", TU_PHONG_BAN:deptName(t.fromDeptId), DEN_PHONG_BAN:deptName(t.toDeptId), GHI_CHU:t.note||"", NGAY:fmtDate(todayStr())}, null, null,
+        "LenhDieuChuyen_"+t.id+".docx", fallback, "Lệnh điều chuyển "+t.id);
+    });
+  });
+
+  // Repairs
+  var rForm = qs("[data-form='repair-new']", root);
+  if(rForm) rForm.addEventListener("submit", function(ev){
+    ev.preventDefault();
+    var fd=new FormData(this); var data={}; fd.forEach(function(v,k){data[k]=v;});
+    var a=byId(data.assetId); if(!a){ flash("Vui lòng chọn tài sản.","err"); return; }
+    a.status=STATUS.BROKEN; a.history=a.history||[]; a.history.push({status:STATUS.BROKEN, date:todayStr(), note:"Báo hỏng: "+data.note, by:currentUser().username});
+    var r={id:uid("SC"), assetId:a.id, deptId:a.deptId, note:data.note, step:0, createdBy:currentUser().id, createdAt:nowISO(),
+      history:[{action:"Lập phiếu báo hỏng", date:todayStr(), by:currentUser().username}]};
+    DB.repairs.push(r); saveDB(); flash("Đã lập phiếu báo hỏng. Trạng thái tài sản chuyển sang Hỏng."); nav("repair_detail",{id:r.id},{replace:true});
+  });
+  qsa("[data-action='repair-step']", root).forEach(function(b){
+    b.addEventListener("click", function(){
+      var r=DB.repairs.filter(function(x){return x.id===this.getAttribute("data-id");}.bind(this))[0];
+      var to=Number(this.getAttribute("data-to"));
+      r.step=to; r.history.push({action:REPAIR_STEPS[to], date:todayStr(), by:currentUser().username});
+      if(to===3){ var a=byId(r.assetId); if(a){ a.status=STATUS.USE; a.history.push({status:STATUS.USE, date:todayStr(), note:"IT khắc phục xong", by:currentUser().username}); } }
+      saveDB(); flash("Đã cập nhật trạng thái phiếu sửa chữa.");
+    });
+  });
+  qsa("[data-action='print-repair']", root).forEach(function(b){
+    b.addEventListener("click", async function(){
+      if(!confirm("Bạn có chắc chắn muốn xuất phiếu báo hỏng?")) return;
+      var r=DB.repairs.filter(function(x){return x.id===this.getAttribute("data-id");}.bind(this))[0];
+      var a=byId(r.assetId);
+      var fallback=reportLetterheadHtml("PHIẾU BÁO HỎNG / SỰ CỐ")+'<table><tr><th>Mã tài sản</th><td>'+escapeHtml(a?a.code:"")+'</td></tr>'+
+        '<tr><th>Tên tài sản</th><td>'+escapeHtml(a?a.name:"")+'</td></tr><tr><th>Phòng ban</th><td>'+escapeHtml(deptName(r.deptId))+'</td></tr>'+
+        '<tr><th>Mô tả sự cố</th><td>'+escapeHtml(r.note||"")+'</td></tr></table>'+reportSignatureHtml();
+      await doExportDocx("repair", {MA_PHIEU:r.id, MA_TS:a?a.code:"", TEN_TS:a?a.name:"", PHONG_BAN:deptName(r.deptId), MO_TA:r.note||"", NGAY:fmtDate(todayStr())}, null, null,
+        "PhieuBaoHong_"+r.id+".docx", fallback, "Phiếu báo hỏng "+r.id);
+    });
+  });
+
+  // Inventory
+  var invForm = qs("[data-form='inventory-new']", root);
+  if(invForm) invForm.addEventListener("submit", function(ev){
+    ev.preventDefault();
+    var fd=new FormData(this); var data={}; fd.forEach(function(v,k){data[k]=v;});
+    var scope = data.deptId==="ALL" ? "ALL" : "DEPT";
+    var assetIds = (scope==="ALL" ? DB.assets : DB.assets.filter(function(a){return a.deptId===data.deptId;})).map(function(a){return a.id;});
+    var iv={id:uid("KK"), scope:scope, deptId: scope==="ALL"?null:data.deptId, date:data.date, assetIds:assetIds};
+    DB.inventories.push(iv); saveDB(); flash("Đã lập biên bản kiểm kê ("+assetIds.length+" tài sản).");
+  });
+  qsa("[data-action='print-inventory']", root).forEach(function(b){
+    b.addEventListener("click", async function(){
+      if(!confirm("Bạn có chắc chắn muốn xuất biên bản kiểm kê?")) return;
+      var iv=DB.inventories.filter(function(x){return x.id===this.getAttribute("data-id");}.bind(this))[0];
+      var list = iv.assetIds.map(byId).filter(Boolean);
+      var rowDicts = list.map(assetRowDict);
+      var tableRows = list.map(function(a,i){ return '<tr><td>'+(i+1)+'</td><td>'+escapeHtml(a.code)+'</td><td>'+escapeHtml(a.name)+'</td><td>'+escapeHtml(a.status)+'</td></tr>'; }).join("");
+      var fallback=reportLetterheadHtml("BIÊN BẢN KIỂM KÊ TÀI SẢN")+'<p>Phạm vi: '+(iv.scope==="ALL"?"Toàn chi nhánh":escapeHtml(deptName(iv.deptId)))+' — Ngày: '+fmtDate(iv.date)+'</p>'+
+        '<table><tr><th>STT</th><th>Mã</th><th>Tên tài sản</th><th>Trạng thái</th></tr>'+tableRows+'</table>'+reportSignatureHtml();
+      await doExportDocx("inventory", {NGAY:fmtDate(iv.date), PHAM_VI: iv.scope==="ALL"?"Toàn chi nhánh":deptName(iv.deptId), SO_LUONG:String(list.length)}, rowDicts,
+        ["STT","MA","TEN","NHOM","PHONG_BAN","NGUYEN_GIA","GIA_TRI_CON_LAI","TRANG_THAI"], "BienBanKiemKe_"+iv.id+".docx", fallback, "Biên bản kiểm kê "+iv.id);
+    });
+  });
+
+  // Categories drill-down
+  qsa("[data-dblclick='cat-drill']", root).forEach(function(tr){
+    tr.addEventListener("dblclick", function(){ nav("assets",{catId:this.getAttribute("data-id")}); });
+  });
+
+  // Admin users
+  var showUserNewBtn=qs("[data-action='show-user-new']",root); if(showUserNewBtn) showUserNewBtn.addEventListener("click", function(){ state.showUserNew=true; render(); });
+  var hideUserNewBtn=qs("[data-action='hide-user-new']",root); if(hideUserNewBtn) hideUserNewBtn.addEventListener("click", function(){ state.showUserNew=false; render(); });
+  var userNewForm2 = qs("[data-form='user-new']", root);
+  if(userNewForm2) userNewForm2.addEventListener("submit", function(ev){
+    ev.preventDefault();
+    var fd=new FormData(this); var data={}; fd.forEach(function(v,k){data[k]=v;});
+    if(DB.users.filter(function(x){return x.username===data.username;}).length){ flash("Tài khoản đã tồn tại!","err"); return; }
+    DB.users.push({id:uid("U"), username:data.username, password:data.password, name:data.name, empCode:data.empCode, deptId:data.deptId, role:data.role});
+    saveDB(); state.showUserNew=false; flash("Đã thêm người dùng.");
+  });
+  qsa("[data-action='edit-user']", root).forEach(function(b){ b.addEventListener("click", function(){ nav("admin_users",{editId:this.getAttribute("data-id")}); }); });
+  var userEditForm = qs("[data-form='user-edit']", root);
+  if(userEditForm) userEditForm.addEventListener("submit", function(ev){
+    ev.preventDefault();
+    var id=this.getAttribute("data-id"); var fd=new FormData(this); var data={}; fd.forEach(function(v,k){data[k]=v;});
+    var x=userById(id); Object.assign(x, {empCode:data.empCode, name:data.name, deptId:data.deptId, role:data.role});
+    saveDB(); flash("Đã lưu thay đổi người dùng."); nav("admin_users",{},{replace:true});
+  });
+  var backUsersBtn = qs("[data-action='goback-users']", root); if(backUsersBtn) backUsersBtn.addEventListener("click", function(){ nav("admin_users",{},{replace:true}); });
+  qsa("[data-action='delete-user']", root).forEach(function(b){
+    b.addEventListener("click", function(){
+      var id=this.getAttribute("data-id");
+      if(id===currentUser().id){ flash("Không thể tự xóa tài khoản đang đăng nhập.","err"); return; }
+      var admins = DB.users.filter(function(x){return x.role==="admin";});
+      var target=userById(id);
+      if(target.role==="admin" && admins.length<=1){ flash("Không thể xóa Admin cuối cùng.","err"); return; }
+      if(!confirm("Xóa người dùng "+target.name+"?")) return;
+      DB.users = DB.users.filter(function(x){return x.id!==id;});
+      saveDB(); flash("Đã xóa người dùng.");
+    });
+  });
+  qsa("[data-action='reset-pw']", root).forEach(function(b){
+    b.addEventListener("click", function(){
+      var x=userById(this.getAttribute("data-id"));
+      var np=prompt("Nhập mật khẩu mới cho "+x.name+":","123456");
+      if(np){ x.password=np; saveDB(); flash("Đã đặt lại mật khẩu."); }
+    });
+  });
+
+  // Admin departments
+  var deptForm = qs("[data-form='dept-new']", root);
+  if(deptForm) deptForm.addEventListener("submit", function(ev){
+    ev.preventDefault();
+    var fd=new FormData(this); var data={}; fd.forEach(function(v,k){data[k]=v;});
+    DB.departments.push({id:uid("D"), code:data.code, name:data.name, address:data.address});
+    saveDB(); flash("Đã thêm phòng ban.");
+  });
+  qsa("[data-action='delete-dept']", root).forEach(function(b){
+    b.addEventListener("click", function(){
+      var id=this.getAttribute("data-id");
+      var used = DB.assets.some(function(a){return a.deptId===id;}) || DB.users.some(function(x){return x.deptId===id;});
+      if(used){ flash("Không thể xóa: vẫn còn tài sản hoặc người dùng thuộc phòng ban này.","err"); return; }
+      if(!confirm("Xóa phòng ban này?")) return;
+      DB.departments = DB.departments.filter(function(d){return d.id!==id;});
+      saveDB(); flash("Đã xóa phòng ban.");
+    });
+  });
+
+  // Admin categories
+  var catForm = qs("[data-form='cat-new']", root);
+  if(catForm) catForm.addEventListener("submit", function(ev){
+    ev.preventDefault();
+    var fd=new FormData(this); var data={}; fd.forEach(function(v,k){data[k]=v;});
+    var code=data.code.toUpperCase();
+    if(DB.categories.some(function(c){return c.code===code;})){ flash("Mã nhóm đã tồn tại!","err"); return; }
+    DB.categories.push({id:uid("C"), code:code, name:data.name, type:data.type});
+    saveDB(); flash("Đã thêm nhóm tài sản.");
+  });
+
+  // Import
+  var importFile = qs("#importFile", root);
+  if(importFile) importFile.addEventListener("change", async function(){
+    var file=this.files[0]; if(!file) return;
+    qs("#importPreview",root).innerHTML='<div class="card">⏳ Đang đọc file...</div>';
+    try{
+      var buf = await file.arrayBuffer();
+      var result = await runBankImport(buf);
+      state._importRows = result.rows;
+      var html='<div class="card"><h3>Xem trước kết quả import</h3>'+
+        '<p>Đã đọc '+result.rows.length+' dòng tài sản từ '+result.sheetSummary.length+' sheet dữ liệu.</p>'+
+        '<ul>'+result.sheetSummary.map(function(s){return '<li>'+escapeHtml(s)+'</li>';}).join("")+'</ul>'+
+        '<p>Tham chiếu phòng ban: '+result.deptRefCount+' mục. Tham chiếu nhóm: '+result.catRefCount+' mục.</p>'+
+        '<div class="table-wrap"><table><thead><tr><th>Mã</th><th>Tên</th><th>Loại</th><th>Phòng ban</th><th>Nhóm</th></tr></thead><tbody>'+
+        result.rows.slice(0,15).map(function(r){ return '<tr><td>'+escapeHtml(r.code)+'</td><td>'+escapeHtml(r.name)+'</td><td>'+r.type+'</td>'+
+          '<td>'+escapeHtml(r.dept?r.dept.name:"")+'</td><td>'+escapeHtml(r.category?r.category.name:"")+'</td></tr>'; }).join("")+
+        '</tbody></table></div>'+
+        '<div class="form-actions"><button class="btn btn-blue" data-action="commit-import">✔ Xác nhận import '+result.rows.length+' dòng</button></div></div>';
+      qs("#importPreview",root).innerHTML=html;
+      qs("[data-action='commit-import']",root).addEventListener("click", function(){
+        if(!confirm("Xác nhận import "+state._importRows.length+" dòng tài sản vào hệ thống?")) return;
+        var r=commitImportRows(state._importRows);
+        flash("Import hoàn tất: thêm mới "+r.added+", cập nhật "+r.updated+".");
+        nav("assets",{},{replace:true});
+      });
+    }catch(e){
+      console.error(e);
+      qs("#importPreview",root).innerHTML='<div class="card login-error">Lỗi đọc file: '+escapeHtml(e.message)+'</div>';
+    }
+  });
+
+  // Templates
+  qsa("[data-template-upload]", root).forEach(function(inp){
+    inp.addEventListener("change", async function(){
+      var k=this.getAttribute("data-template-upload"); var file=this.files[0]; if(!file) return;
+      var buf=await file.arrayBuffer();
+      DB.templateConfig.files[k]={filename:file.name, base64:arrayBufferToBase64(buf)};
+      saveDB(); flash("Đã tải lên mẫu: "+file.name); render();
+    });
+  });
+  qsa("[data-action='remove-template']", root).forEach(function(b){
+    b.addEventListener("click", function(){
+      delete DB.templateConfig.files[this.getAttribute("data-k")]; saveDB(); flash("Đã xóa mẫu."); render();
+    });
+  });
+
+  // Settings / backup
+  var backupBtn = qs("[data-action='backup-export']", root);
+  if(backupBtn) backupBtn.addEventListener("click", function(){
+    downloadBlob(new Blob([JSON.stringify(DB,null,2)],{type:"application/json"}), "VTB-ASSETS-backup-"+todayStr()+".json");
+  });
+  var restoreFile = qs("#restoreFile", root);
+  if(restoreFile) restoreFile.addEventListener("change", async function(){
+    var file=this.files[0]; if(!file) return;
+    if(!confirm("Phục hồi sẽ GHI ĐÈ toàn bộ dữ liệu hiện tại. Tiếp tục?")) return;
+    try{
+      var text=await file.text(); var data=JSON.parse(text);
+      DB=data; migrateDB(); saveDB(); flash("Đã phục hồi dữ liệu."); render();
+    }catch(e){ flash("File sao lưu không hợp lệ.","err"); }
+  });
+  var cadenceForm = qs("[data-form='cadence']", root);
+  if(cadenceForm) cadenceForm.addEventListener("submit", function(ev){
+    ev.preventDefault();
+    DB.inventoryCadenceMonths = Number(new FormData(this).get("months"))||6;
+    saveDB(); flash("Đã lưu cấu hình.");
+  });
+
+  // Hard reset
+  var hrForm = qs("[data-form='hard-reset']", root);
+  if(hrForm) hrForm.addEventListener("submit", function(ev){
+    ev.preventDefault();
+    var txt = new FormData(this).get("confirmText")||"";
+    if(normKey(txt) !== normKey("XÁC NHẬN")){ flash("Vui lòng nhập đúng cụm xác nhận.","err"); return; }
+    if(!confirm("XÁC NHẬN LẦN CUỐI: Xóa toàn bộ dữ liệu?")) return;
+    hardReset(); flash("Đã khôi phục dữ liệu mẫu ban đầu."); nav("dashboard",{},{replace:true});
+  });
+}
+
+/* ========================= Boot ========================= */
+loadDB();
+if(typeof module!=="undefined" && module.exports){
+  module.exports = { DB:function(){return DB;}, state:state, nav:nav, render:render, loadDB:loadDB, hardReset:hardReset,
+    readZipEntries:readZipEntries, readAllXlsxSheets:readAllXlsxSheets, runBankImport:runBankImport, commitImportRows:commitImportRows,
+    mergeDocxTemplate:mergeDocxTemplate, buildZipStored:buildZipStored, classifySheet:classifySheet, extractAssetRows:extractAssetRows,
+    parseDeptReferenceRows:parseDeptReferenceRows, parseCategoryReferenceRows:parseCategoryReferenceRows, parseDepartmentField:parseDepartmentField,
+    seedData:seedData, scopedAssets:scopedAssets, currentUser:currentUser, STATUS:STATUS };
+} else {
+  render();
+}
+})();
+</script>
+</body>
+</html>

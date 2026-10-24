@@ -1,0 +1,14 @@
+node_modules
+.next
+.env
+.env.*
+!.env.example
+*.tsbuildinfo
+next-env.d.ts
+
+# Dữ liệu thật và khoá bí mật: KHÔNG BAO GIỜ commit
+VietinBank_Assets_FullBackup_*.json
+704-ITDiary_Import_*.json
+*adminsdk*.json
+*service-account*.json
+*.pem

@@ -1,0 +1,36 @@
+{
+  "name": "704-assets",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "typecheck": "tsc --noEmit",
+    "build:app": "python3 -I client/build-app.py client/source/offline-original.html",
+    "test": "npm run test:client && npm run test:server",
+    "test:client": "node client/sync-engine.test.js",
+    "test:server": "tsx --tsconfig test/tsconfig.fakes.json test/server.test.ts",
+    "test:e2e": "node client/e2e.test.js",
+    "demo": "tsx --tsconfig test/tsconfig.fakes.json demo/server.ts",
+    "demo:data": "node demo/demo-data.js > demo/demo-backup.json",
+    "test:demo": "node demo/demo.e2e.test.js",
+    "test:modules": "node demo/modules.e2e.test.js",
+    "test:workflow": "node demo/workflow.e2e.test.js"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.60.0",
+    "firebase-admin": "^13.0.0",
+    "googleapis": "^150.0.0",
+    "next": "^15.0.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/react": "^19.0.0",
+    "typescript": "^5.6.0",
+    "tsx": "^4.19.0",
+    "playwright": "^1.50.0"
+  }
+}

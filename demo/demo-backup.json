@@ -1,0 +1,1962 @@
+{
+  "version": 3,
+  "exported_at": "2026-10-13T04:13:02.677Z",
+  "_demo": true,
+  "departments": [
+    {
+      "id": "dept_12",
+      "code": "399001.0000000",
+      "name": "Ban giám đốc"
+    },
+    {
+      "id": "dept_16",
+      "code": "000000.1070498",
+      "name": "CN Bến Lức - Hội sở"
+    },
+    {
+      "id": "dept_11",
+      "code": "000000.1070435",
+      "name": "CN Bến Lức - PGD Châu Thành"
+    },
+    {
+      "id": "dept_2",
+      "code": "000000.1070430",
+      "name": "CN Bến Lức - PGD Cần Giuộc"
+    },
+    {
+      "id": "dept_14",
+      "code": "000000.1070432",
+      "name": "CN Bến Lức - PGD Cần Đước"
+    },
+    {
+      "id": "dept_10",
+      "code": "000000.1070434",
+      "name": "CN Bến Lức - PGD Kỳ Son"
+    },
+    {
+      "id": "dept_5",
+      "code": "000000.1070431",
+      "name": "CN Bến Lức - PGD Phước Lợi"
+    },
+    {
+      "id": "dept_0",
+      "code": "000000.1070433",
+      "name": "CN Bến Lức - PGD Thủ Thừa"
+    },
+    {
+      "id": "dept_3",
+      "code": "000000.0000000",
+      "name": "Khong xac dinh"
+    },
+    {
+      "id": "dept_9",
+      "code": "302009.0000000",
+      "name": "Phòng Bán lẻ"
+    },
+    {
+      "id": "dept_1",
+      "code": "399018.0000000",
+      "name": "Phòng Dịch vụ khách hàng"
+    },
+    {
+      "id": "dept_6",
+      "code": "305180.0000000",
+      "name": "Phòng Hỗ trợ tín dụng"
+    },
+    {
+      "id": "dept_7",
+      "code": "301001.0000000",
+      "name": "Phòng KHDN - chung"
+    },
+    {
+      "id": "dept_15",
+      "code": "301028.0000000",
+      "name": "Phòng KHDN FDI"
+    },
+    {
+      "id": "dept_4",
+      "code": "399019.0000000",
+      "name": "Phòng Tổ chức - Tổng hợp"
+    },
+    {
+      "id": "dept_13",
+      "code": "399002.0000000",
+      "name": "Phòng Tổ chức Hành chính"
+    },
+    {
+      "id": "dept_8",
+      "code": "399013.0000000",
+      "name": "Phòng Tổng hợp/Tổ Tổng hợp"
+    }
+  ],
+  "categories": [
+    {
+      "id": "cat_34",
+      "code": "711301",
+      "name": "Bàn"
+    },
+    {
+      "id": "cat_19",
+      "code": "710606",
+      "name": "Bảng điện tử, Máy chiếu, màn chiếu"
+    },
+    {
+      "id": "cat_38",
+      "code": "711305",
+      "name": "Bộ bàn ghế, salon"
+    },
+    {
+      "id": "cat_42",
+      "code": "719999",
+      "name": "CCDC khác"
+    },
+    {
+      "id": "cat_41",
+      "code": "719902",
+      "name": "CCDC trang trí nội thất"
+    },
+    {
+      "id": "cat_37",
+      "code": "711304",
+      "name": "Cửa"
+    },
+    {
+      "id": "cat_40",
+      "code": "719901",
+      "name": "Dụng cụ đồ nghề"
+    },
+    {
+      "id": "cat_35",
+      "code": "711302",
+      "name": "Ghế"
+    },
+    {
+      "id": "cat_30",
+      "code": "711201",
+      "name": "Hệ thống báo cháy, chữa cháy"
+    },
+    {
+      "id": "cat_31",
+      "code": "711202",
+      "name": "Hệ thống báo trộm"
+    },
+    {
+      "id": "cat_32",
+      "code": "711203",
+      "name": "Hệ thống chống sét"
+    },
+    {
+      "id": "cat_29",
+      "code": "711101",
+      "name": "Két sắt"
+    },
+    {
+      "id": "cat_13",
+      "code": "710599",
+      "name": "MMTB văn phòng, thông tin liên lạc khác"
+    },
+    {
+      "id": "cat_12",
+      "code": "710506",
+      "name": "Máy Fax"
+    },
+    {
+      "id": "cat_24",
+      "code": "710802",
+      "name": "Máy bơm"
+    },
+    {
+      "id": "cat_5",
+      "code": "710402",
+      "name": "Máy cà thẻ (POS)"
+    },
+    {
+      "id": "cat_9",
+      "code": "710503",
+      "name": "Máy hủy tài liệu"
+    },
+    {
+      "id": "cat_8",
+      "code": "710502",
+      "name": "Máy in"
+    },
+    {
+      "id": "cat_26",
+      "code": "710899",
+      "name": "Máy móc thiết bị khác"
+    },
+    {
+      "id": "cat_21",
+      "code": "710699",
+      "name": "Máy móc thiết bị điện tử, điện lạnh khác"
+    },
+    {
+      "id": "cat_7",
+      "code": "710499",
+      "name": "Máy móc, thiết bị thẻ khác"
+    },
+    {
+      "id": "cat_20",
+      "code": "710607",
+      "name": "Máy móc, thiết bị tự động, chấm công"
+    },
+    {
+      "id": "cat_22",
+      "code": "710799",
+      "name": "Máy móc, thiết bị động lực khác"
+    },
+    {
+      "id": "cat_11",
+      "code": "710505",
+      "name": "Máy móc, thông tin liên lạc"
+    },
+    {
+      "id": "cat_10",
+      "code": "710504",
+      "name": "Máy quét"
+    },
+    {
+      "id": "cat_2",
+      "code": "710104",
+      "name": "Máy tính bảng"
+    },
+    {
+      "id": "cat_1",
+      "code": "710103",
+      "name": "Máy vi tính xách tay"
+    },
+    {
+      "id": "cat_0",
+      "code": "710102",
+      "name": "Máy vi tính để bàn"
+    },
+    {
+      "id": "cat_14",
+      "code": "710601",
+      "name": "Máy điều hoà, quạt điện"
+    },
+    {
+      "id": "cat_39",
+      "code": "711399",
+      "name": "Nội thất văn phòng khác"
+    },
+    {
+      "id": "cat_3",
+      "code": "710303",
+      "name": "Switch"
+    },
+    {
+      "id": "cat_6",
+      "code": "710403",
+      "name": "Thiết bị bảo an thẻ"
+    },
+    {
+      "id": "cat_33",
+      "code": "711299",
+      "name": "Thiết bị bảo vệ an toàn trụ sở, kho khác"
+    },
+    {
+      "id": "cat_18",
+      "code": "710605",
+      "name": "Thiết bị ghi âm, ghi hình"
+    },
+    {
+      "id": "cat_27",
+      "code": "711002",
+      "name": "Thiết bị kiểm, đếm, bó tiền"
+    },
+    {
+      "id": "cat_25",
+      "code": "710803",
+      "name": "Thiết bị lưu trữ, đọc dữ liệu"
+    },
+    {
+      "id": "cat_4",
+      "code": "710399",
+      "name": "Thiết bị mạng khác"
+    },
+    {
+      "id": "cat_16",
+      "code": "710603",
+      "name": "Thiết bị nhà bếp, lễ tân"
+    },
+    {
+      "id": "cat_23",
+      "code": "710801",
+      "name": "Thiết bị y tế"
+    },
+    {
+      "id": "cat_17",
+      "code": "710604",
+      "name": "Thiết bị âm thanh, ánh sáng"
+    },
+    {
+      "id": "cat_15",
+      "code": "710602",
+      "name": "Thiết bị điện tử, điện lạnh"
+    },
+    {
+      "id": "cat_28",
+      "code": "711099",
+      "name": "Thiết bị, dụng cụ kho quỹ khác"
+    },
+    {
+      "id": "cat_36",
+      "code": "711303",
+      "name": "Tủ"
+    }
+  ],
+  "users": [
+    {
+      "id": "u_admin",
+      "username": "demo.admin",
+      "password": "Demo@2026",
+      "employee_code": "NV001",
+      "full_name": "Quản trị hệ thống (demo)",
+      "role": "admin",
+      "department_id": null,
+      "is_active": true,
+      "telegram_id": ""
+    },
+    {
+      "id": "u_tcth",
+      "username": "demo.tcth",
+      "password": "Demo@2026",
+      "employee_code": "NV002",
+      "full_name": "Nguyễn Văn Tổng Hợp",
+      "role": "tcth",
+      "department_id": "dept_4",
+      "is_active": true,
+      "telegram_id": ""
+    },
+    {
+      "id": "u_it1",
+      "username": "demo.it1",
+      "password": "Demo@2026",
+      "employee_code": "NV003",
+      "full_name": "Trần Văn Điện Toán",
+      "role": "it",
+      "department_id": "dept_16",
+      "is_active": true,
+      "telegram_id": ""
+    },
+    {
+      "id": "u_it2",
+      "username": "demo.it2",
+      "password": "Demo@2026",
+      "employee_code": "NV004",
+      "full_name": "Lê Thị Mạng",
+      "role": "it",
+      "department_id": "dept_16",
+      "is_active": true,
+      "telegram_id": ""
+    },
+    {
+      "id": "u_mgr",
+      "username": "demo.lanhdao",
+      "password": "Demo@2026",
+      "employee_code": "NV005",
+      "full_name": "Phạm Thị Trưởng Phòng KHDN",
+      "role": "manager",
+      "department_id": "dept_7",
+      "is_active": true,
+      "telegram_id": ""
+    },
+    {
+      "id": "u_mgr2",
+      "username": "demo.lanhdao.bl",
+      "password": "Demo@2026",
+      "employee_code": "NV006",
+      "full_name": "Hoàng Văn Bán Lẻ",
+      "role": "manager",
+      "department_id": "dept_9",
+      "is_active": true,
+      "telegram_id": ""
+    },
+    {
+      "id": "u_nv",
+      "username": "demo.nhanvien",
+      "password": "Demo@2026",
+      "employee_code": "NV007",
+      "full_name": "Võ Minh Nhân Viên",
+      "role": "user",
+      "department_id": "dept_7",
+      "is_active": true,
+      "telegram_id": ""
+    }
+  ],
+  "assets": [
+    {
+      "id": "a_fa0001",
+      "code": "FA0001",
+      "name": "Máy vi tính để bàn Dell OptiPlex 3080 (PC-0042)",
+      "category_id": "cat_0",
+      "original_value": 18500000,
+      "remaining_value": 7400000,
+      "recorded_date": "2023-10-14",
+      "status": "broken",
+      "status_changed_at": "2026-09-03T04:13:02.677Z",
+      "department_id": "dept_7",
+      "address": "CN Bến Lức · Phòng KHDN - chung",
+      "current_user_id": "u_nv",
+      "created_at": "2026-09-03T04:13:02.677Z",
+      "updated_at": "2026-09-03T04:13:02.677Z"
+    },
+    {
+      "id": "a_fa0002",
+      "code": "FA0002",
+      "name": "Máy in HP LaserJet Pro M404dn (phòng KHDN)",
+      "category_id": "cat_8",
+      "original_value": 9800000,
+      "remaining_value": 2940000,
+      "recorded_date": "2022-10-14",
+      "status": "broken",
+      "status_changed_at": "2026-09-03T04:13:02.677Z",
+      "department_id": "dept_7",
+      "address": "CN Bến Lức · Phòng KHDN - chung",
+      "current_user_id": null,
+      "created_at": "2026-09-03T04:13:02.677Z",
+      "updated_at": "2026-09-03T04:13:02.677Z"
+    },
+    {
+      "id": "a_fa0003",
+      "code": "FA0003",
+      "name": "Máy vi tính xách tay Dell Latitude 5420 (LT-0017)",
+      "category_id": "cat_1",
+      "original_value": 24500000,
+      "remaining_value": 13475000,
+      "recorded_date": "2024-10-13",
+      "status": "broken",
+      "status_changed_at": "2026-09-03T04:13:02.677Z",
+      "department_id": "dept_9",
+      "address": "CN Bến Lức · Phòng Bán lẻ",
+      "current_user_id": null,
+      "created_at": "2026-09-03T04:13:02.677Z",
+      "updated_at": "2026-09-03T04:13:02.677Z"
+    },
+    {
+      "id": "a_fa0004",
+      "code": "FA0004",
+      "name": "Switch Cisco Catalyst 2960 24 cổng (Hội sở tầng 2)",
+      "category_id": "cat_3",
+      "original_value": 32000000,
+      "remaining_value": 11200000,
+      "recorded_date": "2021-10-14",
+      "status": "broken",
+      "status_changed_at": "2026-09-03T04:13:02.677Z",
+      "department_id": "dept_16",
+      "address": "CN Bến Lức · CN Bến Lức - Hội sở",
+      "current_user_id": null,
+      "created_at": "2026-09-03T04:13:02.677Z",
+      "updated_at": "2026-09-03T04:13:02.677Z"
+    },
+    {
+      "id": "a_fa0005",
+      "code": "FA0005",
+      "name": "Máy quét Canon DR-C225 (phòng DVKH)",
+      "category_id": "cat_10",
+      "original_value": 12800000,
+      "remaining_value": 5760000,
+      "recorded_date": "2023-10-14",
+      "status": "in_use",
+      "status_changed_at": "2026-09-03T04:13:02.677Z",
+      "department_id": "dept_1",
+      "address": "CN Bến Lức · Phòng Dịch vụ khách hàng",
+      "current_user_id": null,
+      "created_at": "2026-09-03T04:13:02.677Z",
+      "updated_at": "2026-09-03T04:13:02.677Z"
+    },
+    {
+      "id": "a_fa0006",
+      "code": "FA0006",
+      "name": "Máy vi tính để bàn HP ProDesk 400 (PC-0051)",
+      "category_id": "cat_0",
+      "original_value": 16900000,
+      "remaining_value": 8450000,
+      "recorded_date": "2024-10-13",
+      "status": "in_use",
+      "status_changed_at": "2026-09-03T04:13:02.677Z",
+      "department_id": "dept_7",
+      "address": "CN Bến Lức · Phòng KHDN - chung",
+      "current_user_id": null,
+      "created_at": "2026-09-03T04:13:02.677Z",
+      "updated_at": "2026-09-03T04:13:02.677Z"
+    },
+    {
+      "id": "a_fa0007",
+      "code": "FA0007",
+      "name": "Máy điều hoà Daikin 2HP (phòng họp tầng 2)",
+      "category_id": "cat_14",
+      "original_value": 21000000,
+      "remaining_value": 5250000,
+      "recorded_date": "2020-10-14",
+      "status": "in_use",
+      "status_changed_at": "2026-09-03T04:13:02.677Z",
+      "department_id": "dept_16",
+      "address": "CN Bến Lức · CN Bến Lức - Hội sở",
+      "current_user_id": null,
+      "created_at": "2026-09-03T04:13:02.677Z",
+      "updated_at": "2026-09-03T04:13:02.677Z"
+    },
+    {
+      "id": "a_fa0008",
+      "code": "FA0008",
+      "name": "Máy vi tính để bàn Dell OptiPlex 3080 (PC-0060)",
+      "category_id": "cat_0",
+      "original_value": 18500000,
+      "remaining_value": 3700000,
+      "recorded_date": "2025-10-13",
+      "status": "in_use",
+      "status_changed_at": "2026-09-03T04:13:02.677Z",
+      "department_id": "dept_9",
+      "address": "CN Bến Lức · Phòng Bán lẻ",
+      "current_user_id": null,
+      "created_at": "2026-09-03T04:13:02.677Z",
+      "updated_at": "2026-09-03T04:13:02.677Z"
+    },
+    {
+      "id": "a_fa0009",
+      "code": "FA0009",
+      "name": "Máy vi tính xách tay Dell Latitude 5420 (LT-0061)",
+      "category_id": "cat_1",
+      "original_value": 24500000,
+      "remaining_value": 7350000,
+      "recorded_date": "2024-10-13",
+      "status": "in_use",
+      "status_changed_at": "2026-09-03T04:13:02.677Z",
+      "department_id": "dept_6",
+      "address": "CN Bến Lức · Phòng Hỗ trợ tín dụng",
+      "current_user_id": null,
+      "created_at": "2026-09-03T04:13:02.677Z",
+      "updated_at": "2026-09-03T04:13:02.677Z"
+    },
+    {
+      "id": "a_fa0010",
+      "code": "FA0010",
+      "name": "Máy in HP LaserJet Pro M404dn (PGD Phước Lợi)",
+      "category_id": "cat_8",
+      "original_value": 9800000,
+      "remaining_value": 3920000,
+      "recorded_date": "2023-10-14",
+      "status": "in_use",
+      "status_changed_at": "2026-09-03T04:13:02.677Z",
+      "department_id": "dept_5",
+      "address": "CN Bến Lức · CN Bến Lức - PGD Phước Lợi",
+      "current_user_id": null,
+      "created_at": "2026-09-03T04:13:02.677Z",
+      "updated_at": "2026-09-03T04:13:02.677Z"
+    },
+    {
+      "id": "a_fa0011",
+      "code": "FA0011",
+      "name": "Switch Cisco Catalyst 2960 24 cổng (DVKH)",
+      "category_id": "cat_3",
+      "original_value": 32000000,
+      "remaining_value": 16000000,
+      "recorded_date": "2022-10-14",
+      "status": "in_use",
+      "status_changed_at": "2026-09-03T04:13:02.677Z",
+      "department_id": "dept_1",
+      "address": "CN Bến Lức · Phòng Dịch vụ khách hàng",
+      "current_user_id": null,
+      "created_at": "2026-09-03T04:13:02.677Z",
+      "updated_at": "2026-09-03T04:13:02.677Z"
+    },
+    {
+      "id": "a_fa0012",
+      "code": "FA0012",
+      "name": "Máy điều hoà Daikin 2HP (BGĐ)",
+      "category_id": "cat_14",
+      "original_value": 21000000,
+      "remaining_value": 12600000,
+      "recorded_date": "2021-10-14",
+      "status": "in_use",
+      "status_changed_at": "2026-09-03T04:13:02.677Z",
+      "department_id": "dept_12",
+      "address": "CN Bến Lức · Ban giám đốc",
+      "current_user_id": null,
+      "created_at": "2026-09-03T04:13:02.677Z",
+      "updated_at": "2026-09-03T04:13:02.677Z"
+    },
+    {
+      "id": "a_fa0013",
+      "code": "FA0013",
+      "name": "Máy quét Canon DR-C225 (KHDN)",
+      "category_id": "cat_10",
+      "original_value": 12800000,
+      "remaining_value": 8960000,
+      "recorded_date": "2020-10-14",
+      "status": "in_use",
+      "status_changed_at": "2026-09-03T04:13:02.677Z",
+      "department_id": "dept_7",
+      "address": "CN Bến Lức · Phòng KHDN - chung",
+      "current_user_id": null,
+      "created_at": "2026-09-03T04:13:02.677Z",
+      "updated_at": "2026-09-03T04:13:02.677Z"
+    },
+    {
+      "id": "a_fa0014",
+      "code": "FA0014",
+      "name": "Máy vi tính để bàn Dell OptiPlex 3080 (PC-0062)",
+      "category_id": "cat_0",
+      "original_value": 18500000,
+      "remaining_value": 3700000,
+      "recorded_date": "2025-10-13",
+      "status": "in_use",
+      "status_changed_at": "2026-09-03T04:13:02.677Z",
+      "department_id": "dept_4",
+      "address": "CN Bến Lức · Phòng Tổ chức - Tổng hợp",
+      "current_user_id": null,
+      "created_at": "2026-09-03T04:13:02.677Z",
+      "updated_at": "2026-09-03T04:13:02.677Z"
+    },
+    {
+      "id": "a_fa0015",
+      "code": "FA0015",
+      "name": "Máy vi tính xách tay Dell Latitude 5420 (LT-0063)",
+      "category_id": "cat_1",
+      "original_value": 24500000,
+      "remaining_value": 7350000,
+      "recorded_date": "2024-10-13",
+      "status": "in_use",
+      "status_changed_at": "2026-09-03T04:13:02.677Z",
+      "department_id": "dept_16",
+      "address": "CN Bến Lức · CN Bến Lức - Hội sở",
+      "current_user_id": null,
+      "created_at": "2026-09-03T04:13:02.677Z",
+      "updated_at": "2026-09-03T04:13:02.677Z"
+    },
+    {
+      "id": "a_fa0016",
+      "code": "FA0016",
+      "name": "Máy in HP LaserJet Pro M404dn (Bán lẻ)",
+      "category_id": "cat_8",
+      "original_value": 9800000,
+      "remaining_value": 3920000,
+      "recorded_date": "2023-10-14",
+      "status": "in_use",
+      "status_changed_at": "2026-09-03T04:13:02.677Z",
+      "department_id": "dept_9",
+      "address": "CN Bến Lức · Phòng Bán lẻ",
+      "current_user_id": null,
+      "created_at": "2026-09-03T04:13:02.677Z",
+      "updated_at": "2026-09-03T04:13:02.677Z"
+    },
+    {
+      "id": "a_fa0017",
+      "code": "FA0017",
+      "name": "Switch Cisco Catalyst 2960 24 cổng (HTTD)",
+      "category_id": "cat_3",
+      "original_value": 32000000,
+      "remaining_value": 16000000,
+      "recorded_date": "2022-10-14",
+      "status": "in_use",
+      "status_changed_at": "2026-09-03T04:13:02.677Z",
+      "department_id": "dept_6",
+      "address": "CN Bến Lức · Phòng Hỗ trợ tín dụng",
+      "current_user_id": null,
+      "created_at": "2026-09-03T04:13:02.677Z",
+      "updated_at": "2026-09-03T04:13:02.677Z"
+    },
+    {
+      "id": "a_fa0018",
+      "code": "FA0018",
+      "name": "Máy điều hoà Daikin 2HP (PGD Phước Lợi)",
+      "category_id": "cat_14",
+      "original_value": 21000000,
+      "remaining_value": 12600000,
+      "recorded_date": "2021-10-14",
+      "status": "in_use",
+      "status_changed_at": "2026-09-03T04:13:02.677Z",
+      "department_id": "dept_5",
+      "address": "CN Bến Lức · CN Bến Lức - PGD Phước Lợi",
+      "current_user_id": null,
+      "created_at": "2026-09-03T04:13:02.677Z",
+      "updated_at": "2026-09-03T04:13:02.677Z"
+    },
+    {
+      "id": "a_fa0019",
+      "code": "FA0019",
+      "name": "Máy quét Canon DR-C225 (DVKH)",
+      "category_id": "cat_10",
+      "original_value": 12800000,
+      "remaining_value": 8960000,
+      "recorded_date": "2020-10-14",
+      "status": "in_use",
+      "status_changed_at": "2026-09-03T04:13:02.677Z",
+      "department_id": "dept_1",
+      "address": "CN Bến Lức · Phòng Dịch vụ khách hàng",
+      "current_user_id": null,
+      "created_at": "2026-09-03T04:13:02.677Z",
+      "updated_at": "2026-09-03T04:13:02.677Z"
+    },
+    {
+      "id": "a_fa0020",
+      "code": "FA0020",
+      "name": "Máy vi tính để bàn Dell OptiPlex 3080 (PC-0064)",
+      "category_id": "cat_0",
+      "original_value": 18500000,
+      "remaining_value": 3700000,
+      "recorded_date": "2025-10-13",
+      "status": "in_use",
+      "status_changed_at": "2026-09-03T04:13:02.677Z",
+      "department_id": "dept_12",
+      "address": "CN Bến Lức · Ban giám đốc",
+      "current_user_id": null,
+      "created_at": "2026-09-03T04:13:02.677Z",
+      "updated_at": "2026-09-03T04:13:02.677Z"
+    },
+    {
+      "id": "a_fa0021",
+      "code": "FA0021",
+      "name": "Máy vi tính xách tay Dell Latitude 5420 (LT-0065)",
+      "category_id": "cat_1",
+      "original_value": 24500000,
+      "remaining_value": 7350000,
+      "recorded_date": "2024-10-13",
+      "status": "in_use",
+      "status_changed_at": "2026-09-03T04:13:02.677Z",
+      "department_id": "dept_7",
+      "address": "CN Bến Lức · Phòng KHDN - chung",
+      "current_user_id": null,
+      "created_at": "2026-09-03T04:13:02.677Z",
+      "updated_at": "2026-09-03T04:13:02.677Z"
+    },
+    {
+      "id": "a_fa0022",
+      "code": "FA0022",
+      "name": "Máy in HP LaserJet Pro M404dn (TCTH)",
+      "category_id": "cat_8",
+      "original_value": 9800000,
+      "remaining_value": 3920000,
+      "recorded_date": "2023-10-14",
+      "status": "in_use",
+      "status_changed_at": "2026-09-03T04:13:02.677Z",
+      "department_id": "dept_4",
+      "address": "CN Bến Lức · Phòng Tổ chức - Tổng hợp",
+      "current_user_id": null,
+      "created_at": "2026-09-03T04:13:02.677Z",
+      "updated_at": "2026-09-03T04:13:02.677Z"
+    },
+    {
+      "id": "a_fa0023",
+      "code": "FA0023",
+      "name": "Switch Cisco Catalyst 2960 24 cổng (Hội sở)",
+      "category_id": "cat_3",
+      "original_value": 32000000,
+      "remaining_value": 16000000,
+      "recorded_date": "2022-10-14",
+      "status": "in_use",
+      "status_changed_at": "2026-09-03T04:13:02.677Z",
+      "department_id": "dept_16",
+      "address": "CN Bến Lức · CN Bến Lức - Hội sở",
+      "current_user_id": null,
+      "created_at": "2026-09-03T04:13:02.677Z",
+      "updated_at": "2026-09-03T04:13:02.677Z"
+    },
+    {
+      "id": "a_fa0024",
+      "code": "FA0024",
+      "name": "Máy điều hoà Daikin 2HP (Bán lẻ)",
+      "category_id": "cat_14",
+      "original_value": 21000000,
+      "remaining_value": 12600000,
+      "recorded_date": "2021-10-14",
+      "status": "in_use",
+      "status_changed_at": "2026-09-03T04:13:02.677Z",
+      "department_id": "dept_9",
+      "address": "CN Bến Lức · Phòng Bán lẻ",
+      "current_user_id": null,
+      "created_at": "2026-09-03T04:13:02.677Z",
+      "updated_at": "2026-09-03T04:13:02.677Z"
+    },
+    {
+      "id": "a_fa0025",
+      "code": "FA0025",
+      "name": "Máy quét Canon DR-C225 (HTTD)",
+      "category_id": "cat_10",
+      "original_value": 12800000,
+      "remaining_value": 8960000,
+      "recorded_date": "2020-10-14",
+      "status": "in_use",
+      "status_changed_at": "2026-09-03T04:13:02.677Z",
+      "department_id": "dept_6",
+      "address": "CN Bến Lức · Phòng Hỗ trợ tín dụng",
+      "current_user_id": null,
+      "created_at": "2026-09-03T04:13:02.677Z",
+      "updated_at": "2026-09-03T04:13:02.677Z"
+    },
+    {
+      "id": "a_fa0026",
+      "code": "FA0026",
+      "name": "Máy vi tính để bàn Dell OptiPlex 3080 (PC-0066)",
+      "category_id": "cat_0",
+      "original_value": 18500000,
+      "remaining_value": 3700000,
+      "recorded_date": "2025-10-13",
+      "status": "in_use",
+      "status_changed_at": "2026-09-03T04:13:02.677Z",
+      "department_id": "dept_5",
+      "address": "CN Bến Lức · CN Bến Lức - PGD Phước Lợi",
+      "current_user_id": null,
+      "created_at": "2026-09-03T04:13:02.677Z",
+      "updated_at": "2026-09-03T04:13:02.677Z"
+    },
+    {
+      "id": "a_fa0027",
+      "code": "FA0027",
+      "name": "Máy vi tính xách tay Dell Latitude 5420 (LT-0067)",
+      "category_id": "cat_1",
+      "original_value": 24500000,
+      "remaining_value": 7350000,
+      "recorded_date": "2024-10-13",
+      "status": "in_use",
+      "status_changed_at": "2026-09-03T04:13:02.677Z",
+      "department_id": "dept_1",
+      "address": "CN Bến Lức · Phòng Dịch vụ khách hàng",
+      "current_user_id": null,
+      "created_at": "2026-09-03T04:13:02.677Z",
+      "updated_at": "2026-09-03T04:13:02.677Z"
+    },
+    {
+      "id": "a_fa0028",
+      "code": "FA0028",
+      "name": "Máy in HP LaserJet Pro M404dn (BGĐ)",
+      "category_id": "cat_8",
+      "original_value": 9800000,
+      "remaining_value": 3920000,
+      "recorded_date": "2023-10-14",
+      "status": "in_use",
+      "status_changed_at": "2026-09-03T04:13:02.677Z",
+      "department_id": "dept_12",
+      "address": "CN Bến Lức · Ban giám đốc",
+      "current_user_id": null,
+      "created_at": "2026-09-03T04:13:02.677Z",
+      "updated_at": "2026-09-03T04:13:02.677Z"
+    },
+    {
+      "id": "a_fa0029",
+      "code": "FA0029",
+      "name": "Switch Cisco Catalyst 2960 24 cổng (KHDN)",
+      "category_id": "cat_3",
+      "original_value": 32000000,
+      "remaining_value": 16000000,
+      "recorded_date": "2022-10-14",
+      "status": "in_use",
+      "status_changed_at": "2026-09-03T04:13:02.677Z",
+      "department_id": "dept_7",
+      "address": "CN Bến Lức · Phòng KHDN - chung",
+      "current_user_id": null,
+      "created_at": "2026-09-03T04:13:02.677Z",
+      "updated_at": "2026-09-03T04:13:02.677Z"
+    },
+    {
+      "id": "a_fa0030",
+      "code": "FA0030",
+      "name": "Máy điều hoà Daikin 2HP (TCTH)",
+      "category_id": "cat_14",
+      "original_value": 21000000,
+      "remaining_value": 12600000,
+      "recorded_date": "2021-10-14",
+      "status": "in_use",
+      "status_changed_at": "2026-09-03T04:13:02.677Z",
+      "department_id": "dept_4",
+      "address": "CN Bến Lức · Phòng Tổ chức - Tổng hợp",
+      "current_user_id": null,
+      "created_at": "2026-09-03T04:13:02.677Z",
+      "updated_at": "2026-09-03T04:13:02.677Z"
+    },
+    {
+      "id": "a_fa0031",
+      "code": "FA0031",
+      "name": "Máy quét Canon DR-C225 (Hội sở)",
+      "category_id": "cat_10",
+      "original_value": 12800000,
+      "remaining_value": 8960000,
+      "recorded_date": "2020-10-14",
+      "status": "in_use",
+      "status_changed_at": "2026-09-03T04:13:02.677Z",
+      "department_id": "dept_16",
+      "address": "CN Bến Lức · CN Bến Lức - Hội sở",
+      "current_user_id": null,
+      "created_at": "2026-09-03T04:13:02.677Z",
+      "updated_at": "2026-09-03T04:13:02.677Z"
+    },
+    {
+      "id": "a_fa0032",
+      "code": "FA0032",
+      "name": "Máy vi tính để bàn Dell OptiPlex 3080 (PC-0068)",
+      "category_id": "cat_0",
+      "original_value": 18500000,
+      "remaining_value": 3700000,
+      "recorded_date": "2025-10-13",
+      "status": "in_use",
+      "status_changed_at": "2026-09-03T04:13:02.677Z",
+      "department_id": "dept_9",
+      "address": "CN Bến Lức · Phòng Bán lẻ",
+      "current_user_id": null,
+      "created_at": "2026-09-03T04:13:02.677Z",
+      "updated_at": "2026-09-03T04:13:02.677Z"
+    },
+    {
+      "id": "a_fa0033",
+      "code": "FA0033",
+      "name": "Máy vi tính xách tay Dell Latitude 5420 (LT-0069)",
+      "category_id": "cat_1",
+      "original_value": 24500000,
+      "remaining_value": 7350000,
+      "recorded_date": "2024-10-13",
+      "status": "in_use",
+      "status_changed_at": "2026-09-03T04:13:02.677Z",
+      "department_id": "dept_6",
+      "address": "CN Bến Lức · Phòng Hỗ trợ tín dụng",
+      "current_user_id": null,
+      "created_at": "2026-09-03T04:13:02.677Z",
+      "updated_at": "2026-09-03T04:13:02.677Z"
+    },
+    {
+      "id": "a_fa0034",
+      "code": "FA0034",
+      "name": "Máy in HP LaserJet Pro M404dn (PGD Phước Lợi)",
+      "category_id": "cat_8",
+      "original_value": 9800000,
+      "remaining_value": 3920000,
+      "recorded_date": "2023-10-14",
+      "status": "in_use",
+      "status_changed_at": "2026-09-03T04:13:02.677Z",
+      "department_id": "dept_5",
+      "address": "CN Bến Lức · CN Bến Lức - PGD Phước Lợi",
+      "current_user_id": null,
+      "created_at": "2026-09-03T04:13:02.677Z",
+      "updated_at": "2026-09-03T04:13:02.677Z"
+    },
+    {
+      "id": "a_fa0035",
+      "code": "FA0035",
+      "name": "Switch Cisco Catalyst 2960 24 cổng (DVKH)",
+      "category_id": "cat_3",
+      "original_value": 32000000,
+      "remaining_value": 16000000,
+      "recorded_date": "2022-10-14",
+      "status": "in_use",
+      "status_changed_at": "2026-09-03T04:13:02.677Z",
+      "department_id": "dept_1",
+      "address": "CN Bến Lức · Phòng Dịch vụ khách hàng",
+      "current_user_id": null,
+      "created_at": "2026-09-03T04:13:02.677Z",
+      "updated_at": "2026-09-03T04:13:02.677Z"
+    },
+    {
+      "id": "a_fa0036",
+      "code": "FA0036",
+      "name": "Máy điều hoà Daikin 2HP (BGĐ)",
+      "category_id": "cat_14",
+      "original_value": 21000000,
+      "remaining_value": 12600000,
+      "recorded_date": "2021-10-14",
+      "status": "in_use",
+      "status_changed_at": "2026-09-03T04:13:02.677Z",
+      "department_id": "dept_12",
+      "address": "CN Bến Lức · Ban giám đốc",
+      "current_user_id": null,
+      "created_at": "2026-09-03T04:13:02.677Z",
+      "updated_at": "2026-09-03T04:13:02.677Z"
+    },
+    {
+      "id": "a_cc0001",
+      "code": "CC0001",
+      "name": "Ghế xoay văn phòng Hoà Phát (KHDN)",
+      "category_id": "cat_35",
+      "original_value": 1200000,
+      "remaining_value": 360000,
+      "recorded_date": "2025-10-13",
+      "status": "in_use",
+      "status_changed_at": "2026-09-03T04:13:02.677Z",
+      "department_id": "dept_7",
+      "address": "CN Bến Lức · Phòng KHDN - chung",
+      "current_user_id": "u_nv",
+      "created_at": "2026-09-03T04:13:02.677Z",
+      "updated_at": "2026-09-03T04:13:02.677Z"
+    },
+    {
+      "id": "a_cc0002",
+      "code": "CC0002",
+      "name": "Bàn làm việc 1m4 (Bán lẻ)",
+      "category_id": "cat_34",
+      "original_value": 1550000,
+      "remaining_value": 620000,
+      "recorded_date": "2024-10-13",
+      "status": "in_use",
+      "status_changed_at": "2026-09-03T04:13:02.677Z",
+      "department_id": "dept_9",
+      "address": "CN Bến Lức · Phòng Bán lẻ",
+      "current_user_id": "u_mgr",
+      "created_at": "2026-09-03T04:13:02.677Z",
+      "updated_at": "2026-09-03T04:13:02.677Z"
+    },
+    {
+      "id": "a_cc0003",
+      "code": "CC0003",
+      "name": "Bộ dụng cụ đồ nghề IT (tua vít, kìm bấm cáp) (Hội sở)",
+      "category_id": "cat_40",
+      "original_value": 1900000,
+      "remaining_value": 950000,
+      "recorded_date": "2023-10-14",
+      "status": "in_use",
+      "status_changed_at": "2026-09-03T04:13:02.677Z",
+      "department_id": "dept_16",
+      "address": "CN Bến Lức · CN Bến Lức - Hội sở",
+      "current_user_id": null,
+      "created_at": "2026-09-03T04:13:02.677Z",
+      "updated_at": "2026-09-03T04:13:02.677Z"
+    },
+    {
+      "id": "a_cc0004",
+      "code": "CC0004",
+      "name": "Tranh trang trí quầy giao dịch (DVKH)",
+      "category_id": "cat_41",
+      "original_value": 2250000,
+      "remaining_value": 1350000,
+      "recorded_date": "2022-10-14",
+      "status": "in_use",
+      "status_changed_at": "2026-09-03T04:13:02.677Z",
+      "department_id": "dept_1",
+      "address": "CN Bến Lức · Phòng Dịch vụ khách hàng",
+      "current_user_id": null,
+      "created_at": "2026-09-03T04:13:02.677Z",
+      "updated_at": "2026-09-03T04:13:02.677Z"
+    },
+    {
+      "id": "a_cc0005",
+      "code": "CC0005",
+      "name": "Quạt đứng Senko (KHDN)",
+      "category_id": "cat_42",
+      "original_value": 2600000,
+      "remaining_value": 1820000,
+      "recorded_date": "2025-10-13",
+      "status": "in_use",
+      "status_changed_at": "2026-09-03T04:13:02.677Z",
+      "department_id": "dept_7",
+      "address": "CN Bến Lức · Phòng KHDN - chung",
+      "current_user_id": "u_mgr2",
+      "created_at": "2026-09-03T04:13:02.677Z",
+      "updated_at": "2026-09-03T04:13:02.677Z"
+    },
+    {
+      "id": "a_cc0006",
+      "code": "CC0006",
+      "name": "Ghế quầy giao dịch (Bán lẻ)",
+      "category_id": "cat_35",
+      "original_value": 2950000,
+      "remaining_value": 885000,
+      "recorded_date": "2024-10-13",
+      "status": "in_use",
+      "status_changed_at": "2026-09-03T04:13:02.677Z",
+      "department_id": "dept_9",
+      "address": "CN Bến Lức · Phòng Bán lẻ",
+      "current_user_id": null,
+      "created_at": "2026-09-03T04:13:02.677Z",
+      "updated_at": "2026-09-03T04:13:02.677Z"
+    },
+    {
+      "id": "a_cc0007",
+      "code": "CC0007",
+      "name": "Ghế xoay văn phòng Hoà Phát (Hội sở)",
+      "category_id": "cat_35",
+      "original_value": 3300000,
+      "remaining_value": 1320000,
+      "recorded_date": "2023-10-14",
+      "status": "in_use",
+      "status_changed_at": "2026-09-03T04:13:02.677Z",
+      "department_id": "dept_16",
+      "address": "CN Bến Lức · CN Bến Lức - Hội sở",
+      "current_user_id": "u_nv",
+      "created_at": "2026-09-03T04:13:02.677Z",
+      "updated_at": "2026-09-03T04:13:02.677Z"
+    },
+    {
+      "id": "a_cc0008",
+      "code": "CC0008",
+      "name": "Bàn làm việc 1m4 (DVKH)",
+      "category_id": "cat_34",
+      "original_value": 3650000,
+      "remaining_value": 1825000,
+      "recorded_date": "2022-10-14",
+      "status": "in_use",
+      "status_changed_at": "2026-09-03T04:13:02.677Z",
+      "department_id": "dept_1",
+      "address": "CN Bến Lức · Phòng Dịch vụ khách hàng",
+      "current_user_id": null,
+      "created_at": "2026-09-03T04:13:02.677Z",
+      "updated_at": "2026-09-03T04:13:02.677Z"
+    },
+    {
+      "id": "a_cc0009",
+      "code": "CC0009",
+      "name": "Bộ dụng cụ đồ nghề IT (tua vít, kìm bấm cáp) (KHDN)",
+      "category_id": "cat_40",
+      "original_value": 4000000,
+      "remaining_value": 2400000,
+      "recorded_date": "2025-10-13",
+      "status": "in_use",
+      "status_changed_at": "2026-09-03T04:13:02.677Z",
+      "department_id": "dept_7",
+      "address": "CN Bến Lức · Phòng KHDN - chung",
+      "current_user_id": "u_it1",
+      "created_at": "2026-09-03T04:13:02.677Z",
+      "updated_at": "2026-09-03T04:13:02.677Z"
+    },
+    {
+      "id": "a_cc0010",
+      "code": "CC0010",
+      "name": "Tranh trang trí quầy giao dịch (Bán lẻ)",
+      "category_id": "cat_41",
+      "original_value": 4350000,
+      "remaining_value": 3045000,
+      "recorded_date": "2024-10-13",
+      "status": "in_use",
+      "status_changed_at": "2026-09-03T04:13:02.677Z",
+      "department_id": "dept_9",
+      "address": "CN Bến Lức · Phòng Bán lẻ",
+      "current_user_id": null,
+      "created_at": "2026-09-03T04:13:02.677Z",
+      "updated_at": "2026-09-03T04:13:02.677Z"
+    },
+    {
+      "id": "a_cc0011",
+      "code": "CC0011",
+      "name": "Quạt đứng Senko (Hội sở)",
+      "category_id": "cat_42",
+      "original_value": 4700000,
+      "remaining_value": 1410000,
+      "recorded_date": "2023-10-14",
+      "status": "in_use",
+      "status_changed_at": "2026-09-03T04:13:02.677Z",
+      "department_id": "dept_16",
+      "address": "CN Bến Lức · CN Bến Lức - Hội sở",
+      "current_user_id": null,
+      "created_at": "2026-09-03T04:13:02.677Z",
+      "updated_at": "2026-09-03T04:13:02.677Z"
+    },
+    {
+      "id": "a_cc0012",
+      "code": "CC0012",
+      "name": "Ghế quầy giao dịch (DVKH)",
+      "category_id": "cat_35",
+      "original_value": 5050000,
+      "remaining_value": 2020000,
+      "recorded_date": "2022-10-14",
+      "status": "in_use",
+      "status_changed_at": "2026-09-03T04:13:02.677Z",
+      "department_id": "dept_1",
+      "address": "CN Bến Lức · Phòng Dịch vụ khách hàng",
+      "current_user_id": "u_mgr",
+      "created_at": "2026-09-03T04:13:02.677Z",
+      "updated_at": "2026-09-03T04:13:02.677Z"
+    },
+    {
+      "id": "a_dc0001",
+      "code": "DC0001",
+      "name": "Máy khoan pin Bosch (tổ kỹ thuật)",
+      "category_id": "cat_40",
+      "original_value": 2600000,
+      "remaining_value": 1300000,
+      "recorded_date": "2025-10-13",
+      "status": "in_use",
+      "status_changed_at": "2026-09-03T04:13:02.677Z",
+      "department_id": "dept_16",
+      "address": "CN Bến Lức · CN Bến Lức - Hội sở",
+      "current_user_id": "u_it1",
+      "created_at": "2026-09-03T04:13:02.677Z",
+      "updated_at": "2026-09-03T04:13:02.677Z",
+      "kind": "ccdc"
+    }
+  ],
+  "assetHistory": [
+    {
+      "id": "h_0001",
+      "asset_id": "a_fa0001",
+      "event_type": "create",
+      "note": "Khởi tạo từ file Excel ngân hàng (FA0203)",
+      "actor_id": "u_admin",
+      "created_at": "2026-09-03T04:13:02.677Z"
+    },
+    {
+      "id": "h_0002",
+      "asset_id": "a_fa0002",
+      "event_type": "create",
+      "note": "Khởi tạo từ file Excel ngân hàng (FA0203)",
+      "actor_id": "u_admin",
+      "created_at": "2026-09-03T04:13:02.677Z"
+    },
+    {
+      "id": "h_0003",
+      "asset_id": "a_fa0003",
+      "event_type": "create",
+      "note": "Khởi tạo từ file Excel ngân hàng (FA0203)",
+      "actor_id": "u_admin",
+      "created_at": "2026-09-03T04:13:02.677Z"
+    },
+    {
+      "id": "h_0004",
+      "asset_id": "a_fa0004",
+      "event_type": "create",
+      "note": "Khởi tạo từ file Excel ngân hàng (FA0203)",
+      "actor_id": "u_admin",
+      "created_at": "2026-09-03T04:13:02.677Z"
+    },
+    {
+      "id": "h_0005",
+      "asset_id": "a_fa0005",
+      "event_type": "create",
+      "note": "Khởi tạo từ file Excel ngân hàng (FA0203)",
+      "actor_id": "u_admin",
+      "created_at": "2026-09-03T04:13:02.677Z"
+    },
+    {
+      "id": "h_0006",
+      "asset_id": "a_fa0006",
+      "event_type": "create",
+      "note": "Khởi tạo từ file Excel ngân hàng (FA0203)",
+      "actor_id": "u_admin",
+      "created_at": "2026-09-03T04:13:02.677Z"
+    },
+    {
+      "id": "h_0007",
+      "asset_id": "a_fa0007",
+      "event_type": "create",
+      "note": "Khởi tạo từ file Excel ngân hàng (FA0203)",
+      "actor_id": "u_admin",
+      "created_at": "2026-09-03T04:13:02.677Z"
+    },
+    {
+      "id": "h_0008",
+      "asset_id": "a_fa0008",
+      "event_type": "create",
+      "note": "Khởi tạo từ file Excel ngân hàng (FA0203)",
+      "actor_id": "u_admin",
+      "created_at": "2026-09-03T04:13:02.677Z"
+    },
+    {
+      "id": "h_0009",
+      "asset_id": "a_fa0009",
+      "event_type": "create",
+      "note": "Khởi tạo từ file Excel ngân hàng (FA0203)",
+      "actor_id": "u_admin",
+      "created_at": "2026-09-03T04:13:02.677Z"
+    },
+    {
+      "id": "h_0010",
+      "asset_id": "a_fa0010",
+      "event_type": "create",
+      "note": "Khởi tạo từ file Excel ngân hàng (FA0203)",
+      "actor_id": "u_admin",
+      "created_at": "2026-09-03T04:13:02.677Z"
+    },
+    {
+      "id": "h_0011",
+      "asset_id": "a_fa0011",
+      "event_type": "create",
+      "note": "Khởi tạo từ file Excel ngân hàng (FA0203)",
+      "actor_id": "u_admin",
+      "created_at": "2026-09-03T04:13:02.677Z"
+    },
+    {
+      "id": "h_0012",
+      "asset_id": "a_fa0012",
+      "event_type": "create",
+      "note": "Khởi tạo từ file Excel ngân hàng (FA0203)",
+      "actor_id": "u_admin",
+      "created_at": "2026-09-03T04:13:02.677Z"
+    },
+    {
+      "id": "h_0013",
+      "asset_id": "a_fa0013",
+      "event_type": "create",
+      "note": "Khởi tạo từ file Excel ngân hàng (FA0203)",
+      "actor_id": "u_admin",
+      "created_at": "2026-09-03T04:13:02.677Z"
+    },
+    {
+      "id": "h_0014",
+      "asset_id": "a_fa0014",
+      "event_type": "create",
+      "note": "Khởi tạo từ file Excel ngân hàng (FA0203)",
+      "actor_id": "u_admin",
+      "created_at": "2026-09-03T04:13:02.677Z"
+    },
+    {
+      "id": "h_0015",
+      "asset_id": "a_fa0015",
+      "event_type": "create",
+      "note": "Khởi tạo từ file Excel ngân hàng (FA0203)",
+      "actor_id": "u_admin",
+      "created_at": "2026-09-03T04:13:02.677Z"
+    },
+    {
+      "id": "h_0016",
+      "asset_id": "a_fa0016",
+      "event_type": "create",
+      "note": "Khởi tạo từ file Excel ngân hàng (FA0203)",
+      "actor_id": "u_admin",
+      "created_at": "2026-09-03T04:13:02.677Z"
+    },
+    {
+      "id": "h_0017",
+      "asset_id": "a_fa0017",
+      "event_type": "create",
+      "note": "Khởi tạo từ file Excel ngân hàng (FA0203)",
+      "actor_id": "u_admin",
+      "created_at": "2026-09-03T04:13:02.677Z"
+    },
+    {
+      "id": "h_0018",
+      "asset_id": "a_fa0018",
+      "event_type": "create",
+      "note": "Khởi tạo từ file Excel ngân hàng (FA0203)",
+      "actor_id": "u_admin",
+      "created_at": "2026-09-03T04:13:02.677Z"
+    },
+    {
+      "id": "h_0019",
+      "asset_id": "a_fa0019",
+      "event_type": "create",
+      "note": "Khởi tạo từ file Excel ngân hàng (FA0203)",
+      "actor_id": "u_admin",
+      "created_at": "2026-09-03T04:13:02.677Z"
+    },
+    {
+      "id": "h_0020",
+      "asset_id": "a_fa0020",
+      "event_type": "create",
+      "note": "Khởi tạo từ file Excel ngân hàng (FA0203)",
+      "actor_id": "u_admin",
+      "created_at": "2026-09-03T04:13:02.677Z"
+    },
+    {
+      "id": "h_0021",
+      "asset_id": "a_fa0021",
+      "event_type": "create",
+      "note": "Khởi tạo từ file Excel ngân hàng (FA0203)",
+      "actor_id": "u_admin",
+      "created_at": "2026-09-03T04:13:02.677Z"
+    },
+    {
+      "id": "h_0022",
+      "asset_id": "a_fa0022",
+      "event_type": "create",
+      "note": "Khởi tạo từ file Excel ngân hàng (FA0203)",
+      "actor_id": "u_admin",
+      "created_at": "2026-09-03T04:13:02.677Z"
+    },
+    {
+      "id": "h_0023",
+      "asset_id": "a_fa0023",
+      "event_type": "create",
+      "note": "Khởi tạo từ file Excel ngân hàng (FA0203)",
+      "actor_id": "u_admin",
+      "created_at": "2026-09-03T04:13:02.677Z"
+    },
+    {
+      "id": "h_0024",
+      "asset_id": "a_fa0024",
+      "event_type": "create",
+      "note": "Khởi tạo từ file Excel ngân hàng (FA0203)",
+      "actor_id": "u_admin",
+      "created_at": "2026-09-03T04:13:02.677Z"
+    },
+    {
+      "id": "h_0025",
+      "asset_id": "a_fa0025",
+      "event_type": "create",
+      "note": "Khởi tạo từ file Excel ngân hàng (FA0203)",
+      "actor_id": "u_admin",
+      "created_at": "2026-09-03T04:13:02.677Z"
+    },
+    {
+      "id": "h_0026",
+      "asset_id": "a_fa0026",
+      "event_type": "create",
+      "note": "Khởi tạo từ file Excel ngân hàng (FA0203)",
+      "actor_id": "u_admin",
+      "created_at": "2026-09-03T04:13:02.677Z"
+    },
+    {
+      "id": "h_0027",
+      "asset_id": "a_fa0027",
+      "event_type": "create",
+      "note": "Khởi tạo từ file Excel ngân hàng (FA0203)",
+      "actor_id": "u_admin",
+      "created_at": "2026-09-03T04:13:02.677Z"
+    },
+    {
+      "id": "h_0028",
+      "asset_id": "a_fa0028",
+      "event_type": "create",
+      "note": "Khởi tạo từ file Excel ngân hàng (FA0203)",
+      "actor_id": "u_admin",
+      "created_at": "2026-09-03T04:13:02.677Z"
+    },
+    {
+      "id": "h_0029",
+      "asset_id": "a_fa0029",
+      "event_type": "create",
+      "note": "Khởi tạo từ file Excel ngân hàng (FA0203)",
+      "actor_id": "u_admin",
+      "created_at": "2026-09-03T04:13:02.677Z"
+    },
+    {
+      "id": "h_0030",
+      "asset_id": "a_fa0030",
+      "event_type": "create",
+      "note": "Khởi tạo từ file Excel ngân hàng (FA0203)",
+      "actor_id": "u_admin",
+      "created_at": "2026-09-03T04:13:02.677Z"
+    },
+    {
+      "id": "h_0031",
+      "asset_id": "a_fa0031",
+      "event_type": "create",
+      "note": "Khởi tạo từ file Excel ngân hàng (FA0203)",
+      "actor_id": "u_admin",
+      "created_at": "2026-09-03T04:13:02.677Z"
+    },
+    {
+      "id": "h_0032",
+      "asset_id": "a_fa0032",
+      "event_type": "create",
+      "note": "Khởi tạo từ file Excel ngân hàng (FA0203)",
+      "actor_id": "u_admin",
+      "created_at": "2026-09-03T04:13:02.677Z"
+    },
+    {
+      "id": "h_0033",
+      "asset_id": "a_fa0033",
+      "event_type": "create",
+      "note": "Khởi tạo từ file Excel ngân hàng (FA0203)",
+      "actor_id": "u_admin",
+      "created_at": "2026-09-03T04:13:02.677Z"
+    },
+    {
+      "id": "h_0034",
+      "asset_id": "a_fa0034",
+      "event_type": "create",
+      "note": "Khởi tạo từ file Excel ngân hàng (FA0203)",
+      "actor_id": "u_admin",
+      "created_at": "2026-09-03T04:13:02.677Z"
+    },
+    {
+      "id": "h_0035",
+      "asset_id": "a_fa0035",
+      "event_type": "create",
+      "note": "Khởi tạo từ file Excel ngân hàng (FA0203)",
+      "actor_id": "u_admin",
+      "created_at": "2026-09-03T04:13:02.677Z"
+    },
+    {
+      "id": "h_0036",
+      "asset_id": "a_fa0036",
+      "event_type": "create",
+      "note": "Khởi tạo từ file Excel ngân hàng (FA0203)",
+      "actor_id": "u_admin",
+      "created_at": "2026-09-03T04:13:02.677Z"
+    },
+    {
+      "id": "h_0037",
+      "asset_id": "a_cc0001",
+      "event_type": "create",
+      "note": "Khởi tạo từ file Excel ngân hàng (FA0203)",
+      "actor_id": "u_admin",
+      "created_at": "2026-09-03T04:13:02.677Z"
+    },
+    {
+      "id": "h_0038",
+      "asset_id": "a_cc0002",
+      "event_type": "create",
+      "note": "Khởi tạo từ file Excel ngân hàng (FA0203)",
+      "actor_id": "u_admin",
+      "created_at": "2026-09-03T04:13:02.677Z"
+    },
+    {
+      "id": "h_0039",
+      "asset_id": "a_cc0003",
+      "event_type": "create",
+      "note": "Khởi tạo từ file Excel ngân hàng (FA0203)",
+      "actor_id": "u_admin",
+      "created_at": "2026-09-03T04:13:02.677Z"
+    },
+    {
+      "id": "h_0040",
+      "asset_id": "a_cc0004",
+      "event_type": "create",
+      "note": "Khởi tạo từ file Excel ngân hàng (FA0203)",
+      "actor_id": "u_admin",
+      "created_at": "2026-09-03T04:13:02.677Z"
+    },
+    {
+      "id": "h_0041",
+      "asset_id": "a_cc0005",
+      "event_type": "create",
+      "note": "Khởi tạo từ file Excel ngân hàng (FA0203)",
+      "actor_id": "u_admin",
+      "created_at": "2026-09-03T04:13:02.677Z"
+    },
+    {
+      "id": "h_0042",
+      "asset_id": "a_cc0006",
+      "event_type": "create",
+      "note": "Khởi tạo từ file Excel ngân hàng (FA0203)",
+      "actor_id": "u_admin",
+      "created_at": "2026-09-03T04:13:02.677Z"
+    },
+    {
+      "id": "h_0043",
+      "asset_id": "a_cc0007",
+      "event_type": "create",
+      "note": "Khởi tạo từ file Excel ngân hàng (FA0203)",
+      "actor_id": "u_admin",
+      "created_at": "2026-09-03T04:13:02.677Z"
+    },
+    {
+      "id": "h_0044",
+      "asset_id": "a_cc0008",
+      "event_type": "create",
+      "note": "Khởi tạo từ file Excel ngân hàng (FA0203)",
+      "actor_id": "u_admin",
+      "created_at": "2026-09-03T04:13:02.677Z"
+    },
+    {
+      "id": "h_0045",
+      "asset_id": "a_cc0009",
+      "event_type": "create",
+      "note": "Khởi tạo từ file Excel ngân hàng (FA0203)",
+      "actor_id": "u_admin",
+      "created_at": "2026-09-03T04:13:02.677Z"
+    },
+    {
+      "id": "h_0046",
+      "asset_id": "a_cc0010",
+      "event_type": "create",
+      "note": "Khởi tạo từ file Excel ngân hàng (FA0203)",
+      "actor_id": "u_admin",
+      "created_at": "2026-09-03T04:13:02.677Z"
+    },
+    {
+      "id": "h_0047",
+      "asset_id": "a_cc0011",
+      "event_type": "create",
+      "note": "Khởi tạo từ file Excel ngân hàng (FA0203)",
+      "actor_id": "u_admin",
+      "created_at": "2026-09-03T04:13:02.677Z"
+    },
+    {
+      "id": "h_0048",
+      "asset_id": "a_cc0012",
+      "event_type": "create",
+      "note": "Khởi tạo từ file Excel ngân hàng (FA0203)",
+      "actor_id": "u_admin",
+      "created_at": "2026-09-03T04:13:02.677Z"
+    },
+    {
+      "id": "h_0049",
+      "asset_id": "a_dc0001",
+      "event_type": "create",
+      "note": "Khởi tạo từ file Excel ngân hàng (FA0203)",
+      "actor_id": "u_admin",
+      "created_at": "2026-09-03T04:13:02.677Z"
+    },
+    {
+      "id": "h_0050",
+      "asset_id": "a_fa0001",
+      "event_type": "status_change",
+      "note": "Lập phiếu báo hỏng GBH-KHDN-20261012: Máy không lên nguồn, bấm nút nguồn không có đèn",
+      "actor_id": "u_nv",
+      "created_at": "2026-10-12T02:13:02.677Z"
+    },
+    {
+      "id": "h_0051",
+      "asset_id": "a_fa0001",
+      "event_type": "repair",
+      "note": "LĐP phê duyệt phiếu GBH-KHDN-20261012 (Mức độ: Cao (Xử lý gấp))",
+      "actor_id": "u_mgr",
+      "created_at": "2026-10-12T03:13:02.677Z"
+    },
+    {
+      "id": "h_0052",
+      "asset_id": "a_fa0001",
+      "event_type": "repair",
+      "note": "TCTH điều phối phiếu GBH-KHDN-20261012 cho Điện toán",
+      "actor_id": "u_tcth",
+      "created_at": "2026-10-12T23:13:02.677Z"
+    },
+    {
+      "id": "h_0053",
+      "asset_id": "a_fa0002",
+      "event_type": "status_change",
+      "note": "Lập phiếu báo hỏng GBH-KHDN-20261011: Kẹt giấy liên tục, bản in bị nhăn",
+      "actor_id": "u_nv",
+      "created_at": "2026-10-11T00:13:02.677Z"
+    },
+    {
+      "id": "h_0054",
+      "asset_id": "a_fa0002",
+      "event_type": "repair",
+      "note": "LĐP phê duyệt phiếu GBH-KHDN-20261011 (Mức độ: Bình thường)",
+      "actor_id": "u_mgr",
+      "created_at": "2026-10-11T02:13:02.677Z"
+    },
+    {
+      "id": "h_0055",
+      "asset_id": "a_fa0002",
+      "event_type": "repair",
+      "note": "TCTH điều phối phiếu GBH-KHDN-20261011 cho Điện toán",
+      "actor_id": "u_tcth",
+      "created_at": "2026-10-11T22:13:02.677Z"
+    },
+    {
+      "id": "h_0056",
+      "asset_id": "a_fa0003",
+      "event_type": "status_change",
+      "note": "Lập phiếu báo hỏng GBH-BANLE-20261012: Laptop cắm sạc không vào pin, máy tắt khi rút điện",
+      "actor_id": "u_mgr2",
+      "created_at": "2026-10-12T22:13:02.677Z"
+    },
+    {
+      "id": "h_0057",
+      "asset_id": "a_fa0003",
+      "event_type": "repair",
+      "note": "LĐP phê duyệt phiếu GBH-BANLE-20261012 (Mức độ: Bình thường)",
+      "actor_id": "u_mgr2",
+      "created_at": "2026-10-12T22:43:02.677Z"
+    },
+    {
+      "id": "h_0058",
+      "asset_id": "a_fa0004",
+      "event_type": "status_change",
+      "note": "Lập phiếu báo hỏng GBH-HOISO-20261013: Switch tầng 2 mất đèn các cổng 12-24, máy trạm mất mạng",
+      "actor_id": "u_tcth",
+      "created_at": "2026-10-13T02:13:02.677Z"
+    },
+    {
+      "id": "h_0059",
+      "asset_id": "a_fa0005",
+      "event_type": "status_change",
+      "note": "Lập phiếu báo hỏng GBH-DVKH-20260923: Máy quét không nhận dữ liệu khi quét nhiều trang",
+      "actor_id": "u_nv",
+      "created_at": "2026-09-23T04:13:02.677Z"
+    },
+    {
+      "id": "h_0060",
+      "asset_id": "a_fa0005",
+      "event_type": "repair",
+      "note": "LĐP phê duyệt phiếu GBH-DVKH-20260923 (Mức độ: Bình thường)",
+      "actor_id": "u_mgr",
+      "created_at": "2026-09-23T06:13:02.677Z"
+    },
+    {
+      "id": "h_0061",
+      "asset_id": "a_fa0005",
+      "event_type": "repair",
+      "note": "TCTH điều phối phiếu GBH-DVKH-20260923 cho Điện toán",
+      "actor_id": "u_tcth",
+      "created_at": "2026-09-23T08:13:02.677Z"
+    },
+    {
+      "id": "h_0062",
+      "asset_id": "a_fa0005",
+      "event_type": "status_change",
+      "note": "IT khắc phục xong phiếu GBH-DVKH-20260923: Cài lại driver máy quét, thay cáp USB",
+      "actor_id": "u_it1",
+      "created_at": "2026-09-24T04:13:02.677Z"
+    },
+    {
+      "id": "h_0063",
+      "asset_id": "a_fa0006",
+      "event_type": "transfer",
+      "note": "Lập lệnh điều chuyển PĐC-KHDN-20261013",
+      "actor_id": "u_mgr",
+      "created_at": "2026-10-13T00:13:02.677Z"
+    },
+    {
+      "id": "h_0064",
+      "asset_id": "a_fa0001",
+      "event_type": "it_work",
+      "note": "IT ghi nhật ký (Sửa chữa phần cứng): Thay RAM 8GB lên 16GB — 30 phút",
+      "actor_id": "u_it1",
+      "created_at": "2026-08-14T04:13:02.677Z"
+    },
+    {
+      "id": "h_0065",
+      "asset_id": "a_fa0001",
+      "event_type": "it_work",
+      "note": "IT ghi nhật ký (Bảo trì định kỳ): Vệ sinh máy, tra keo tản nhiệt — 40 phút",
+      "actor_id": "u_it2",
+      "created_at": "2026-09-18T04:13:02.677Z"
+    },
+    {
+      "id": "h_0066",
+      "asset_id": "a_fa0005",
+      "event_type": "it_work",
+      "note": "IT ghi nhật ký (Sửa chữa phần cứng): Cài lại driver máy quét, thay cáp USB — 25 phút",
+      "actor_id": "u_it1",
+      "created_at": "2026-09-24T04:13:02.677Z"
+    },
+    {
+      "id": "h_0067",
+      "asset_id": "a_fa0002",
+      "event_type": "it_work",
+      "note": "IT ghi nhật ký (Máy in/Photocopy): Thay trục cuốn giấy — 50 phút",
+      "actor_id": "u_it2",
+      "created_at": "2026-08-29T04:13:02.677Z"
+    },
+    {
+      "id": "h_0068",
+      "asset_id": "a_fa0007",
+      "event_type": "it_work",
+      "note": "IT ghi nhật ký (Bảo trì định kỳ): Vệ sinh dàn lạnh định kỳ quý — 90 phút",
+      "actor_id": "u_it1",
+      "created_at": "2026-10-01T04:13:02.677Z"
+    }
+  ],
+  "transfers": [
+    {
+      "id": "t_1",
+      "ticket_code": "PĐC-KHDN-20261013",
+      "asset_id": "a_fa0006",
+      "from_department_id": "dept_7",
+      "to_department_id": "dept_9",
+      "reason": "Điều chuyển cho nhân sự mới phòng Bán lẻ",
+      "status": "pending_confirm",
+      "requested_by": "u_mgr",
+      "created_at": "2026-10-13T00:13:02.677Z",
+      "confirmed_by": null,
+      "confirmed_at": null,
+      "approved_by": null,
+      "approved_at": null,
+      "executed_by": null,
+      "executed_at": null,
+      "rejected_by": null,
+      "rejected_at": null,
+      "reject_reason": null
+    }
+  ],
+  "repairs": [
+    {
+      "manager_id": "u_mgr",
+      "manager_at": "2026-10-12T03:13:02.677Z",
+      "priority": "Cao (Xử lý gấp)",
+      "manager_note": "Cần xử lý trong ngày, đang vào đợt chốt hồ sơ tín dụng",
+      "tcth_id": "u_tcth",
+      "tcth_at": "2026-10-12T23:13:02.677Z",
+      "it_id": "u_it1",
+      "it_at": null,
+      "resolution_note": null,
+      "rejected_by": null,
+      "rejected_at": null,
+      "reject_reason": null,
+      "user_confirmed_at": null,
+      "id": "r_1",
+      "ticket_code": "GBH-KHDN-20261012",
+      "asset_id": "a_fa0001",
+      "description": "Máy không lên nguồn, bấm nút nguồn không có đèn",
+      "status": "pending_it",
+      "reported_by": "u_nv",
+      "created_at": "2026-10-12T02:13:02.677Z"
+    },
+    {
+      "manager_id": "u_mgr",
+      "manager_at": "2026-10-11T02:13:02.677Z",
+      "priority": "Bình thường",
+      "manager_note": "",
+      "tcth_id": "u_tcth",
+      "tcth_at": "2026-10-11T22:13:02.677Z",
+      "it_id": null,
+      "it_at": null,
+      "resolution_note": null,
+      "rejected_by": null,
+      "rejected_at": null,
+      "reject_reason": null,
+      "user_confirmed_at": null,
+      "id": "r_2",
+      "ticket_code": "GBH-KHDN-20261011",
+      "asset_id": "a_fa0002",
+      "description": "Kẹt giấy liên tục, bản in bị nhăn",
+      "status": "pending_it",
+      "reported_by": "u_nv",
+      "created_at": "2026-10-11T00:13:02.677Z"
+    },
+    {
+      "manager_id": "u_mgr2",
+      "manager_at": "2026-10-12T22:43:02.677Z",
+      "priority": "Bình thường",
+      "manager_note": "",
+      "tcth_id": null,
+      "tcth_at": null,
+      "it_id": null,
+      "it_at": null,
+      "resolution_note": null,
+      "rejected_by": null,
+      "rejected_at": null,
+      "reject_reason": null,
+      "user_confirmed_at": null,
+      "id": "r_3",
+      "ticket_code": "GBH-BANLE-20261012",
+      "asset_id": "a_fa0003",
+      "description": "Laptop cắm sạc không vào pin, máy tắt khi rút điện",
+      "status": "pending_tcth",
+      "reported_by": "u_mgr2",
+      "created_at": "2026-10-12T22:13:02.677Z"
+    },
+    {
+      "manager_id": null,
+      "manager_at": null,
+      "priority": null,
+      "manager_note": null,
+      "tcth_id": null,
+      "tcth_at": null,
+      "it_id": null,
+      "it_at": null,
+      "resolution_note": null,
+      "rejected_by": null,
+      "rejected_at": null,
+      "reject_reason": null,
+      "user_confirmed_at": null,
+      "id": "r_4",
+      "ticket_code": "GBH-HOISO-20261013",
+      "asset_id": "a_fa0004",
+      "description": "Switch tầng 2 mất đèn các cổng 12-24, máy trạm mất mạng",
+      "status": "pending_manager",
+      "reported_by": "u_tcth",
+      "created_at": "2026-10-13T02:13:02.677Z"
+    },
+    {
+      "manager_id": "u_mgr",
+      "manager_at": "2026-09-23T06:13:02.677Z",
+      "priority": "Bình thường",
+      "manager_note": null,
+      "tcth_id": "u_tcth",
+      "tcth_at": "2026-09-23T08:13:02.677Z",
+      "it_id": "u_it1",
+      "it_at": "2026-09-24T04:13:02.677Z",
+      "resolution_note": "Cài lại driver máy quét, thay cáp USB",
+      "rejected_by": null,
+      "rejected_at": null,
+      "reject_reason": null,
+      "user_confirmed_at": "2026-09-24T07:13:02.677Z",
+      "id": "r_5",
+      "ticket_code": "GBH-DVKH-20260923",
+      "asset_id": "a_fa0005",
+      "description": "Máy quét không nhận dữ liệu khi quét nhiều trang",
+      "status": "completed",
+      "reported_by": "u_nv",
+      "created_at": "2026-09-23T04:13:02.677Z"
+    }
+  ],
+  "inventoryChecks": [
+    {
+      "id": "ic_1",
+      "department_id": "dept_7",
+      "period_type": "quarter",
+      "period_label": "2026-Q4",
+      "note": "Kiểm kê đủ, khớp sổ (dữ liệu demo)",
+      "created_by": "u_tcth",
+      "created_at": "2026-10-03T04:13:02.677Z"
+    }
+  ],
+  "worklogs": [
+    {
+      "id": "WL-D001",
+      "ts_ms": 1786680782677,
+      "created_at": "2026-08-14T04:13:02.677Z",
+      "source": "demo",
+      "it_user_id": "u_it1",
+      "it_user": "Trần Văn Điện Toán",
+      "asset_id": "a_fa0001",
+      "asset_code": "FA0001",
+      "asset_name": "Máy vi tính để bàn Dell OptiPlex 3080 (PC-0042)",
+      "department_id": "dept_7",
+      "category": "Sửa chữa phần cứng",
+      "description": "Thay RAM 8GB lên 16GB",
+      "duration_min": 30,
+      "status": "done",
+      "repair_id": null,
+      "ticket_code": null
+    },
+    {
+      "id": "WL-D002",
+      "ts_ms": 1789704782677,
+      "created_at": "2026-09-18T04:13:02.677Z",
+      "source": "demo",
+      "it_user_id": "u_it2",
+      "it_user": "Lê Thị Mạng",
+      "asset_id": "a_fa0001",
+      "asset_code": "FA0001",
+      "asset_name": "Máy vi tính để bàn Dell OptiPlex 3080 (PC-0042)",
+      "department_id": "dept_7",
+      "category": "Bảo trì định kỳ",
+      "description": "Vệ sinh máy, tra keo tản nhiệt",
+      "duration_min": 40,
+      "status": "done",
+      "repair_id": null,
+      "ticket_code": null
+    },
+    {
+      "id": "WL-D003",
+      "ts_ms": 1790223182677,
+      "created_at": "2026-09-24T04:13:02.677Z",
+      "source": "demo",
+      "it_user_id": "u_it1",
+      "it_user": "Trần Văn Điện Toán",
+      "asset_id": "a_fa0005",
+      "asset_code": "FA0005",
+      "asset_name": "Máy quét Canon DR-C225 (phòng DVKH)",
+      "department_id": "dept_1",
+      "category": "Sửa chữa phần cứng",
+      "description": "Cài lại driver máy quét, thay cáp USB",
+      "duration_min": 25,
+      "status": "done",
+      "repair_id": "r_5",
+      "ticket_code": "GBH-DVKH-20260923"
+    },
+    {
+      "id": "WL-D004",
+      "ts_ms": 1787976782677,
+      "created_at": "2026-08-29T04:13:02.677Z",
+      "source": "demo",
+      "it_user_id": "u_it2",
+      "it_user": "Lê Thị Mạng",
+      "asset_id": "a_fa0002",
+      "asset_code": "FA0002",
+      "asset_name": "Máy in HP LaserJet Pro M404dn (phòng KHDN)",
+      "department_id": "dept_7",
+      "category": "Máy in/Photocopy",
+      "description": "Thay trục cuốn giấy",
+      "duration_min": 50,
+      "status": "done",
+      "repair_id": null,
+      "ticket_code": null
+    },
+    {
+      "id": "WL-D005",
+      "ts_ms": 1790827982677,
+      "created_at": "2026-10-01T04:13:02.677Z",
+      "source": "demo",
+      "it_user_id": "u_it1",
+      "it_user": "Trần Văn Điện Toán",
+      "asset_id": "a_fa0007",
+      "asset_code": "FA0007",
+      "asset_name": "Máy điều hoà Daikin 2HP (phòng họp tầng 2)",
+      "department_id": "dept_16",
+      "category": "Bảo trì định kỳ",
+      "description": "Vệ sinh dàn lạnh định kỳ quý",
+      "duration_min": 90,
+      "status": "done",
+      "repair_id": null,
+      "ticket_code": null
+    }
+  ],
+  "templateConfig": {},
+  "session": {
+    "userId": null
+  }
+}

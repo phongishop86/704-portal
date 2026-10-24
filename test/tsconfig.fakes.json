@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "strict": true,
+    "skipLibCheck": true,
+    "paths": {
+      "@/*": ["../*"],
+      "firebase-admin/app": ["./fakes/node_modules/firebase-admin/app/index.js"],
+      "firebase-admin/firestore": ["./fakes/node_modules/firebase-admin/firestore/index.js"],
+      "@anthropic-ai/sdk": ["./fakes/node_modules/@anthropic-ai/sdk/index.js"],
+      "googleapis": ["./fakes/node_modules/googleapis/index.js"]
+    }
+  }
+}

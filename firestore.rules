@@ -1,0 +1,10 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Toàn bộ truy cập từ client bị chặn.
+    // Chỉ server (Firebase Admin SDK trên Vercel) đọc/ghi, và Admin SDK bỏ qua rules.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

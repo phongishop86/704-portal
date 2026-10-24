@@ -1,0 +1,306 @@
+{
+ "departments": [
+  {
+   "id": "dept_12",
+   "code": "399001.0000000",
+   "name": "Ban giám đốc"
+  },
+  {
+   "id": "dept_16",
+   "code": "000000.1070498",
+   "name": "CN Bến Lức - Hội sở"
+  },
+  {
+   "id": "dept_11",
+   "code": "000000.1070435",
+   "name": "CN Bến Lức - PGD Châu Thành"
+  },
+  {
+   "id": "dept_2",
+   "code": "000000.1070430",
+   "name": "CN Bến Lức - PGD Cần Giuộc"
+  },
+  {
+   "id": "dept_14",
+   "code": "000000.1070432",
+   "name": "CN Bến Lức - PGD Cần Đước"
+  },
+  {
+   "id": "dept_10",
+   "code": "000000.1070434",
+   "name": "CN Bến Lức - PGD Kỳ Son"
+  },
+  {
+   "id": "dept_5",
+   "code": "000000.1070431",
+   "name": "CN Bến Lức - PGD Phước Lợi"
+  },
+  {
+   "id": "dept_0",
+   "code": "000000.1070433",
+   "name": "CN Bến Lức - PGD Thủ Thừa"
+  },
+  {
+   "id": "dept_3",
+   "code": "000000.0000000",
+   "name": "Khong xac dinh"
+  },
+  {
+   "id": "dept_9",
+   "code": "302009.0000000",
+   "name": "Phòng Bán lẻ"
+  },
+  {
+   "id": "dept_1",
+   "code": "399018.0000000",
+   "name": "Phòng Dịch vụ khách hàng"
+  },
+  {
+   "id": "dept_6",
+   "code": "305180.0000000",
+   "name": "Phòng Hỗ trợ tín dụng"
+  },
+  {
+   "id": "dept_7",
+   "code": "301001.0000000",
+   "name": "Phòng KHDN - chung"
+  },
+  {
+   "id": "dept_15",
+   "code": "301028.0000000",
+   "name": "Phòng KHDN FDI"
+  },
+  {
+   "id": "dept_4",
+   "code": "399019.0000000",
+   "name": "Phòng Tổ chức - Tổng hợp"
+  },
+  {
+   "id": "dept_13",
+   "code": "399002.0000000",
+   "name": "Phòng Tổ chức Hành chính"
+  },
+  {
+   "id": "dept_8",
+   "code": "399013.0000000",
+   "name": "Phòng Tổng hợp/Tổ Tổng hợp"
+  }
+ ],
+ "categories": [
+  {
+   "id": "cat_34",
+   "code": "711301",
+   "name": "Bàn"
+  },
+  {
+   "id": "cat_19",
+   "code": "710606",
+   "name": "Bảng điện tử, Máy chiếu, màn chiếu"
+  },
+  {
+   "id": "cat_38",
+   "code": "711305",
+   "name": "Bộ bàn ghế, salon"
+  },
+  {
+   "id": "cat_42",
+   "code": "719999",
+   "name": "CCDC khác"
+  },
+  {
+   "id": "cat_41",
+   "code": "719902",
+   "name": "CCDC trang trí nội thất"
+  },
+  {
+   "id": "cat_37",
+   "code": "711304",
+   "name": "Cửa"
+  },
+  {
+   "id": "cat_40",
+   "code": "719901",
+   "name": "Dụng cụ đồ nghề"
+  },
+  {
+   "id": "cat_35",
+   "code": "711302",
+   "name": "Ghế"
+  },
+  {
+   "id": "cat_30",
+   "code": "711201",
+   "name": "Hệ thống báo cháy, chữa cháy"
+  },
+  {
+   "id": "cat_31",
+   "code": "711202",
+   "name": "Hệ thống báo trộm"
+  },
+  {
+   "id": "cat_32",
+   "code": "711203",
+   "name": "Hệ thống chống sét"
+  },
+  {
+   "id": "cat_29",
+   "code": "711101",
+   "name": "Két sắt"
+  },
+  {
+   "id": "cat_13",
+   "code": "710599",
+   "name": "MMTB văn phòng, thông tin liên lạc khác"
+  },
+  {
+   "id": "cat_12",
+   "code": "710506",
+   "name": "Máy Fax"
+  },
+  {
+   "id": "cat_24",
+   "code": "710802",
+   "name": "Máy bơm"
+  },
+  {
+   "id": "cat_5",
+   "code": "710402",
+   "name": "Máy cà thẻ (POS)"
+  },
+  {
+   "id": "cat_9",
+   "code": "710503",
+   "name": "Máy hủy tài liệu"
+  },
+  {
+   "id": "cat_8",
+   "code": "710502",
+   "name": "Máy in"
+  },
+  {
+   "id": "cat_26",
+   "code": "710899",
+   "name": "Máy móc thiết bị khác"
+  },
+  {
+   "id": "cat_21",
+   "code": "710699",
+   "name": "Máy móc thiết bị điện tử, điện lạnh khác"
+  },
+  {
+   "id": "cat_7",
+   "code": "710499",
+   "name": "Máy móc, thiết bị thẻ khác"
+  },
+  {
+   "id": "cat_20",
+   "code": "710607",
+   "name": "Máy móc, thiết bị tự động, chấm công"
+  },
+  {
+   "id": "cat_22",
+   "code": "710799",
+   "name": "Máy móc, thiết bị động lực khác"
+  },
+  {
+   "id": "cat_11",
+   "code": "710505",
+   "name": "Máy móc, thông tin liên lạc"
+  },
+  {
+   "id": "cat_10",
+   "code": "710504",
+   "name": "Máy quét"
+  },
+  {
+   "id": "cat_2",
+   "code": "710104",
+   "name": "Máy tính bảng"
+  },
+  {
+   "id": "cat_1",
+   "code": "710103",
+   "name": "Máy vi tính xách tay"
+  },
+  {
+   "id": "cat_0",
+   "code": "710102",
+   "name": "Máy vi tính để bàn"
+  },
+  {
+   "id": "cat_14",
+   "code": "710601",
+   "name": "Máy điều hoà, quạt điện"
+  },
+  {
+   "id": "cat_39",
+   "code": "711399",
+   "name": "Nội thất văn phòng khác"
+  },
+  {
+   "id": "cat_3",
+   "code": "710303",
+   "name": "Switch"
+  },
+  {
+   "id": "cat_6",
+   "code": "710403",
+   "name": "Thiết bị bảo an thẻ"
+  },
+  {
+   "id": "cat_33",
+   "code": "711299",
+   "name": "Thiết bị bảo vệ an toàn trụ sở, kho khác"
+  },
+  {
+   "id": "cat_18",
+   "code": "710605",
+   "name": "Thiết bị ghi âm, ghi hình"
+  },
+  {
+   "id": "cat_27",
+   "code": "711002",
+   "name": "Thiết bị kiểm, đếm, bó tiền"
+  },
+  {
+   "id": "cat_25",
+   "code": "710803",
+   "name": "Thiết bị lưu trữ, đọc dữ liệu"
+  },
+  {
+   "id": "cat_4",
+   "code": "710399",
+   "name": "Thiết bị mạng khác"
+  },
+  {
+   "id": "cat_16",
+   "code": "710603",
+   "name": "Thiết bị nhà bếp, lễ tân"
+  },
+  {
+   "id": "cat_23",
+   "code": "710801",
+   "name": "Thiết bị y tế"
+  },
+  {
+   "id": "cat_17",
+   "code": "710604",
+   "name": "Thiết bị âm thanh, ánh sáng"
+  },
+  {
+   "id": "cat_15",
+   "code": "710602",
+   "name": "Thiết bị điện tử, điện lạnh"
+  },
+  {
+   "id": "cat_28",
+   "code": "711099",
+   "name": "Thiết bị, dụng cụ kho quỹ khác"
+  },
+  {
+   "id": "cat_36",
+   "code": "711303",
+   "name": "Tủ"
+  }
+ ]
+}

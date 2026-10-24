@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Giả lập Telegram · 704-assets demo</title>
+<style>
+  :root { --bg:#eef1f5; --panel:#fff; --line:#d9dee6; --ink:#1b2430; --muted:#5b6778; --brand:#0055a4; --me:#d7ecff; --bot:#fff; --warn:#fff6dd; }
+  * { box-sizing:border-box; }
+  body { margin:0; font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; background:var(--bg); color:var(--ink); height:100vh; display:flex; flex-direction:column; }
+  header { background:var(--brand); color:#fff; padding:10px 16px; display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+  header h1 { font-size:16px; margin:0; font-weight:600; }
+  header a, header button { color:#fff; background:rgba(255,255,255,.15); border:0; border-radius:6px; padding:6px 10px; font:inherit; font-size:13px; cursor:pointer; text-decoration:none; }
+  header a:hover, header button:hover { background:rgba(255,255,255,.28); }
+  .spacer { flex:1; }
+  .note { background:var(--warn); border-bottom:1px solid #ecd9a0; padding:8px 16px; font-size:13px; color:#5a4a10; }
+  main { flex:1; display:flex; min-height:0; }
+  nav { width:250px; background:var(--panel); border-right:1px solid var(--line); overflow:auto; flex-shrink:0; }
+  nav button { display:block; width:100%; text-align:left; border:0; background:none; padding:12px 14px; border-bottom:1px solid var(--line); cursor:pointer; font:inherit; color:inherit; }
+  nav button:hover { background:#f4f7fb; }
+  nav button.on { background:#e6f0fb; border-left:4px solid var(--brand); padding-left:10px; }
+  nav .nm { font-weight:600; } nav .rl { font-size:12px; color:var(--muted); }
+  section { flex:1; display:flex; flex-direction:column; min-width:0; }
+  .msgs { flex:1; overflow:auto; padding:16px; display:flex; flex-direction:column; gap:8px; }
+  .msgs > div[hidden] { display:none; }
+  .col { display:flex; flex-direction:column; gap:8px; }
+  .b { max-width:min(560px,86%); padding:9px 12px; border-radius:12px; white-space:pre-wrap; word-wrap:break-word; box-shadow:0 1px 1px rgba(0,0,0,.08); }
+  .b.me { align-self:flex-end; background:var(--me); border-bottom-right-radius:4px; }
+  .b.bot { align-self:flex-start; background:var(--bot); border-bottom-left-radius:4px; }
+  .btns { display:flex; gap:8px; margin-top:8px; }
+  .btns button { flex:1; border:1px solid var(--brand); background:#fff; color:var(--brand); border-radius:8px; padding:7px 10px; cursor:pointer; font:inherit; font-weight:600; }
+  .btns button:hover { background:var(--brand); color:#fff; }
+  .chips { padding:8px 16px 0; display:flex; gap:6px; flex-wrap:wrap; background:var(--panel); border-top:1px solid var(--line); }
+  .chips button { border:1px solid var(--line); background:#f7f9fc; border-radius:14px; padding:4px 10px; font:inherit; font-size:12.5px; cursor:pointer; color:var(--muted); }
+  .chips button:hover { border-color:var(--brand); color:var(--brand); }
+  form { display:flex; gap:8px; padding:10px 16px 14px; background:var(--panel); }
+  form input { flex:1; border:1px solid var(--line); border-radius:20px; padding:10px 14px; font:inherit; }
+  form button { border:0; background:var(--brand); color:#fff; border-radius:20px; padding:0 18px; font:inherit; font-weight:600; cursor:pointer; }
+  .grp { padding:10px 16px 14px; background:var(--panel); border-top:1px solid var(--line); }
+  .grp button { border:0; background:var(--brand); color:#fff; border-radius:8px; padding:9px 14px; font:inherit; font-weight:600; cursor:pointer; }
+  .empty { color:var(--muted); text-align:center; margin-top:40px; font-size:14px; }
+  @media (max-width:720px) { nav { width:130px; } nav .rl { display:none; } }
+</style>
+</head>
+<body>
+<header>
+  <h1>🤖 Giả lập Telegram · bot nhật ký IT</h1>
+  <span class="spacer"></span>
+  <a href="/" target="_blank">Mở 704-assets ↗</a>
+  <button id="reset">↺ Đặt lại dữ liệu demo</button>
+</header>
+<div class="note"><b>Chế độ giả lập.</b> Mã bot là mã thật (webhook, kiểm quyền theo Telegram ID, nút ✅, ghi dữ liệu, đóng phiếu). Chỉ phần hiểu câu tiếng Việt dùng bộ quy tắc đơn giản thay cho Claude, nên hãy nhắn theo mẫu bên dưới. Bản triển khai thật dùng Claude, hiểu câu tự do hơn nhiều.</div>
+<main>
+  <nav id="nav"></nav>
+  <section>
+    <div class="msgs" id="msgs"></div>
+    <div id="bottom"></div>
+  </section>
+</main>
+<script>
+const $ = (s, el = document) => el.querySelector(s);
+const post = (url, body) => fetch(url, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body || {}) }).then(r => r.json());
+const CHIPS = [
+  "Xong máy FA0001, thay nguồn 45 phút",
+  "/lichsu FA0001",
+  "/phieu",
+  "Gỡ kẹt giấy máy in FA0002 xong, 10 phút",
+  "Thay RAM máy PC-0051, 15 phút",
+  "Vệ sinh máy FA0007 định kỳ, 1 giờ",
+  "/homnay",
+  "/help",
+];
+const state = { chats: [], group: null, active: null, panes: {}, since: {}, bubbles: {} };
+
+function pane(chat) {
+  if (!state.panes[chat]) {
+    const d = document.createElement("div"); d.className = "col"; d.hidden = true;
+    d.innerHTML = '<div class="empty">Chưa có tin nhắn. Thử một câu mẫu ở phía dưới.</div>';
+    $("#msgs").appendChild(d); state.panes[chat] = d; state.since[chat] = 0; state.bubbles[chat] = {};
+  }
+  return state.panes[chat];
+}
+function bubble(chat, cls, text) {
+  const p = pane(chat); const e = $(".empty", p); if (e) e.remove();
+  const b = document.createElement("div"); b.className = "b " + cls; b.textContent = text; p.appendChild(b);
+  $("#msgs").scrollTop = $("#msgs").scrollHeight; return b;
+}
+function addButtons(chat, b, id, buttons) {
+  const w = document.createElement("div"); w.className = "btns";
+  buttons.forEach(x => {
+    const k = document.createElement("button"); k.textContent = x.text;
+    k.onclick = async () => { w.querySelectorAll("button").forEach(z => z.disabled = true); await post("/demo/api/press", { chat, message_id: id, data: x.data }); await pull(chat); };
+    w.appendChild(k);
+  }); b.appendChild(w);
+}
+let queue = Promise.resolve();
+const pull = chat => (queue = queue.then(() => doPull(chat)).catch(console.error));
+async function doPull(chat) {
+  const r = await fetch(`/demo/api/outbox?chat=${chat}&since=${state.since[chat] || 0}`).then(r => r.json());
+  state.since[chat] = r.next;
+  for (const m of r.items) {
+    if (m.kind === "msg") { const b = bubble(chat, "bot", m.text); state.bubbles[chat][m.id] = b; if (m.buttons) addButtons(chat, b, m.id, m.buttons); }
+    else { const b = state.bubbles[chat][m.id]; if (b) { b.textContent = m.text; } else bubble(chat, "bot", m.text); }
+  }
+}
+async function sendText(text) {
+  const chat = state.active; if (!text.trim() || chat === state.group) return;
+  bubble(chat, "me", text); await post("/demo/api/send", { chat, text }); await pull(chat);
+}
+function select(chat) {
+  state.active = chat; pane(chat);
+  Object.entries(state.panes).forEach(([k, p]) => p.hidden = k !== chat);
+  document.querySelectorAll("nav button").forEach(b => b.classList.toggle("on", b.dataset.chat === chat));
+  const bottom = $("#bottom"); bottom.innerHTML = "";
+  if (chat === state.group) {
+    bottom.innerHTML = '<div class="grp"><button id="cron">⏰ Chạy nhắc việc 08:00 (cron)</button> <span style="color:#5b6778;font-size:13px">Bot nhắn vào nhóm các phiếu đang chờ Điện toán, đánh dấu quá hạn sau 24 giờ.</span></div>';
+    $("#cron").onclick = async () => { await post("/demo/api/cron"); await pull(chat); };
+  } else {
+    const c = document.createElement("div"); c.className = "chips";
+    CHIPS.forEach(t => { const k = document.createElement("button"); k.type = "button"; k.textContent = t; k.onclick = () => { $("#in").value = t; $("#in").focus(); }; c.appendChild(k); });
+    const f = document.createElement("form");
+    f.innerHTML = '<input id="in" autocomplete="off" placeholder="Nhắn cho bot… (bấm một câu mẫu ở trên để điền sẵn)"><button>Gửi</button>';
+    f.onsubmit = async e => { e.preventDefault(); const v = $("#in").value; $("#in").value = ""; await sendText(v); };
+    bottom.append(c, f); $("#in").focus();
+  }
+  pull(chat);
+}
+async function init() {
+  const r = await fetch("/demo/api/chats").then(r => r.json());
+  state.chats = r.chats; state.group = r.group;
+  const nav = $("#nav"); nav.innerHTML = "";
+  r.chats.forEach(c => { const b = document.createElement("button"); b.dataset.chat = c.tg; b.innerHTML = `<div class="nm">${c.label}</div><div class="rl">${c.role}</div>`; b.onclick = () => select(c.tg); nav.appendChild(b); });
+  const g = document.createElement("button"); g.dataset.chat = r.group; g.innerHTML = '<div class="nm">👥 Nhóm IT</div><div class="rl">Nhận nhắc việc 08:00</div>'; g.onclick = () => select(r.group); nav.appendChild(g);
+  select(r.chats[0].tg);
+}
+$("#reset").onclick = async () => { if (!confirm("Xoá mọi thay đổi và nạp lại dữ liệu mẫu ban đầu?")) return; await post("/demo/api/reset"); location.reload(); };
+setInterval(() => { if (state.active) pull(state.active); }, 3000);
+init();
+</script>
+</body>
+</html>
