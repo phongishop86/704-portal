@@ -96,6 +96,7 @@ async function geminiCreate(req: any): Promise<AiReply> {
       method: "POST",
       headers: { "Content-Type": "application/json", "x-goog-api-key": String(process.env.GEMINI_API_KEY) },
       body: JSON.stringify(body),
+      signal: AbortSignal.timeout(20_000), // không để treo tới hết 60 giây của Vercel
     },
   );
   if (!r.ok) throw new Error(`Gemini ${r.status}: ${(await r.text()).slice(0, 300)}`);

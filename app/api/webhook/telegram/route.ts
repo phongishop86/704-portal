@@ -93,6 +93,14 @@ export async function POST(req: Request) {
     }
   } catch (e) {
     console.error("Webhook lỗi:", e);
+    // Báo lỗi ngắn cho người nhắn (không kèm khóa/chi tiết nhạy cảm) để không im lặng.
+    try {
+      const chat = update?.message?.chat?.id ?? update?.callback_query?.message?.chat?.id;
+      const why = e instanceof Error ? e.message.slice(0, 160) : "lỗi không rõ";
+      if (chat) await tgSend(chat, `Bot gặp lỗi khi xử lý: ${why}`);
+    } catch {
+      /* bỏ qua */
+    }
     // Luôn trả 200 để Telegram không gửi lại liên tục
   }
   return Response.json({ ok: true });
