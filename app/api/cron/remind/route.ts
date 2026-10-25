@@ -18,7 +18,7 @@ export async function GET(req: Request) {
 
   const slaMs = (Number(process.env.SLA_HOURS) || 24) * 3600 * 1000;
   const snap = await db.collection("repairs").where("status", "==", "pending_it").get();
-  const open = snap.docs.map((d) => ({ id: d.id, ...(d.data() as Record<string, any>) })).filter((r) => !r._del);
+  const open: Record<string, any>[] = snap.docs.map((d) => ({ id: d.id, ...(d.data() as Record<string, any>) } as Record<string, any>)).filter((r) => !r._del);
   if (!open.length) return Response.json({ ok: true, open: 0 });
 
   const now = Date.now();
