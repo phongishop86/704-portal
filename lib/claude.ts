@@ -12,7 +12,7 @@ import Anthropic from "@anthropic-ai/sdk";
 const USE_GEMINI = !!process.env.GEMINI_API_KEY;
 
 export const MODEL = USE_GEMINI
-  ? (process.env.GEMINI_MODEL ?? "gemini-2.5-flash")
+  ? (process.env.GEMINI_MODEL ?? "gemini-3.8-flash")
   : (process.env.ANTHROPIC_MODEL ?? "claude-sonnet-5-5");
 
 let anthropic: Anthropic | null = null;

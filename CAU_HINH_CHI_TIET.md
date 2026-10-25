@@ -198,7 +198,7 @@ Mở bot, bấm Start. Lúc này bot chưa trả lời gì vì chưa có webhook
 
 ## 7. Claude API
 
-1. Vào https://console.anthropic.com → đăng nhập → **API keys → Create key**. Đây là `ANTHROPIC_API_KEY` (bắt đầu `sk-ant-`). **Dùng Gemini thay Claude:** bỏ qua mục này, lấy khóa miễn phí ở https://aistudio.google.com/apikey và điền vào `GEMINI_API_KEY` (mô hình mặc định `gemini-2.5-flash`, đổi bằng `GEMINI_MODEL`). Có `GEMINI_API_KEY` thì bot dùng Gemini, bỏ trống thì dùng Claude, chỉ hiện một lần.
+1. Vào https://console.anthropic.com → đăng nhập → **API keys → Create key**. Đây là `ANTHROPIC_API_KEY` (bắt đầu `sk-ant-`). **Dùng Gemini thay Claude:** bỏ qua mục này, lấy khóa miễn phí ở https://aistudio.google.com/apikey và điền vào `GEMINI_API_KEY` (mô hình mặc định `gemini-3.8-flash`, đổi bằng `GEMINI_MODEL`). Có `GEMINI_API_KEY` thì bot dùng Gemini, bỏ trống thì dùng Claude, chỉ hiện một lần.
 2. **Billing**: nạp trước một khoản nhỏ (ví dụ 10 USD) hoặc bật nạp tự động. Không có số dư thì bot báo lỗi khi IT nhắn.
 3. Đặt **hạn mức chi tiêu hàng tháng** (Limits/Spend limit) ở mức bạn chấp nhận.
 4. `ANTHROPIC_MODEL`: để `claude-sonnet-5-5` (có sẵn trong `.env.example`). Muốn rẻ hơn có thể thử `claude-haiku-5-5`; muốn hiểu câu khó tốt hơn dùng mẫu lớn hơn. Tên mô hình phải đúng với danh sách trong Console của bạn.
