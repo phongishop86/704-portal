@@ -58,6 +58,23 @@ Telegram (IT nhắn bot) ─▶ Claude ─────┘
 
 Sau bước này mở `https://<ten-app>.vercel.app`, đăng nhập và dùng như bản cũ. Từ đây dữ liệu nằm trên máy chủ; **không dùng lại bản offline** (dữ liệu cũ trong trình duyệt sẽ không đồng bộ).
 
+### 3b. Nạp thẳng từ file Excel ngân hàng (không cần file backup cũ)
+
+Chạy trên máy bạn (cần Node 18+), dữ liệu không đi đâu ngoài máy chủ của bạn:
+
+```bash
+# 1) Chuyển Excel -> file JSON (nhận file nhiều sheet; DS_PhongBan và Mã nhóm làm nguồn tên chuẩn)
+node scripts/excel-to-backup.mjs du-lieu.json RS-CCDC-TSCD-20260911.xlsx
+# 2) Nạp lên máy chủ (an toàn khi chạy lại: ghi đè theo mã, không nhân đôi)
+node scripts/import-backup.mjs https://<ten-app>.vercel.app <ADMIN_KEY> du-lieu.json
+```
+
+- Với CCDC: nguyên giá = cột *Giá trị phân bổ*, giá trị còn lại = *Giá trị phân bổ* trừ *KH/PB luỹ kế*. Với TSCĐ lấy đúng cột *Nguyên giá* và *Giá trị còn lại*.
+- Bỏ qua dòng "Tổng cộng". Không tạo tài khoản người dùng (giữ nguyên tài khoản hiện có).
+- Chỉ nên nạp file mới nhất (RS-CCDC-TSCD). Nạp nhiều file thì mã trùng được ghi đè bởi file đứng sau.
+- Nạp thật sẽ ghi ~3.100 bản ghi vào Firestore; cân nhắc gói Blaze nếu nhiều người đăng nhập (mỗi máy kéo toàn bộ dữ liệu ở lần đầu).
+- File `du-lieu.json` chứa dữ liệu thật của ngân hàng: không đưa lên GitHub (đã nằm trong `.gitignore` nếu đặt tên theo mẫu backup), xoá sau khi nạp xong.
+
 ## 4. Cho IT dùng chatbot
 
 1. Mỗi IT nhắn bot `/id`: bot trả về **Telegram ID** của họ (gõ `/id` trong nhóm để lấy `TG_GROUP_ID`).

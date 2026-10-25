@@ -12,3 +12,8 @@ VietinBank_Assets_FullBackup_*.json
 *adminsdk*.json
 *service-account*.json
 *.pem
+
+# Dữ liệu chuyển từ Excel ngân hàng
+du-lieu*.json
+out_*.json
+*.xlsx
