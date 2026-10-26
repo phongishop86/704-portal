@@ -40,7 +40,7 @@ const sign = (payload: string) => createHmac("sha256", secret()).update(payload)
 
 export function makeSessionCookie(userId: string): string {
   const payload = Buffer.from(JSON.stringify({ u: userId, e: Date.now() + SESSION_TTL_MS })).toString("base64url");
-  const secure = process.env.NODE_ENV === "production" ? "; Secure" : "";
+  const secure = process.env.NODE_ENV === "production" && process.env.COOKIE_SECURE !== "0" ? "; Secure" : "";
   return `${COOKIE}=${payload}.${sign(payload)}; HttpOnly; SameSite=Lax; Path=/; Max-Age=${SESSION_TTL_MS / 1000}${secure}`;
 }
 

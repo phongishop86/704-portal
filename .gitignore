@@ -17,3 +17,8 @@ VietinBank_Assets_FullBackup_*.json
 du-lieu*.json
 out_*.json
 *.xlsx
+
+# Bản nội bộ Windows
+data/
+dist-win/
+*.zip

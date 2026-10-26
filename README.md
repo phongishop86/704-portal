@@ -15,6 +15,8 @@ Telegram (IT nhắn bot) ─▶ Claude ─────┘
 
 > **Đọc trước:** `CAU_HINH_CHI_TIET.md` là hướng dẫn cấu hình từng bước (Firebase, GitHub, Vercel, Telegram, Claude, Sheet, bảo mật, sự cố). Muốn xem thử không cần tài khoản: `npm install && npm run demo`, kịch bản trong `DEMO_SCRIPT.md`.
 
+> **Chạy nội bộ trên Windows Server 2019 (không Vercel/Firebase):** xem `deploy/HUONG_DAN_WINDOWS_SERVER.md` — đặt `DB_MODE=local`, dữ liệu lưu file JSON.
+
 ## 1. Chuẩn bị (một lần)
 
 | Việc | Cách làm | Lấy được |
