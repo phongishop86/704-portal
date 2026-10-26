@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Cổng 704</title>
+<style>
+:root{--bg:#f4f6f9;--card:#fff;--ink:#16202e;--mut:#64748b;--line:#e2e8f0;--pri:#0b5cad;--pri2:#e8f1fb;--dan:#c0392b;--sh:0 1px 3px rgba(16,32,46,.08),0 8px 24px rgba(16,32,46,.06)}
+@media(prefers-color-scheme:dark){:root{--bg:#0e141c;--card:#18212d;--ink:#e6edf5;--mut:#93a1b3;--line:#263344;--pri:#5aa8f0;--pri2:#1b2c40;--dan:#ff7b6b;--sh:0 1px 3px rgba(0,0,0,.4)}}
+*{box-sizing:border-box}html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 system-ui,"Segoe UI",Roboto,sans-serif}
+button,input,select,textarea{font:inherit;color:inherit}
+.top{display:flex;align-items:center;gap:12px;padding:10px 16px;background:var(--card);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5}
+.brand{font-weight:700;font-size:17px;cursor:pointer;display:flex;align-items:center;gap:8px}
+.brand i{font-style:normal;background:var(--pri);color:#fff;border-radius:8px;padding:2px 8px;font-size:14px}
+.sp{flex:1}.who{color:var(--mut);font-size:13px}
+.btn{border:1px solid var(--line);background:var(--card);border-radius:8px;padding:7px 12px;cursor:pointer}
+.btn:hover{background:var(--pri2)}.btn.pri{background:var(--pri);border-color:var(--pri);color:#fff}.btn.dan{color:var(--dan)}
+.btn.on{background:var(--pri2);border-color:var(--pri);color:var(--pri)}
+main{max-width:1100px;margin:0 auto;padding:24px 16px}
+h1{font-size:22px;margin:0 0 4px}.sub{color:var(--mut);margin:0 0 20px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:16px}
+.tile{position:relative;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;box-shadow:var(--sh);cursor:pointer;transition:transform .12s,border-color .12s;min-height:132px}
+.tile:hover{transform:translateY(-2px);border-color:var(--pri)}
+.tile .ic{font-size:30px;line-height:1}.tile h3{margin:10px 0 4px;font-size:16px}.tile p{margin:0;color:var(--mut);font-size:13px}
+.tile.off{opacity:.55}.tile.drag{outline:2px dashed var(--pri)}
+.badge{position:absolute;top:10px;right:10px;font-size:11px;background:var(--pri2);color:var(--pri);border-radius:999px;padding:1px 8px}
+.tools{display:flex;gap:6px;margin-top:12px;flex-wrap:wrap}.tools .btn{padding:3px 9px;font-size:13px}
+.add{border:2px dashed var(--line);box-shadow:none;display:flex;align-items:center;justify-content:center;color:var(--mut);font-weight:600}
+.empty{color:var(--mut);padding:40px 0;text-align:center}
+.bar{display:flex;align-items:center;gap:10px;padding:8px 16px;background:var(--card);border-bottom:1px solid var(--line)}
+.frame{width:100%;border:0;height:calc(100vh - 100px);display:block;background:var(--bg)}
+.login{max-width:360px;margin:12vh auto;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:24px;box-shadow:var(--sh)}
+.login h2{margin:0 0 14px}label{display:block;font-size:13px;color:var(--mut);margin:10px 0 3px}
+input,select,textarea{width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--bg)}
+.err{color:var(--dan);font-size:13px;margin-top:8px;min-height:18px}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;padding:16px;z-index:20}
+.modal>div{background:var(--card);border-radius:14px;padding:20px;width:100%;max-width:460px;max-height:92vh;overflow:auto}
+.row{display:flex;gap:10px}.row>*{flex:1}.chk{display:flex;align-items:center;gap:6px;margin:6px 0}.chk input{width:auto}
+.roles{display:flex;flex-wrap:wrap;gap:4px 14px}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+(function(){
+"use strict";
+var ROLES=[["admin","Admin"],["tcth","TCTH"],["it","IT"],["manager","Lãnh đạo"],["user","Nhân viên"]];
+var S={user:null,pages:[],edit:false,err:""};
+var $app=document.getElementById("app");
+function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
+function api(p,o){o=o||{};o.credentials="same-origin";if(o.body&&typeof o.body!=="string"){o.body=JSON.stringify(o.body);o.headers={"content-type":"application/json"};o.method=o.method||"POST"}
+ return fetch(p,o).then(function(r){return r.json().catch(function(){return{}}).then(function(j){j._s=r.status;return j})})}
+var isAdmin=function(){return S.user&&S.user.role==="admin"};
+
+function loginView(){
+ $app.innerHTML='<form class="login" id="lf"><h2>Cổng 704</h2><p class="sub" style="margin:0 0 6px">Đăng nhập để tiếp tục</p>'+
+ '<label>Tên đăng nhập</label><input name="u" autocomplete="username" autofocus><label>Mật khẩu</label><input name="p" type="password" autocomplete="current-password">'+
+ '<div class="err" id="le">'+esc(S.err)+'</div><button class="btn pri" style="width:100%;margin-top:6px">Đăng nhập</button></form>';
+ document.getElementById("lf").onsubmit=function(e){e.preventDefault();var f=e.target;
+  api("/api/auth/login",{body:{username:f.u.value,password:f.p.value}}).then(function(j){
+   if(j.ok){S.err="";boot()}else{document.getElementById("le").textContent=j.error||"Đăng nhập thất bại ("+j._s+")"}})}
+}
+
+function shell(inner,crumb){
+ $app.innerHTML='<div class="top"><div class="brand" id="home"><i>704</i> Cổng thông tin</div><div class="sp"></div>'+
+ '<span class="who">'+esc(S.user.full_name||S.user.username)+' · '+esc(S.user.role)+'</span>'+
+ (isAdmin()&&!crumb?'<button class="btn'+(S.edit?' on':'')+'" id="ed">'+(S.edit?'✔ Xong':'⚙ Quản lý trang')+'</button>':'')+
+ '<button class="btn" id="lo">Đăng xuất</button></div>'+inner;
+ document.getElementById("home").onclick=function(){location.hash=""};
+ document.getElementById("lo").onclick=function(){api("/api/auth/logout",{method:"POST",body:{}}).then(function(){S.user=null;loginView()})};
+ var ed=document.getElementById("ed");if(ed)ed.onclick=function(){S.edit=!S.edit;route()};
+}
+
+function homeView(){
+ var h='<main><h1>Xin chào, '+esc(S.user.full_name||S.user.username)+'</h1><p class="sub">'+(S.edit?'Chế độ quản lý: kéo thả hoặc dùng mũi tên để sắp xếp; bấm Sửa / Xóa trên từng thẻ.':'Chọn một phân hệ để bắt đầu.')+'</p><div class="grid" id="g">';
+ S.pages.forEach(function(p,i){
+  h+='<div class="tile'+(p.enabled===false?' off':'')+'" data-i="'+i+'" '+(S.edit?'draggable="true"':'')+'>'+
+   (p.mode==="newtab"?'<span class="badge">↗ tab mới</span>':'')+(p.enabled===false?'<span class="badge" style="right:auto;left:10px">Đang ẩn</span>':'')+
+   '<div class="ic">'+esc(p.icon)+'</div><h3>'+esc(p.title)+'</h3><p>'+esc(p.desc)+'</p>'+
+   (S.edit?'<div class="tools"><button class="btn" data-a="up">▲</button><button class="btn" data-a="dn">▼</button><button class="btn" data-a="edit">Sửa</button><button class="btn dan" data-a="del">Xóa</button></div>':'')+'</div>';
+ });
+ if(S.edit)h+='<div class="tile add" id="add">＋ Thêm trang</div>';
+ h+='</div>'+(!S.pages.length&&!S.edit?'<div class="empty">Chưa có phân hệ nào được cấp cho bạn.</div>':'')+'</main>';
+ shell(h);
+ var g=document.getElementById("g");
+ g.onclick=function(e){
+  var t=e.target.closest(".tile");if(!t)return;
+  if(t.id==="add"){return editDlg(null)}
+  var p=S.pages[+t.dataset.i],a=e.target.dataset.a;
+  if(a){e.stopPropagation();
+   if(a==="edit")return editDlg(p);
+   if(a==="del")return confirm("Xóa trang \""+p.title+"\" khỏi cổng?")&&api("/api/portal/pages",{body:{action:"delete",id:p.id}}).then(done);
+   var i=+t.dataset.i,j=a==="up"?i-1:i+1;if(j<0||j>=S.pages.length)return;
+   var x=S.pages.splice(i,1)[0];S.pages.splice(j,0,x);return saveOrder();
+  }
+  if(S.edit)return;
+  if(p.mode==="newtab")window.open(p.url,"_blank","noopener");else location.hash="#/p/"+encodeURIComponent(p.id);
+ };
+ if(S.edit){var from=-1;
+  g.ondragstart=function(e){var t=e.target.closest(".tile");if(t&&t.dataset.i){from=+t.dataset.i;t.classList.add("drag");e.dataTransfer.effectAllowed="move"}};
+  g.ondragend=function(e){var t=e.target.closest&&e.target.closest(".tile");if(t)t.classList.remove("drag")};
+  g.ondragover=function(e){e.preventDefault()};
+  g.ondrop=function(e){e.preventDefault();var t=e.target.closest(".tile");if(!t||!t.dataset.i||from<0)return;var to=+t.dataset.i;if(to===from)return;
+   var x=S.pages.splice(from,1)[0];S.pages.splice(to,0,x);saveOrder()};
+ }
+}
+function done(j){if(j&&j.error)alert(j.error);return loadPages().then(route)}
+function saveOrder(){return api("/api/portal/pages",{body:{action:"reorder",ids:S.pages.map(function(p){return p.id})}}).then(done)}
+
+function editDlg(p){
+ var n=!p;p=p||{title:"",desc:"",icon:"📄",url:"",mode:"embed",roles:[],enabled:true};
+ var d=document.createElement("div");d.className="modal";
+ var rh=ROLES.map(function(r){return'<label class="chk"><input type="checkbox" value="'+r[0]+'"'+(p.roles&&p.roles.indexOf(r[0])>=0?' checked':'')+'> '+r[1]+'</label>'}).join("");
+ d.innerHTML='<div><h2 style="margin:0 0 6px">'+(n?'Thêm trang':'Sửa trang')+'</h2>'+
+  '<div class="row"><div style="flex:0 0 90px"><label>Biểu tượng</label><input id="f_i" value="'+esc(p.icon)+'" maxlength="4"></div><div><label>Tên trang</label><input id="f_t" value="'+esc(p.title)+'"></div></div>'+
+  '<label>Mô tả ngắn</label><input id="f_d" value="'+esc(p.desc)+'">'+
+  '<label>Địa chỉ (vd: /app.html hoặc https://...)</label><input id="f_u" value="'+esc(p.url)+'" placeholder="/ten-trang.html">'+
+  '<label>Cách mở</label><select id="f_m"><option value="embed"'+(p.mode!=="newtab"?' selected':'')+'>Mở bên trong cổng</option><option value="newtab"'+(p.mode==="newtab"?' selected':'')+'>Mở tab mới (cho trang web ngoài không cho nhúng)</option></select>'+
+  '<label>Ai được thấy (không chọn = tất cả)</label><div class="roles" id="f_r">'+rh+'</div>'+
+  '<label class="chk"><input type="checkbox" id="f_e"'+(p.enabled!==false?' checked':'')+'> Hiển thị</label>'+
+  '<div class="err" id="f_err"></div><div style="display:flex;gap:8px;justify-content:flex-end;margin-top:10px"><button class="btn" id="f_c">Hủy</button><button class="btn pri" id="f_s">Lưu</button></div></div>';
+ document.body.appendChild(d);
+ var q=function(i){return d.querySelector("#"+i)};
+ q("f_c").onclick=function(){d.remove()};
+ q("f_s").onclick=function(){
+  var roles=[].slice.call(d.querySelectorAll("#f_r input:checked")).map(function(x){return x.value});
+  api("/api/portal/pages",{body:{action:"save",page:{id:p.id,title:q("f_t").value,desc:q("f_d").value,icon:q("f_i").value,url:q("f_u").value,mode:q("f_m").value,roles:roles,enabled:q("f_e").checked}}}).then(function(j){
+   if(j.ok){d.remove();done()}else q("f_err").textContent=j.error||"Lỗi "+j._s})};
+}
+
+function pageView(id){
+ var p=S.pages.filter(function(x){return x.id===id})[0];
+ if(!p){location.hash="";return}
+ shell('<div class="bar"><button class="btn" id="bk">← Trang chủ</button><b>'+esc(p.icon)+' '+esc(p.title)+'</b><div class="sp"></div><button class="btn" id="nt" title="Mở toàn màn hình trong tab mới">↗</button></div><iframe class="frame" id="fr" src="'+esc(p.url)+'"></iframe>',true);
+ document.getElementById("bk").onclick=function(){location.hash=""};
+ document.getElementById("nt").onclick=function(){window.open(p.url,"_blank","noopener")};
+ document.title=p.title+" · Cổng 704";
+}
+
+function route(){
+ if(!S.user)return loginView();
+ var m=/^#\/p\/(.+)$/.exec(location.hash);
+ document.title="Cổng 704";
+ if(m)pageView(decodeURIComponent(m[1]));else homeView();
+}
+function loadPages(){return api("/api/portal/pages").then(function(j){if(j._s===401){S.user=null;return}S.pages=j.pages||[]})}
+function boot(){api("/api/auth/me").then(function(j){S.user=j.ok?j.user:null;return S.user?loadPages():0}).then(route)}
+window.addEventListener("hashchange",route);
+boot();
+})();
+</script>
+</body>
+</html>

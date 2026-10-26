@@ -135,7 +135,8 @@ async function main() {
       const url = new URL(req.url || "/", `http://localhost:${PORT}`);
       const p = url.pathname;
 
-      if (p === "/" || p === "/app.html") return send(res, 200, fs.readFileSync(indexPath), "text/html; charset=utf-8");
+      if (p === "/app.html") return send(res, 200, fs.readFileSync(indexPath), "text/html; charset=utf-8");
+      if (p === "/" || p === "/portal.html") return send(res, 200, fs.readFileSync(path.join(ROOT, "public", "portal.html")), "text/html; charset=utf-8");
       if (p === "/demo/chat") return send(res, 200, chatPage, "text/html; charset=utf-8");
 
       if (p === "/demo/api/chats") return sendJson(res, { chats: CHATS, group: GROUP });
