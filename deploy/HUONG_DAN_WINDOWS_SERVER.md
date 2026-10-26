@@ -1,4 +1,6 @@
-# Triển khai 704-assets nội bộ trên Windows Server 2019
+# Triển khai Cổng 704 + 704-ASSETS nội bộ trên Windows Server 2019
+
+**Chạy hoàn toàn trong mạng LAN, không cần Internet.** Trang chủ `/` là Cổng 704 (admin thêm/xóa/sắp xếp trang); phân hệ Quản lý CCDC & Tài sản mở trong cổng ở `/app.html`; mọi người dùng chung một đăng nhập và một nguồn dữ liệu. **Toàn bộ dữ liệu nằm trong một thư mục `C:\704-assets\data`** (dữ liệu + sao lưu): chép thư mục này là chuyển/sao lưu được cả hệ thống. Giao diện không gọi CDN/phông chữ ngoài.
 
 Bản nội bộ chạy **độc lập**, không cần Vercel/Firebase: ứng dụng Node.js (Next.js) + dữ liệu lưu thành một file JSON
 (`C:\704-assets\data\data.json`, tự sao lưu hằng ngày). Dành cho **chạy thử trong nhóm nhỏ**; xem mục 8 về giới hạn.
@@ -11,7 +13,7 @@ Bản nội bộ chạy **độc lập**, không cần Vercel/Firebase: ứng d�
 | Dữ liệu | `C:\704-assets\data\data.json` (+ `.bak` tự động) |
 | Cấu hình | `C:\704-assets\.env` (khóa ngẫu nhiên tạo lúc cài) |
 | Dịch vụ | Task Scheduler `704-assets` (chạy bằng SYSTEM khi máy khởi động, tự khởi động lại nếu lỗi) |
-| Sao lưu | Task `704-assets-backup` 02:00 hằng ngày → `C:\704-assets\backups` (giữ 30 bản) |
+| Sao lưu | Task `704-assets-backup` 02:00 hằng ngày → `C:\704-assets\data\backups` (giữ 30 bản) |
 | Cổng | TCP 3000 (mở Windows Firewall cho mạng Domain/Private) |
 | Log | `C:\704-assets\logs\app.log`, `app.err.log` |
 
@@ -63,7 +65,7 @@ Nạp lại nhiều lần vẫn an toàn (ghi đè theo id).
 |---|---|
 | Khởi động / dừng | `Start-ScheduledTask 704-assets` / `Stop-ScheduledTask 704-assets` |
 | Sao lưu tay | `powershell -File C:\704-assets\backup.ps1` |
-| Khôi phục | `powershell -File C:\704-assets\restore.ps1 -File C:\704-assets\backups\data-YYYYMMDD-HHmm.json` |
+| Khôi phục | `powershell -File C:\704-assets\restore.ps1 -File C:\704-assets\data\backups\data-YYYYMMDD-HHmm.json` |
 | Đổi cổng / khóa | sửa `C:\704-assets\.env` rồi `Stop-` + `Start-ScheduledTask 704-assets` (và cập nhật luật Firewall) |
 | Gỡ | `powershell -File C:\704-assets\uninstall.ps1` (giữ dữ liệu) |
 

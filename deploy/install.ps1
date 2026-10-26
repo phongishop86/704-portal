@@ -73,7 +73,7 @@ $pri = New-ScheduledTaskPrincipal -UserId "SYSTEM" -LogonType ServiceAccount -Ru
 $set = New-ScheduledTaskSettingsSet -RestartCount 999 -RestartInterval (New-TimeSpan -Minutes 1) -ExecutionTimeLimit ([TimeSpan]::Zero) -StartWhenAvailable -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries
 Register-ScheduledTask -TaskName "704-assets" -Action $act -Trigger $trg -Principal $pri -Settings $set -Force | Out-Null
 
-Say "Đăng ký sao lưu hằng ngày 02:00 (giữ 30 bản)"
+Say "Đăng ký sao lưu hằng ngày 02:00 vào data\backups (giữ 30 bản)"
 $a2 = New-ScheduledTaskAction -Execute "powershell.exe" -Argument "-NoProfile -ExecutionPolicy Bypass -File `"$InstallDir\backup.ps1`""
 Register-ScheduledTask -TaskName "704-assets-backup" -Action $a2 -Trigger (New-ScheduledTaskTrigger -Daily -At 2:00am) -Principal $pri -Force | Out-Null
 
