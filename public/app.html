@@ -5709,6 +5709,170 @@ function assetExtraCards(a, u) {
     ${sw.length || acc.length ? `<ul style="margin:0;padding-left:18px">${sw.map(s => `<li><a data-nav="software_detail" data-params='{"id":"${s.id}"}'>${esc(s.name)}</a> ${esc(s.version || "")}</li>`).join("")}${acc.map(({ x, s }) => `<li><a data-nav="accessory_detail" data-params='{"id":"${x.id}"}'>${esc(x.name)}</a> × ${s.qty} <span class="text-muted small">(${esc(s.to_label)})</span></li>`).join("")}</ul>` : `<p class="text-muted" style="margin:0">Chưa ghi nhận phần mềm / phụ kiện cho tài sản này.</p>`}</div></div>` : ""}</div>`;
 }
 
+/* ============================================================================
+   NHẬT KÝ CÔNG VIỆC IT: khai báo trên web (song song với ghi qua Telegram)
+   ============================================================================ */
+const IT_CATS = ["Sự cố phần cứng", "Phần mềm / Hệ điều hành", "Mạng / Internet", "Máy in / Thiết bị ngoại vi", "Cài đặt / Cấu hình", "Bảo trì định kỳ", "Tài khoản / Phân quyền", "Hỗ trợ người dùng", "Khác"];
+const IT_RESULTS = { done: ["Hoàn thành", "#16a34a"], doing: ["Đang xử lý", "#2563eb"], waiting: ["Chờ linh kiện / phản hồi", "#d97706"], escalated: ["Chuyển tuyến / đơn vị ngoài", "#7c3aed"], failed: ["Chưa khắc phục được", "#dc2626"] };
+const itF = { edit: null, view: null, q: "", dept: "", result: "", cat: "", from: "", to: "", page: 1 };
+const canIt = u => ["admin", "tcth", "it"].includes(u.role);
+const itWhen = w => w.started_at || w.created_at || "";
+const itMs = w => Number(w.ts_ms) || Date.parse(itWhen(w)) || 0;
+const itResultOf = w => w.result || (w.status === "done" ? "done" : "");
+const itBadge = w => { const r = IT_RESULTS[itResultOf(w)]; return r ? `<span style="background:${r[1]}1a;color:${r[1]};padding:2px 8px;border-radius:99px;font-size:12px;white-space:nowrap">${r[0]}</span>` : `<span class="text-muted small">-</span>`; };
+const itLocal = iso => { if (!iso) return ""; const d = new Date(iso); if (isNaN(d)) return ""; const p = n => String(n).padStart(2, "0"); return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`; };
+const itDay = ms => { const d = new Date(ms), p = n => String(n).padStart(2, "0"); return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`; };
+const itCanEdit = (u, w) => u.role === "admin" || (canIt(u) && w.source === "web" && w.it_user_id === u.id);
+
+function itFiltered() {
+  const q = normTxt(itF.q).trim();
+  return (DB.worklogs || []).filter(w => {
+    if (itF.dept && w.department_id !== itF.dept) return false;
+    if (itF.result && itResultOf(w) !== itF.result) return false;
+    if (itF.cat && w.category !== itF.cat) return false;
+    const ms = itMs(w);
+    if (itF.from && itDay(ms) < itF.from) return false;
+    if (itF.to && itDay(ms) > itF.to) return false;
+    if (q && !q.split(/\s+/).every(t => normTxt([w.asset_code, w.asset_name, w.title, w.description, w.cause, w.solution, w.it_user, w.requester_name, w.category, w.ticket_code, w.id].join(" ")).includes(t))) return false;
+    return true;
+  }).sort((a, b) => itMs(b) - itMs(a));
+}
+function itApply() {
+  const g = id => { const e = document.getElementById(id); return e ? e.value : ""; };
+  itF.q = g("itlogSearch"); itF.dept = g("it_f_dept"); itF.result = g("it_f_res"); itF.cat = g("it_f_cat"); itF.from = g("it_f_from"); itF.to = g("it_f_to"); itF.page = 1; render();
+  const e = document.getElementById("itlogSearch"); if (e && itF.q) { e.focus(); e.setSelectionRange(e.value.length, e.value.length); }
+}
+function itReset() { Object.assign(itF, { q: "", dept: "", result: "", cat: "", from: "", to: "", page: 1 }); render(); }
+function itNew() { itF.edit = "new"; itF.view = null; render(); window.scrollTo(0, 0); }
+function itEdit(id) { itF.edit = id; itF.view = null; render(); window.scrollTo(0, 0); }
+function itView(id) { itF.view = itF.view === id ? null : id; render(); }
+function itCancel() { itF.edit = null; render(); }
+function itPage(p) { itF.page = Number(p) || 1; render(); }
+function itCalc() {
+  const s = document.getElementById("it_start"), e = document.getElementById("it_end"), d = document.getElementById("it_dur");
+  if (!s || !e || !d || !s.value || !e.value) return;
+  const m = Math.round((new Date(e.value) - new Date(s.value)) / 60000);
+  d.value = m >= 0 ? m : "";
+}
+function itReqChange(sel) {
+  const us = byId(DB.users, sel.value), dep = document.getElementById("it_dept");
+  if (us && us.department_id && dep && !dep.value) dep.value = us.department_id;
+}
+function itDelete(id) {
+  const u = currentUser(), w = byId(DB.worklogs, id); if (!w || !itCanEdit(u, w)) return;
+  if (!confirm("Xóa nhật ký “" + (w.title || w.description || w.id) + "”?")) return;
+  DB.worklogs.splice(DB.worklogs.indexOf(w), 1); itF.view = null; saveDB(); flash("Đã xóa nhật ký."); render();
+}
+function itExport() {
+  const rows = itFiltered(), q = v => csvEscape(v == null ? "" : v);
+  const lines = [["Mã", "Bắt đầu", "Kết thúc", "Phút", "Loại", "Công việc", "Phòng ban", "Người yêu cầu", "Mã tài sản", "Nguyên nhân", "Hướng xử lý", "Kết quả", "Người IT", "Nguồn", "Ghi chú"].map(q).join(",")];
+  rows.forEach(w => lines.push([w.id, fmtDateTime(itWhen(w)), fmtDateTime(w.ended_at), w.duration_min || 0, w.category, w.title || w.description, depName(w.department_id), w.requester_name, w.asset_code, w.cause, w.solution, (IT_RESULTS[itResultOf(w)] || [""])[0], w.it_user, w.source === "web" ? "Web" : "Telegram", w.note].map(q).join(",")));
+  downloadCSV(lines, "nhat_ky_it");
+}
+
+function itForm(u) {
+  const w = itF.edit === "new" ? { source: "web", started_at: new Date().toISOString(), result: "done", it_user_id: u.id } : byId(DB.worklogs, itF.edit);
+  if (!w) { itF.edit = null; return ""; }
+  const deps = DB.departments.slice().sort((a, b) => String(a.name).localeCompare(String(b.name)));
+  const its = (DB.users || []).filter(x => x.is_active !== false && ["admin", "tcth", "it"].includes(x.role));
+  const reqs = (DB.users || []).filter(x => x.is_active !== false).sort((a, b) => String(a.full_name).localeCompare(String(b.full_name)));
+  const o = (v, sel, t) => `<option value="${esc(v)}" ${String(v) === String(sel ?? "") ? "selected" : ""}>${esc(t)}</option>`;
+  const F = (label, inner, wide) => `<div class="form-group" style="${wide ? "grid-column:1/-1" : ""}"><label>${label}</label>${inner}</div>`;
+  const ta = (name, v, ph) => `<textarea class="form-control" name="${name}" rows="3" placeholder="${ph}">${esc(v || "")}</textarea>`;
+  return `<div class="card"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:12px"><h4 style="margin:0">${itF.edit === "new" ? "➕ Tạo nhật ký công việc IT" : "✏️ Sửa nhật ký " + esc(w.id)}</h4><button class="btn btn-outline-secondary btn-sm" onclick="itCancel()">✖ Đóng</button></div>
+  <form data-form="itlog"><input type="hidden" name="id" value="${esc(itF.edit === "new" ? "" : w.id)}">
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:0 16px">
+      ${F("Công việc / tiêu đề *", `<input class="form-control" name="title" required value="${esc(w.title || w.description || "")}" placeholder="VD: Máy tính không lên nguồn">`, true)}
+      ${F("Loại công việc", `<select class="form-control" name="category">${IT_CATS.map(c => o(c, w.category || "", c)).join("")}${w.category && !IT_CATS.includes(w.category) ? o(w.category, w.category, w.category) : ""}</select>`)}
+      ${F("Người thực hiện (IT)", `<select class="form-control" name="it_user_id">${its.map(x => o(x.id, w.it_user_id || u.id, x.full_name)).join("")}</select>`)}
+      ${F("Người yêu cầu / user được hỗ trợ", `<select class="form-control" name="requester_id" onchange="itReqChange(this)"><option value="">-- Không chọn --</option>${reqs.map(x => o(x.id, w.requester_id, x.full_name + (x.username ? " (" + x.username + ")" : ""))).join("")}</select>`)}
+      ${F("Hoặc nhập tên người yêu cầu", `<input class="form-control" name="requester_name_free" value="${esc(w.requester_id ? "" : w.requester_name || "")}" placeholder="Nếu không có trong danh sách">`)}
+      ${F("Phòng ban được xử lý", `<select class="form-control" name="department_id" id="it_dept"><option value="">-- Chọn phòng ban --</option>${deps.map(d => o(d.id, w.department_id, d.name)).join("")}</select>`)}
+      ${F("Mã tài sản liên quan (nếu có)", `<input class="form-control" name="asset_code" value="${esc(w.asset_code || "")}" placeholder="VD: TS-0001" onkeydown="if(event.key==='Enter')event.preventDefault()">`)}
+      ${F("Mã phiếu (nếu có)", `<input class="form-control" name="ticket_code" value="${esc(w.ticket_code || "")}">`)}
+      ${F("Thời gian bắt đầu *", `<input class="form-control" type="datetime-local" name="started_at" id="it_start" required value="${itLocal(w.started_at || w.created_at)}" onchange="itCalc()">`)}
+      ${F("Thời gian kết thúc", `<input class="form-control" type="datetime-local" name="ended_at" id="it_end" value="${itLocal(w.ended_at)}" onchange="itCalc()">`)}
+      ${F("Thời lượng (phút)", `<input class="form-control" type="number" min="0" name="duration_min" id="it_dur" value="${esc(w.duration_min ?? "")}" placeholder="Tự tính từ bắt đầu – kết thúc">`)}
+      ${F("Kết quả", `<select class="form-control" name="result">${Object.entries(IT_RESULTS).map(([k, v]) => o(k, itResultOf(w) || "done", v[0])).join("")}</select>`)}
+      ${F("Nguyên nhân", ta("cause", w.cause, "Nguyên nhân sự cố / yêu cầu"), true)}
+      ${F("Hướng xử lý", ta("solution", w.solution, "Các bước đã làm / giải pháp"), true)}
+      ${F("Ghi chú thêm", ta("note", w.note, "Vật tư thay thế, đề xuất, theo dõi tiếp…"), true)}
+    </div>
+    <button class="btn btn-primary" type="submit">💾 Lưu nhật ký</button> <button type="button" class="btn btn-outline-secondary" onclick="itCancel()">Hủy</button>
+  </form></div>`;
+}
+
+function submit_itlog(form) {
+  const u = currentUser(), fd = new FormData(form), id = fd.get("id"), g = k => String(fd.get(k) || "").trim();
+  const title = g("title"); if (!title) return;
+  const st = g("started_at"), en = g("ended_at");
+  if (!st) { flash("Cần nhập thời gian bắt đầu.", "error"); render(); return; }
+  if (en && new Date(en) < new Date(st)) { flash("Thời gian kết thúc phải sau thời gian bắt đầu.", "error"); render(); return; }
+  let asset = null; const code = g("asset_code");
+  if (code) { asset = qrFind(code); if (!asset) { flash("Không tìm thấy tài sản có mã “" + code + "”.", "error"); render(); return; } }
+  const itu = byId(DB.users, g("it_user_id")) || u, req = byId(DB.users, g("requester_id"));
+  let dur = fd.get("duration_min") === "" || fd.get("duration_min") == null ? null : Number(fd.get("duration_min"));
+  if (dur == null && en) dur = Math.max(0, Math.round((new Date(en) - new Date(st)) / 60000));
+  const result = g("result") || "done";
+  const startIso = new Date(st).toISOString();
+  const vals = {
+    title, description: title, category: g("category"), it_user_id: itu.id, it_user: itu.full_name,
+    requester_id: req ? req.id : null, requester_name: req ? req.full_name : g("requester_name_free"),
+    department_id: g("department_id") || (req && req.department_id) || null,
+    asset_id: asset ? asset.id : null, asset_code: asset ? asset.code : "", asset_name: asset ? asset.name : "",
+    ticket_code: g("ticket_code") || null, started_at: startIso, ended_at: en ? new Date(en).toISOString() : null, ts_ms: Date.parse(startIso),
+    duration_min: dur || 0, cause: g("cause"), solution: g("solution"), result, status: result === "done" ? "done" : "open", note: g("note"), updated_at: nowIso(),
+  };
+  if (id) { const w = byId(DB.worklogs, id); if (!w || !itCanEdit(u, w)) return; Object.assign(w, vals); }
+  else {
+    const nid = "WL-W" + Date.now().toString(36).toUpperCase();
+    DB.worklogs.push(Object.assign({ id: nid, created_at: nowIso(), source: "web" }, vals));
+    if (asset) logHistory(asset.id, "it_work", `IT ghi nhật ký (${vals.category}): ${title}${dur ? ` — ${dur} phút` : ""}`);
+  }
+  saveDB(); itF.edit = null; flash("Đã lưu nhật ký công việc."); render();
+}
+
+function itDetail(w, u) {
+  const r = (k, v) => v ? `<div style="margin-bottom:8px"><div class="text-muted small">${k}</div><div style="white-space:pre-wrap">${esc(v)}</div></div>` : "";
+  return `<tr class="it-detail"><td colspan="8" style="background:#f8fafc"><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:4px 20px;padding:6px 4px">
+    ${r("Nguyên nhân", w.cause)}${r("Hướng xử lý", w.solution)}${r("Ghi chú", w.note)}${r("Người yêu cầu", w.requester_name)}${r("Bắt đầu", fmtDateTime(w.started_at))}${r("Kết thúc", fmtDateTime(w.ended_at))}${r("Nguồn", w.source === "web" ? "Nhập trên web" : "Telegram")}
+    </div>${itCanEdit(u, w) ? `<div style="padding:4px"><button class="btn btn-sm btn-outline" onclick="itEdit('${w.id}')">✏️ Sửa</button> <button class="btn btn-sm btn-outline" style="color:#dc2626" onclick="itDelete('${w.id}')">🗑️ Xóa</button></div>` : ""}</td></tr>`;
+}
+
+function viewItLog(u) {
+  if (!canIt(u)) return `<div class="alert alert-error">Bạn không có quyền truy cập.</div>`;
+  if (itF.edit) return itForm(u);
+  const list = itFiltered(), total = list.reduce((s, w) => s + (Number(w.duration_min) || 0), 0), PS = 50;
+  const pages = Math.max(1, Math.ceil(list.length / PS)); if (itF.page > pages) itF.page = pages;
+  const shown = list.slice((itF.page - 1) * PS, itF.page * PS);
+  const deps = DB.departments.slice().sort((a, b) => String(a.name).localeCompare(String(b.name)));
+  const sel = (id, v, ph, items) => `<select class="form-control" style="width:auto;flex:1 1 150px;min-width:140px;max-width:240px" id="${id}" onchange="itApply()"><option value="">${ph}</option>${items.map(([k, t]) => `<option value="${esc(k)}" ${v === k ? "selected" : ""}>${esc(t)}</option>`).join("")}</select>`;
+  return `<div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap">
+      <h4 style="margin:0">🧰 Nhật ký công việc IT (${list.length} việc · ${total} phút)</h4>
+      <div style="display:flex;gap:8px"><button class="btn btn-sm btn-outline" onclick="itExport()">⬇️ Xuất CSV</button><button class="btn btn-primary btn-sm" onclick="itNew()">➕ Tạo nhật ký</button></div>
+    </div>
+    <div class="toolbar" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
+      <input class="form-control" id="itlogSearch" placeholder="🔍 Mã tài sản, nội dung, người ghi… (Enter)" value="${esc(itF.q)}" style="width:auto;max-width:280px;flex:1 1 200px;min-width:180px" onkeydown="if(event.key==='Enter') itApply()">
+      ${sel("it_f_dept", itF.dept, "Tất cả phòng ban", deps.map(d => [d.id, d.name]))}
+      ${sel("it_f_cat", itF.cat, "Tất cả loại", IT_CATS.map(c => [c, c]))}
+      ${sel("it_f_res", itF.result, "Mọi kết quả", Object.entries(IT_RESULTS).map(([k, v]) => [k, v[0]]))}
+      <input class="form-control" type="date" id="it_f_from" value="${esc(itF.from)}" onchange="itApply()" title="Từ ngày" style="width:auto;flex:0 0 150px">
+      <input class="form-control" type="date" id="it_f_to" value="${esc(itF.to)}" onchange="itApply()" title="Đến ngày" style="width:auto;flex:0 0 150px">
+      <button class="btn btn-sm btn-outline-secondary" onclick="itReset()">Xóa lọc</button>
+    </div>
+    ${shown.length ? `<div style="overflow:auto"><table><thead><tr><th>Thời gian</th><th>IT</th><th>Công việc</th><th>Phòng ban / User</th><th>Tài sản</th><th>Kết quả</th><th>Phút</th><th></th></tr></thead><tbody>
+      ${shown.map(w => `<tr onclick="itView('${w.id}')" style="cursor:pointer"><td class="text-nowrap">${fmtDateTime(itWhen(w))}</td><td>${esc(w.it_user || "-")}${w.source === "web" ? "" : `<div class="small text-muted">Telegram</div>`}</td>
+        <td><b>${esc(w.title || w.description || "")}</b><div class="small text-muted">${esc(w.category || "")}${w.ticket_code ? " · " + esc(w.ticket_code) : ""}</div></td>
+        <td>${esc(depName(w.department_id) || "-")}${w.requester_name ? `<div class="small text-muted">${esc(w.requester_name)}</div>` : ""}</td>
+        <td>${w.asset_id ? `<a data-nav="asset_detail" data-params='{"id":"${esc(w.asset_id)}"}' onclick="event.stopPropagation()">${esc(w.asset_code || "")}</a>` : esc(w.asset_code || "")}<div class="small text-muted">${esc(w.asset_name || "")}</div></td>
+        <td>${itBadge(w)}</td><td>${esc(w.duration_min || 0)}</td><td class="text-muted small">${itF.view === w.id ? "▲" : "▼"}</td></tr>${itF.view === w.id ? itDetail(w, u) : ""}`).join("")}
+    </tbody></table></div>
+    ${pages > 1 ? `<div style="display:flex;gap:8px;align-items:center;justify-content:center;margin-top:10px"><button class="btn btn-sm btn-outline-secondary" ${itF.page <= 1 ? "disabled" : ""} onclick="itPage(${itF.page - 1})">‹ Trước</button><span class="small text-muted">Trang ${itF.page}/${pages}</span><button class="btn btn-sm btn-outline-secondary" ${itF.page >= pages ? "disabled" : ""} onclick="itPage(${itF.page + 1})">Sau ›</button></div>` : ""}`
+      : `<p class="text-muted">Chưa có nhật ký nào. Bấm “Tạo nhật ký” hoặc ghi qua chatbot Telegram.</p>`}
+  </div>`;
+}
+
 boot();
 </script>
 </body>

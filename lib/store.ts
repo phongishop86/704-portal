@@ -36,7 +36,7 @@ export const WRITE_ROLES: Partial<Record<Col, string[]>> = {
   departments: ["admin", "tcth"],
   categories: ["admin", "tcth"],
   config: ["admin", "tcth"],
-  worklogs: ["admin", "it"],
+  worklogs: ["admin", "tcth", "it"],
   locations: ["admin", "tcth"],
   accessories: ["admin", "tcth", "it"],
   software: ["admin", "tcth", "it"],
