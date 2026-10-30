@@ -17,6 +17,15 @@ Telegram (IT nhắn bot) ─▶ Claude ─────┘
 
 > **Chạy nội bộ trên Windows Server 2019 (không Vercel/Firebase):** xem `deploy/HUONG_DAN_WINDOWS_SERVER.md` — đặt `DB_MODE=local`, dữ liệu lưu file JSON.
 
+## Tính năng giao diện mới (Trang chủ · QR · Địa điểm · Phụ kiện · Phần mềm)
+
+- **Trang chủ**: thẻ số liệu, biểu đồ theo nhóm / tình trạng / phòng ban (SVG, không cần Internet), tài sản cập nhật gần đây, ô tra cứu QR, danh sách việc cần xử lý.
+- **Tìm kiếm chung** (thanh trên cùng) theo mã, tên, serial, người dùng, phòng ban, địa điểm; **chuông thông báo** (phiếu chờ xử lý, quá hạn, sắp hết bảo hành, kỳ kiểm kê, phần mềm hết hạn, phụ kiện dưới mức tồn).
+- **QR Code**: tem QR in hàng loạt (A4 3×8, 4×10, tem cuộn 50×30), tra cứu bằng máy quét USB, liên kết sâu `…/app.html#asset=<mã>` (quét bằng Camera điện thoại rồi đăng nhập). Quét camera trong ứng dụng chỉ chạy được trên HTTPS/localhost.
+- **Tài sản**: thêm Serial, Địa điểm, Hạn bảo hành, trạng thái “Chưa sử dụng”; lọc theo địa điểm; gán địa điểm hàng loạt.
+- **Địa điểm** (Admin/TCTH sửa; IT xem), **Phụ kiện** (kho + cấp phát/thu hồi theo số lượng), **Phần mềm** (đếm bản quyền, hạn dùng, máy đã cài; khóa bản quyền chỉ Admin/TCTH/IT thấy).
+- Mã nguồn giao diện: `client/modules2.js` + `client/qr.js`; chạy `npm run build:app` sau khi sửa.
+
 ## 1. Chuẩn bị (một lần)
 
 | Việc | Cách làm | Lấy được |

@@ -2,6 +2,9 @@ import { db } from "@/lib/firebase";
 import { getSessionUser, json } from "@/lib/auth";
 import { isCol, publicData, readRev } from "@/lib/store";
 
+/** Khóa bản quyền phần mềm chỉ gửi cho nhóm được phép xem. */
+const LICENSE_ROLES = ["admin", "tcth", "it"];
+
 export const maxDuration = 60;
 
 const MAX_PAGE_BYTES = 3_000_000;
@@ -40,7 +43,9 @@ export async function GET(req: Request) {
   let truncated = false;
   for (const d of snap.docs) {
     const data = d.data();
-    const item = data._del ? { id: d.id, deleted: true } : { id: d.id, data: publicData(data) };
+    const pub = data._del ? null : publicData(data);
+    if (pub && col === "software" && !LICENSE_ROLES.includes(user.role)) delete pub.license_key;
+    const item = data._del ? { id: d.id, deleted: true } : { id: d.id, data: pub as Record<string, unknown> };
     const n = Buffer.byteLength(JSON.stringify(item));
     if (items.length > 0 && bytes + n > MAX_PAGE_BYTES) {
       truncated = true;

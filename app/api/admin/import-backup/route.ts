@@ -4,7 +4,7 @@ import { assetKeywords, bumpRev, clientData, uid } from "@/lib/store";
 
 export const maxDuration = 60;
 
-const SIMPLE = ["departments", "categories", "assets", "assetHistory", "transfers", "repairs", "inventoryChecks", "inventoryLines", "worklogs"] as const;
+const SIMPLE = ["departments", "categories", "assets", "assetHistory", "transfers", "repairs", "inventoryChecks", "inventoryLines", "worklogs", "locations", "accessories", "software"] as const;
 
 type Rec = Record<string, unknown> & { id?: string };
 

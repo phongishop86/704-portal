@@ -21,6 +21,9 @@ export const COLS = [
   "inventoryChecks",
   "inventoryLines",
   "worklogs",
+  "locations",
+  "accessories",
+  "software",
   "config",
 ] as const;
 export type Col = (typeof COLS)[number];
@@ -34,6 +37,9 @@ export const WRITE_ROLES: Partial<Record<Col, string[]>> = {
   categories: ["admin", "tcth"],
   config: ["admin", "tcth"],
   worklogs: ["admin", "it"],
+  locations: ["admin", "tcth"],
+  accessories: ["admin", "tcth", "it"],
+  software: ["admin", "tcth", "it"],
   // Kiểm kê: tạo/chốt phiên chỉ Admin+TCTH; tick từng tài sản thêm lãnh đạo phòng (giới hạn phòng ban do giao diện áp)
   inventoryChecks: ["admin", "tcth"],
   inventoryLines: ["admin", "tcth", "manager"],
@@ -65,13 +71,14 @@ export function clientData(data: Record<string, unknown>): Record<string, unknow
 export const tokenize = (s: string): string[] =>
   Array.from(new Set(s.toLowerCase().split(/[^\p{L}\p{N}-]+/u).filter((t) => t.length >= 2)));
 
-/** Từ khoá tìm kiếm cho chatbot: mã + tên tài sản. */
-export function assetKeywords(a: { code?: unknown; name?: unknown }): string[] {
-  return tokenize(`${a.code ?? ""} ${a.name ?? ""}`);
+/** Từ khoá tìm kiếm cho chatbot: mã + tên + serial tài sản. */
+export function assetKeywords(a: { code?: unknown; name?: unknown; serial?: unknown }): string[] {
+  return tokenize(`${a.code ?? ""} ${a.name ?? ""} ${a.serial ?? ""}`);
 }
 
 export const STATUS_LABELS: Record<string, string> = {
   in_use: "Đang sử dụng",
+  unused: "Chưa sử dụng",
   broken: "Hỏng - đề nghị sửa chữa",
   liquidation: "Đề nghị thanh lý",
 };

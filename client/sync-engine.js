@@ -4,7 +4,7 @@
    không phải sửa. saveDB() so sánh từng bản ghi với "bản sao đã đồng bộ" (mirror) rồi chỉ đẩy
    phần thay đổi lên /api/db/sync. Thay đổi của người khác/chatbot về qua việc thăm dò /api/db.
    ========================================================= */
-const SYNC_COLS = ["departments","categories","users","assets","assetHistory","transfers","repairs","inventoryChecks","inventoryLines","worklogs"];
+const SYNC_COLS = ["departments","categories","users","assets","assetHistory","transfers","repairs","inventoryChecks","inventoryLines","worklogs","locations","accessories","software"];
 const ALL_SYNC_COLS = SYNC_COLS.concat(["config"]);   // "config" = templateConfig, mỗi khoá một bản ghi {id,value}
 const CACHE_KEY = "assets704_cloud_cache_v1";
 const POLL_MS = 20000;
@@ -12,7 +12,7 @@ const FLUSH_DELAY_MS = 500;
 
 function emptyDB(){
   return {version:3, departments:[], categories:[], users:[], assets:[], assetHistory:[], transfers:[],
-    repairs:[], inventoryChecks:[], inventoryLines:[], worklogs:[], templateConfig:{}, session:{userId:null}};
+    repairs:[], inventoryChecks:[], inventoryLines:[], worklogs:[], locations:[], accessories:[], software:[], templateConfig:{}, session:{userId:null}};
 }
 let DB = emptyDB();
 
@@ -372,6 +372,7 @@ async function doLogin(username, password){
   const r = await api("/api/auth/login", {method:"POST", body: JSON.stringify({username, password})});
   await bootAfterAuth(r.user.id);
   state.route = "dashboard"; state.history = [];
+  if(typeof handleDeepLink === "function") handleDeepLink();
   render();
 }
 
@@ -380,6 +381,7 @@ async function boot(){
   try{
     const me = await api("/api/auth/me");
     await bootAfterAuth(me.user.id);
+    if(typeof handleDeepLink === "function") handleDeepLink();
     render();
   }catch(e){
     DB = emptyDB(); resetMirror();

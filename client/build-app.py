@@ -6,6 +6,8 @@ src_path = pathlib.Path(sys.argv[1])
 root = pathlib.Path(__file__).resolve().parent.parent
 engine = (root / "client" / "sync-engine.js").read_text(encoding="utf8")
 modules = (root / "client" / "modules.js").read_text(encoding="utf8")
+qr = (root / "client" / "qr.js").read_text(encoding="utf8")
+modules2 = (root / "client" / "modules2.js").read_text(encoding="utf8")
 s = src_path.read_text(encoding="utf8")
 
 def sub_once(old, new, label):
@@ -53,7 +55,7 @@ sub_once('if(action === "logout"){ DB.session.userId = null; saveDB(); render();
          'if(action === "logout"){ doLogout(); return; }', "logout")
 
 # 4. Khởi động
-sub_once('loadDB();\nrender();\n</script>', modules.rstrip("\n") + '\n\nboot();\n</script>', "boot")
+sub_once('loadDB();\nrender();\n</script>', modules.rstrip("\n") + "\n\n" + qr.rstrip("\n") + "\n\n" + modules2.rstrip("\n") + '\n\nboot();\n</script>', "boot")
 
 # 5. Bỏ biểu ngữ "OFFLINE", sửa chân trang
 regex_once(r'<div id="notice" class="notice-banner">.*?</div>\n', '', "notice")
@@ -148,6 +150,33 @@ sub_once('      ${item("assets","🗄️","Sổ tài sản")}', '      ${item("a
 sub_once('      ${item("reports","📈","Báo cáo & Lịch sử")}\n', '      ${item("reports","📈","Báo cáo & Lịch sử")}\n      ${u.role==="manager"?item("admin_inventory","📋","Kiểm kê phòng ban"):""}\n', "menu-inventory-manager")
 sub_once('        department_id: dept.id, address: row.address, updated_at: now,\n      });', '        department_id: dept.id, address: row.address, updated_at: now,\n        kind: st.kindLabel.indexOf("CC")===0 ? "ccdc" : "asset",\n      });', "import-kind-update")
 sub_once('current_user_id: null,\n        created_at: now, updated_at: now,\n      });', 'current_user_id: null,\n        kind: st.kindLabel.indexOf("CC")===0 ? "ccdc" : "asset",\n        created_at: now, updated_at: now,\n      });', "import-kind-create")
+
+# 11. Giao diện mới + QR + địa điểm/phụ kiện/phần mềm (logic nằm ở client/modules2.js và client/qr.js)
+sub_once('function viewDashboard(u){', 'function viewDashboardLegacy(u){', "dash-legacy")
+sub_once('function submit_asset(form){', 'function submit_asset_base(form){', "asset-base")
+regex_once(r'<div class="topbar">\s*<div style="display:flex;align-items:center;gap:10px">.*?</span>\s*</div>\s*</div>', '${renderTopbar(u,title)}', "topbar")
+sub_once('      case "itlog": body = viewItLog(u); break;', '      case "itlog": body = viewItLog(u); break;\n      case "locations": body = viewLocations(u); break;\n      case "qr": body = viewQR(u); break;\n      case "accessories": body = viewAccessories(u); break;\n      case "accessory_detail": body = viewAccessoryDetail(u); break;\n      case "software": body = viewSoftware(u); break;\n      case "software_detail": body = viewSoftwareDetail(u); break;', "routes2")
+sub_once('const STATUS_LABELS = {in_use:"Đang sử dụng",', 'const STATUS_LABELS = {in_use:"Đang sử dụng", unused:"Chưa sử dụng",', "status-label")
+# danh sách tài sản: lọc theo địa điểm / bảo hành, tìm theo serial, cột Serial + Địa điểm
+sub_once('  if(f.current_user_id) list = list.filter(a=>a.current_user_id===f.current_user_id);\n',
+         '  if(f.current_user_id) list = list.filter(a=>a.current_user_id===f.current_user_id);\n  if(f.location_id) list = list.filter(a=>a.location_id===f.location_id);\n  if(f.warranty==="soon") list = list.filter(a=>{ const d = dayDiff(a.warranty_until); return d!==null && d>=0 && d<=30; });\n', "list-filter")
+sub_once('a.code.toLowerCase().includes(q)||a.name.toLowerCase().includes(q)', 'a.code.toLowerCase().includes(q)||a.name.toLowerCase().includes(q)||String(a.serial||"").toLowerCase().includes(q)', "list-search")
+sub_once('        <th style="cursor:pointer; user-select:none;" data-action="sortAssets:category_id">Nhóm${icon(\'category_id\')}</th>',
+         '        <th style="cursor:pointer; user-select:none;" data-action="sortAssets:serial">Serial${icon(\'serial\')}</th>\n        <th style="cursor:pointer; user-select:none;" data-action="sortAssets:category_id">Nhóm${icon(\'category_id\')}</th>', "list-th-serial")
+sub_once('data-action="sortAssets:department_id">Phòng ban${icon(\'department_id\')}</th>', 'data-action="sortAssets:department_id">Phòng ban${icon(\'department_id\')}</th>\n        <th>Địa điểm</th>', "list-th-loc")
+sub_once('        <td>${esc(catName(a.category_id)||"-")}</td>\n        <td>${esc(depName(a.department_id)||"-")}</td>', '        <td class="mono">${esc(a.serial||"-")}</td>\n        <td>${esc(catName(a.category_id)||"-")}</td>\n        <td>${esc(depName(a.department_id)||"-")}</td>\n        <td>${esc(locName(a.location_id)||"-")}</td>', "list-td")
+sub_once('<td colspan="8" class="text-muted" style="text-align:center;padding:24px">Không có tài sản phù hợp.', '<td colspan="10" class="text-muted" style="text-align:center;padding:24px">Không có tài sản phù hợp.', "list-colspan")
+sub_once('<button class="btn btn-sm" data-action="applyAssetFilters" style="height:36px; align-self:flex-end;">', '${locFilterHtml(f)}\n      <button class="btn btn-sm" data-action="applyAssetFilters" style="height:36px; align-self:flex-end;">', "list-filter-ui")
+sub_once('  state.assetFilters.status = document.getElementById("f_status").value;', '  state.assetFilters.status = document.getElementById("f_status").value;\n  { const le = document.getElementById("f_loc"); if(le) state.assetFilters.location_id = le.value; }', "apply-filter")
+sub_once('<option value="in_use" ${f.status==="in_use"?"selected":""}>Đang sử dụng</option>', '<option value="in_use" ${f.status==="in_use"?"selected":""}>Đang sử dụng</option>\n          <option value="unused" ${f.status==="unused"?"selected":""}>Chưa sử dụng</option>', "filter-unused")
+sub_once('            <option value="in_use">Đang sử dụng</option>\n            <option value="broken">', '            <option value="in_use">Đang sử dụng</option>\n            <option value="unused">Chưa sử dụng</option>\n            <option value="broken">', "bulk-unused")
+sub_once('      <div style="text-align: right; margin-bottom: 16px;">\n        <button class="btn btn-sm btn-success" data-action="applyBulkActions"', '      ${bulkLocHtml()}\n      <div style="text-align: right; margin-bottom: 16px;">\n        <button class="btn btn-sm btn-success" data-action="applyBulkActions"', "bulk-loc")
+# hồ sơ tài sản
+sub_once('${a.status==="in_use" && (u.role==="admin" || a.department_id===u.department_id) ? `', '${["in_use","unused"].includes(a.status) && (u.role==="admin" || a.department_id===u.department_id) ? `', "detail-actions")
+sub_once('          <tr><td class="text-muted">Địa chỉ</td>', '          ${assetExtraRows(a)}\n          <tr><td class="text-muted">Địa chỉ</td>', "detail-rows")
+sub_once('  ${ccdcKindCard(a,u)}`;', '  ${ccdcKindCard(a,u)}\n  ${assetExtraCards(a,u)}`;', "detail-cards")
+sub_once('        <div class="col col-6"><div class="form-group"><label>Địa chỉ</label>\n          <input class="form-control" name="address"', '        ${assetFormExtra(a,u)}\n        <div class="col col-6"><div class="form-group"><label>Địa chỉ</label>\n          <input class="form-control" name="address"', "form-extra")
+sub_once('let assets = DB.assets.filter(a=>a.status==="in_use");', 'let assets = DB.assets.filter(a=>["in_use","unused"].includes(a.status));', "transfer-new-unused")
 
 out = root / "public" / "app.html"
 out.write_text(s, encoding="utf8")

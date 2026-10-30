@@ -23,7 +23,7 @@ if (!Array.isArray(b.users) || !Array.isArray(b.assets)) {
   process.exit(2);
 }
 
-const ARRAYS = ["departments", "categories", "users", "assets", "assetHistory", "transfers", "repairs", "inventoryChecks", "inventoryLines", "worklogs"];
+const ARRAYS = ["departments", "categories", "users", "assets", "assetHistory", "transfers", "repairs", "inventoryChecks", "inventoryLines", "worklogs", "locations", "accessories", "software"];
 const size = (x) => Buffer.byteLength(JSON.stringify(x));
 
 // Gom thành các lô; lô nào cũng có users/assets (có thể rỗng) để qua kiểm tra của máy chủ
