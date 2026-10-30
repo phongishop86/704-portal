@@ -5153,11 +5153,9 @@ function renderSidebar(u) {
       ${item("repairs", "🛠️", "Bảo trì - Bảo hành")}
       ${ta ? item("admin_inventory", "📋", "Kiểm kê") : (u.role === "manager" ? item("admin_inventory", "📋", "Kiểm kê phòng ban") : "")}
       ${staff ? `<div class="sidebar-section-title">Danh mục</div>
-        ${item("locations", "📍", "Địa điểm")}
         ${adm ? item("admin_users", "👤", "Người sử dụng") : ""}
         ${adm ? item("admin_departments", "🏢", "Phòng ban") : ""}
         ${item("qr", "🔳", "QR Code")}
-        ${item("accessories", "🧩", "Phụ kiện")}
         ${item("software", "💿", "Phần mềm")}` : ""}
       <div class="sidebar-section-title">Hệ thống</div>
       ${item("reports", "📈", "Báo cáo")}
