@@ -22,7 +22,7 @@ export async function GET(req: Request) {
   if (!open.length) return Response.json({ ok: true, open: 0 });
 
   const now = Date.now();
-  const since = (r: Record<string, any>) => Date.parse(r.tcth_at || r.created_at || "") || now;
+  const since = (r: Record<string, any>) => Date.parse(r.tcth_at || r.manager_at || r.created_at || "") || now;
   const overdue = open.filter((r) => now - since(r) > slaMs);
 
   const assets = await db.getAll(...open.slice(0, 15).map((r) => db.collection("assets").doc(r.asset_id)));

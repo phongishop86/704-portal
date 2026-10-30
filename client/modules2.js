@@ -113,6 +113,7 @@ table th{background:#f5f8fd;color:#51658a;font-size:12.5px;}
 .mono{font-family:ui-monospace,Consolas,monospace;}
 .toolbar{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;margin-bottom:12px;}
 .toolbar .form-group{margin:0;min-width:150px;}
+.wf-step.skipped{background:#f3f4f6;border-style:dashed;color:#6b7280;}
 .modal2{position:fixed;inset:0;background:rgba(15,23,42,.55);z-index:200;display:flex;align-items:center;justify-content:center;padding:16px;}
 .modal2>div{background:#fff;border-radius:16px;padding:22px;max-width:520px;width:100%;max-height:92vh;overflow:auto;}
 .bar-sm{height:8px;background:#e8edf5;border-radius:6px;overflow:hidden;min-width:80px;} .bar-sm>i{display:block;height:100%;background:#3b82f6;}
@@ -152,7 +153,7 @@ function uiNotifs(u) {
   if (pt) add("🔁", `${pt} lệnh điều chuyển đang chờ xử lý`, "transfers", {}, "warn");
   if (confirms) add("✅", `${confirms} phiếu đã xử lý xong, chờ bạn xác nhận`, "repairs", {}, "warn");
   if (isStaff2(u)) {
-    const late = DB.repairs.filter(r => r.status === "pending_it" && now - (Date.parse(r.tcth_at || r.created_at || "") || now) > slaMs).length;
+    const late = DB.repairs.filter(r => r.status === "pending_it" && now - (Date.parse(r.tcth_at || r.manager_at || r.created_at || "") || now) > slaMs).length;
     if (late) add("⏰", `${late} phiếu sửa chữa quá hạn xử lý (hơn 24 giờ)`, "repairs", {}, "bad");
   }
   const scope = assetsScope(u, DB.assets);

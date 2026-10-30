@@ -183,6 +183,26 @@ sub_once('<div style="margin: 24px 0; padding: 20px; border: 1px dashed var(--bo
 sub_once('function render(){\n  const u = currentUser();', 'function render(){\n  sortLists();\n  const u = currentUser();', "render-sort")
 s = s.replace('${assets.map(a=>`<option value="${a.id}" ${presetAssetId', '${assets.slice().sort(cmpName).map(a=>`<option value="${a.id}" ${presetAssetId')
 
+
+# ---- Luồng phiếu báo hỏng: LĐP chọn chuyển thẳng Điện toán (bỏ bước TCTH) hoặc chuyển TCTH (hư hỏng lớn) ----
+sub_once('<button class="btn btn-success btn-block" type="submit">LĐP phê duyệt &amp; Chuyển TCTH</button>',
+ """<div class="form-group" style="margin-bottom:12px;">
+            <label style="font-size:12px; font-weight:600;">Chuyển tiếp đến *</label>
+            <select class="form-control" name="route" required>
+              <option value="">-- Chọn nơi chuyển --</option>
+              <option value="it">Dịch vụ khách hàng / Điện toán (IT) xử lý trực tiếp (bỏ bước TCTH)</option>
+              <option value="tcth">LĐP TCTH xử lý (hư hỏng lớn, ngoài chuyên môn IT)</option>
+            </select>
+          </div>
+          <button class="btn btn-success btn-block" type="submit">LĐP phê duyệt &amp; Chuyển tiếp</button>""", "rp-route-form")
+sub_once('  rt.status = "pending_tcth";\n  rt.manager_id = u.id;',
+ '  const route = new FormData(form).get("route") === "it" ? "it" : "tcth";\n  rt.route = route;\n  rt.status = route === "it" ? "pending_it" : "pending_tcth";\n  rt.manager_id = u.id;', "rp-route-status")
+sub_once('alert("Cập nhật và chuyển tiếp đến TCTH thành công!");', 'alert(route === "it" ? "Đã phê duyệt và chuyển trực tiếp đến Điện toán (IT)!" : "Đã phê duyệt và chuyển tiếp đến TCTH!");', "rp-route-alert")
+sub_once('LĐP phê duyệt phiếu ${rt.ticket_code || rt.id.slice(-5)} (Mức độ: ${priority})', 'LĐP phê duyệt phiếu ${rt.ticket_code || rt.id.slice(-5)} (Mức độ: ${priority}) và chuyển ${route === "it" ? "trực tiếp Điện toán (bỏ bước TCTH)" : "TCTH (hư hỏng lớn)"}', "rp-route-hist")
+sub_once('{label:"3. TCTH điều phối", who:userName(rt.tcth_id), at:rt.tcth_at},', '{label:"3. TCTH điều phối", who:(rt.route === "it" ? "Bỏ qua — LĐP chuyển thẳng Điện toán" : userName(rt.tcth_id)), at:(rt.route === "it" ? rt.manager_at : rt.tcth_at)},', "rp-route-step")
+sub_once('  if(rt.status === "pending_manager") steps[1].cls = "active";', '  if(rt.route === "it") steps[2].cls = "skipped";\n  if(rt.status === "pending_manager") steps[1].cls = "active";', "rp-route-skipcls")
+sub_once('<tr><td class="text-muted">Ngày lập</td><td>${fmtDateTime(rt.created_at)}</td></tr>', '<tr><td class="text-muted">Ngày lập</td><td>${fmtDateTime(rt.created_at)}</td></tr>\n          ${rt.route ? `<tr><td class="text-muted">LĐP chuyển tới</td><td>${rt.route === "it" ? "Điện toán (IT) trực tiếp" : "TCTH (hư hỏng lớn)"}</td></tr>` : ""}', "rp-route-row")
+
 out = root / "public" / "app.html"
 out.write_text(s, encoding="utf8")
 print("OK ->", out, len(s), "ký tự")

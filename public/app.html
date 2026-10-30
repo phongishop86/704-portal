@@ -2121,11 +2121,12 @@ function viewRepairDetail(u, id){
   const steps = [
     {label:"1. Nhân viên báo hỏng", who:userName(rt.reported_by), at:rt.created_at},
     {label:"2. LĐP phê duyệt", who:userName(rt.manager_id), at:rt.manager_at},
-    {label:"3. TCTH điều phối", who:userName(rt.tcth_id), at:rt.tcth_at},
+    {label:"3. TCTH điều phối", who:(rt.route === "it" ? "Bỏ qua — LĐP chuyển thẳng Điện toán" : userName(rt.tcth_id)), at:(rt.route === "it" ? rt.manager_at : rt.tcth_at)},
     {label:"4. Điện toán xử lý xong", who:userName(rt.it_id), at:rt.it_at},
     {label:"5. Người báo xác nhận", who:userName(rt.reported_by), at:rt.user_confirmed_at},
   ];
   steps.forEach(s => s.cls = s.at ? "done" : "");
+  if(rt.route === "it") steps[2].cls = "skipped";
   if(rt.status === "pending_manager") steps[1].cls = "active";
   else if(rt.status === "pending_tcth") steps[2].cls = "active";
   else if(rt.status === "pending_it") steps[3].cls = "active";
@@ -2145,6 +2146,7 @@ function viewRepairDetail(u, id){
           ${rt.manager_id ? `<tr><td class="text-muted">LĐP duyệt</td><td><strong style="color:#0f172a;">${esc(userName(rt.manager_id))}</strong></td></tr>` : ""}
           ${rt.it_id ? `<tr><td class="text-muted">Điện toán XL</td><td><strong style="color:#0f172a;">${esc(userName(rt.it_id))}</strong></td></tr>` : ""}
           <tr><td class="text-muted">Ngày lập</td><td>${fmtDateTime(rt.created_at)}</td></tr>
+          ${rt.route ? `<tr><td class="text-muted">LĐP chuyển tới</td><td>${rt.route === "it" ? "Điện toán (IT) trực tiếp" : "TCTH (hư hỏng lớn)"}</td></tr>` : ""}
           ${rt.it_at ? `<tr><td class="text-muted">Thời gian xử lý (SLA)</td><td><strong style="color:var(--brand)">${calculateSLA(rt.created_at, rt.it_at)}</strong> <span class="small text-muted">(tính đến lúc Điện toán khắc phục xong)</span></td></tr>` : ""}
           ${rt.priority?`<tr><td class="text-muted">Mức độ khẩn cấp</td><td><strong style="color:#dc2626">${esc(rt.priority)}</strong></td></tr>`:""}
           ${rt.manager_note?`<tr><td class="text-muted">LĐP truyền đạt</td><td>${esc(rt.manager_note)}</td></tr>`:""}
@@ -2168,7 +2170,15 @@ function viewRepairDetail(u, id){
             <label style="font-size:12px; font-weight:600;">LĐP truyền đạt / Chỉ đạo</label>
             <textarea class="form-control" name="manager_note" rows="2" placeholder="Nhập ghi chú cho Điện toán..."></textarea>
           </div>
-          <button class="btn btn-success btn-block" type="submit">LĐP phê duyệt &amp; Chuyển TCTH</button>
+          <div class="form-group" style="margin-bottom:12px;">
+            <label style="font-size:12px; font-weight:600;">Chuyển tiếp đến *</label>
+            <select class="form-control" name="route" required>
+              <option value="">-- Chọn nơi chuyển --</option>
+              <option value="it">Dịch vụ khách hàng / Điện toán (IT) xử lý trực tiếp (bỏ bước TCTH)</option>
+              <option value="tcth">LĐP TCTH xử lý (hư hỏng lớn, ngoài chuyên môn IT)</option>
+            </select>
+          </div>
+          <button class="btn btn-success btn-block" type="submit">LĐP phê duyệt &amp; Chuyển tiếp</button>
         </form>
         ` : ""}
         ${canTcthDispatch?`
@@ -2220,15 +2230,17 @@ function submit_repair_manager_approve(form){
   const priority = new FormData(form).get("priority");
   const manager_note = new FormData(form).get("manager_note").trim();
 
-  rt.status = "pending_tcth";
+  const route = new FormData(form).get("route") === "it" ? "it" : "tcth";
+  rt.route = route;
+  rt.status = route === "it" ? "pending_it" : "pending_tcth";
   rt.manager_id = u.id;
   rt.manager_at = nowIso();
   rt.priority = priority;
   rt.manager_note = manager_note;
 
-  logHistory(rt.asset_id, "repair", `LĐP phê duyệt phiếu ${rt.ticket_code || rt.id.slice(-5)} (Mức độ: ${priority})`);
+  logHistory(rt.asset_id, "repair", `LĐP phê duyệt phiếu ${rt.ticket_code || rt.id.slice(-5)} (Mức độ: ${priority}) và chuyển ${route === "it" ? "trực tiếp Điện toán (bỏ bước TCTH)" : "TCTH (hư hỏng lớn)"}`);
   saveDB();
-  alert("Cập nhật và chuyển tiếp đến TCTH thành công!");
+  alert(route === "it" ? "Đã phê duyệt và chuyển trực tiếp đến Điện toán (IT)!" : "Đã phê duyệt và chuyển tiếp đến TCTH!");
   nav("repair_detail", {id});
 }
 
@@ -5012,6 +5024,7 @@ table th{background:#f5f8fd;color:#51658a;font-size:12.5px;}
 .mono{font-family:ui-monospace,Consolas,monospace;}
 .toolbar{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;margin-bottom:12px;}
 .toolbar .form-group{margin:0;min-width:150px;}
+.wf-step.skipped{background:#f3f4f6;border-style:dashed;color:#6b7280;}
 .modal2{position:fixed;inset:0;background:rgba(15,23,42,.55);z-index:200;display:flex;align-items:center;justify-content:center;padding:16px;}
 .modal2>div{background:#fff;border-radius:16px;padding:22px;max-width:520px;width:100%;max-height:92vh;overflow:auto;}
 .bar-sm{height:8px;background:#e8edf5;border-radius:6px;overflow:hidden;min-width:80px;} .bar-sm>i{display:block;height:100%;background:#3b82f6;}
@@ -5051,7 +5064,7 @@ function uiNotifs(u) {
   if (pt) add("🔁", `${pt} lệnh điều chuyển đang chờ xử lý`, "transfers", {}, "warn");
   if (confirms) add("✅", `${confirms} phiếu đã xử lý xong, chờ bạn xác nhận`, "repairs", {}, "warn");
   if (isStaff2(u)) {
-    const late = DB.repairs.filter(r => r.status === "pending_it" && now - (Date.parse(r.tcth_at || r.created_at || "") || now) > slaMs).length;
+    const late = DB.repairs.filter(r => r.status === "pending_it" && now - (Date.parse(r.tcth_at || r.manager_at || r.created_at || "") || now) > slaMs).length;
     if (late) add("⏰", `${late} phiếu sửa chữa quá hạn xử lý (hơn 24 giờ)`, "repairs", {}, "bad");
   }
   const scope = assetsScope(u, DB.assets);
