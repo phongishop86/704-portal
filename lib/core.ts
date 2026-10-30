@@ -249,7 +249,7 @@ export async function handleCallback(user: User, data: string): Promise<string> 
     tx.set(counterRef, { n });
     tx.set(db.collection("worklogs").doc(logId), {
       id: logId,
-      ts_ms: ms,
+      ts_ms: typeof d.started_ms === "number" ? d.started_ms : ms,
       created_at: iso,
       source: "telegram",
       it_user_id: user.id,
@@ -264,18 +264,29 @@ export async function handleCallback(user: User, data: string): Promise<string> 
       status: d.status,
       repair_id: d.repair_id ?? null,
       ticket_code: d.ticket_code ?? null,
+      // Các trường khai báo theo biểu mẫu (cùng bộ trường với form Nhật ký IT trên web)
+      title: d.title ?? d.description,
+      requester_name: d.requester_name ?? "",
+      started_at: d.started_at ?? null,
+      ended_at: d.ended_at ?? null,
+      cause: d.cause ?? "",
+      solution: d.solution ?? "",
+      result: d.result ?? (d.status === "done" ? "done" : "doing"),
+      note: d.note ?? "",
       ...meta,
     });
-    const hid = uid();
-    tx.set(db.collection("assetHistory").doc(hid), {
-      id: hid,
-      asset_id: d.asset_id,
-      event_type: "it_work",
-      note: `IT ghi nhật ký (${d.category}): ${d.description}${d.duration_min ? ` — ${d.duration_min} phút` : ""}`,
-      actor_id: user.id,
-      created_at: iso,
-      ...meta,
-    });
+    if (d.asset_id) {
+      const hid = uid();
+      tx.set(db.collection("assetHistory").doc(hid), {
+        id: hid,
+        asset_id: d.asset_id,
+        event_type: "it_work",
+        note: `IT ghi nhật ký (${d.category}): ${d.description}${d.duration_min ? ` — ${d.duration_min} phút` : ""}`,
+        actor_id: user.id,
+        created_at: iso,
+        ...meta,
+      });
+    }
 
     if (canClose && repairRef && repairSnap) {
       const rp = repairSnap.data()!;

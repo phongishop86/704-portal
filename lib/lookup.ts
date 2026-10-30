@@ -14,6 +14,10 @@ async function names() {
   return cache;
 }
 
+export async function listDepartments(): Promise<{ id: string; name: string }[]> {
+  return [...(await names()).dept.entries()].map(([id, name]) => ({ id, name })).filter((d) => d.name).sort((a, b) => a.name.localeCompare(b.name, "vi"));
+}
+
 export async function deptName(id?: string | null): Promise<string> {
   return id ? ((await names()).dept.get(id) ?? "") : "";
 }

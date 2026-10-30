@@ -11,13 +11,12 @@ async function call(method: string, body: unknown) {
   if (!res.ok) console.error(`Telegram ${method} lỗi`, res.status, await res.text());
 }
 
-export function tgSend(chatId: number | string, text: string, buttons?: Button[]) {
+export function tgSend(chatId: number | string, text: string, buttons?: Button[] | Button[][]) {
+  const rows: Button[][] | undefined = !buttons || !buttons.length ? undefined : Array.isArray(buttons[0]) ? (buttons as Button[][]) : [buttons as Button[]];
   return call("sendMessage", {
     chat_id: chatId,
     text,
-    reply_markup: buttons
-      ? { inline_keyboard: [buttons.map((b) => ({ text: b.text, callback_data: b.data }))] }
-      : undefined,
+    reply_markup: rows ? { inline_keyboard: rows.map((r) => r.map((b) => ({ text: b.text, callback_data: b.data }))) } : undefined,
   });
 }
 

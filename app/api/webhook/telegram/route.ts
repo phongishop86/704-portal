@@ -10,6 +10,7 @@ import {
   todaySummary,
 } from "@/lib/core";
 import { tgAnswerCallback, tgEdit, tgSend } from "@/lib/channels/telegram";
+import { wizardActive, wizardCallback, wizardCancel, wizardStart, wizardText } from "@/lib/wizard";
 import type { User } from "@/lib/types";
 
 export const maxDuration = 60;
@@ -24,7 +25,7 @@ async function getUserByTelegramId(tgId: string): Promise<User | null> {
 }
 
 const HELP =
-  "Cách dùng:\n• Nhắn tự nhiên, ví dụ: Thay RAM máy FA0001, 30 phút\n• /lichsu FA0001 — lịch sử xử lý thiết bị\n• /phieu — phiếu đang chờ Điện toán xử lý\n• /homnay — việc bạn đã ghi hôm nay\n• /id — xem Telegram ID của bạn và ID nhóm đang chat";
+  "Cách dùng:\n• /nhatky — khai báo nhật ký từng bước (công việc, phòng ban, user, thời gian, nguyên nhân, xử lý, kết quả)\n• /huy — thoát khi đang khai báo\n• Nhắn tự nhiên, ví dụ: Thay RAM máy FA0001, 30 phút\n• /lichsu FA0001 — lịch sử xử lý thiết bị\n• /phieu — phiếu đang chờ Điện toán xử lý\n• /homnay — việc bạn đã ghi hôm nay\n• /id — xem Telegram ID của bạn và ID nhóm đang chat";
 
 export async function POST(req: Request) {
   // 1. Chặn request giả mạo (secret_token đặt khi setWebhook)
@@ -41,6 +42,12 @@ export async function POST(req: Request) {
       await tgAnswerCallback(cb.id);
       const user = await getUserByTelegramId(String(cb.from.id));
       if (!user) return Response.json({ ok: true });
+      if (typeof cb.data === "string" && cb.data.startsWith("w:")) {
+        const out = await wizardCallback(user, cb.data);
+        if (out.ack) await tgEdit(cb.message.chat.id, cb.message.message_id, out.ack);
+        if (out.next) await tgSend(cb.message.chat.id, out.next.text, out.next.buttons);
+        return Response.json({ ok: true });
+      }
       const result = await handleCallback(user, cb.data);
       await tgEdit(cb.message.chat.id, cb.message.message_id, result);
       return Response.json({ ok: true });
@@ -68,7 +75,12 @@ export async function POST(req: Request) {
     }
 
     // 3. Lệnh nhanh
-    if (text === "/start" || text === "/help") {
+    if (/^\/(nhatky|moi|ghi)(@\w+)?$/i.test(text)) {
+      const r = await wizardStart(user);
+      await tgSend(chatId, r.text, r.buttons);
+    } else if (/^\/(huy|cancel)(@\w+)?$/i.test(text)) {
+      await tgSend(chatId, await wizardCancel(user));
+    } else if (text === "/start" || text === "/help") {
       await tgSend(chatId, `Xin chào ${user.full_name}.\n${HELP}`);
     } else if (text.startsWith("/lichsu")) {
       const code = text.replace("/lichsu", "").trim();
@@ -86,6 +98,15 @@ export async function POST(req: Request) {
       await tgSend(chatId, await myTickets(user));
     } else if (text === "/homnay") {
       await tgSend(chatId, await todaySummary(user));
+    } else if (/^\/(boqua|skip)$/i.test(text) && (await wizardActive(user))) {
+      const r = await wizardText(user, text);
+      await tgSend(chatId, r.text, r.buttons);
+    } else if (text.startsWith("/")) {
+      // Lệnh không biết (kể cả gõ mỗi dấu "/") không gửi cho AI: nhắc cách dùng
+      await tgSend(chatId, HELP);
+    } else if (await wizardActive(user)) {
+      const r = await wizardText(user, text);
+      await tgSend(chatId, r.text, r.buttons);
     } else {
       // 4. Tin nhắn tự nhiên → Claude
       const reply = await handleText(user, text);

@@ -40,5 +40,6 @@ export interface Button {
 
 export interface Reply {
   text: string;
-  buttons?: Button[];
+  /** Một hàng nút (Button[]) hoặc nhiều hàng (Button[][]). */
+  buttons?: Button[] | Button[][];
 }
