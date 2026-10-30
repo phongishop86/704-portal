@@ -107,7 +107,16 @@ table th{background:#f5f8fd;color:#51658a;font-size:12.5px;}
 .modal2{position:fixed;inset:0;background:rgba(15,23,42,.55);z-index:200;display:flex;align-items:center;justify-content:center;padding:16px;}
 .modal2>div{background:#fff;border-radius:16px;padding:22px;max-width:520px;width:100%;max-height:92vh;overflow:auto;}
 .bar-sm{height:8px;background:#e8edf5;border-radius:6px;overflow:hidden;min-width:80px;} .bar-sm>i{display:block;height:100%;background:#3b82f6;}
-@media(max-width:980px){.topbar2{padding:10px 14px;} .topbar2 .ttl{display:none;} .sidebar{position:fixed;left:-270px;z-index:100;transition:left .2s;} .sidebar.open{left:0;}}
+.dash>div{min-width:0;}
+.sb-backdrop{display:none;}
+@media(max-width:980px){.topbar2{padding:8px 12px;gap:8px;} .topbar2 .ttl{display:none;} .sidebar{position:fixed;left:-270px;top:0;z-index:100;transition:left .2s;box-shadow:none;} .sidebar.open{left:0;box-shadow:8px 0 30px rgba(0,0,0,.35);}
+  .sb-backdrop.show{display:block;position:fixed;inset:0;background:rgba(15,23,42,.45);z-index:90;} .gs{margin-left:0;min-width:0;} .hamburger{padding:4px 8px;}}
+@media(max-width:700px){
+  .dd-btn .who2{display:none;} .tb-right{gap:2px;} .container{padding:12px 10px;} .card{padding:14px;overflow-x:auto;} .cpanel{padding:12px;} table{font-size:12.5px;}
+  .kpis{gap:10px;} .kpi{padding:12px;} .kpi .v{font-size:24px;} .kpis.money{grid-template-columns:1fr !important;} .kpis.money .v{font-size:19px !important;}
+  .fab-back{width:48px !important;height:48px !important;} .modal2>div{padding:16px;} .toolbar .form-group{min-width:130px;flex:1;}
+  .gs input{padding:8px 12px 8px 34px;font-size:14px;} .dd-menu{min-width:260px;right:-48px;}
+}
 `;
   document.head.appendChild(st);
 })();
@@ -221,7 +230,7 @@ function renderTopbar(u, title) {
       <div class="dd" id="ddBell"><button class="dd-btn bell" onclick="uiToggle('ddBell')" title="Thông báo">🔔${n.length ? `<span class="cnt">${n.length}</span>` : ""}</button>
         <div class="dd-menu"><div class="hd">Thông báo</div>${nh}</div></div>
       <div class="dd" id="ddUser"><button class="dd-btn" onclick="uiToggle('ddUser')"><span class="avatar">${esc(initials(u.full_name))}</span>
-        <span style="text-align:left;line-height:1.2"><b style="font-size:13px">${esc(u.full_name)}</b><br><small class="text-muted">${esc(ROLE_LABELS[u.role] || u.role)}</small></span> ▾</button>
+        <span class="who2" style="text-align:left;line-height:1.2"><b style="font-size:13px">${esc(u.full_name)}</b><br><small class="text-muted">${esc(ROLE_LABELS[u.role] || u.role)}</small></span> <span class="who2">▾</span></button>
         <div class="dd-menu" style="min-width:200px"><a class="menu-it" data-action="logout">🚪 Đăng xuất</a></div></div>
     </div>
   </div>`;
@@ -236,6 +245,7 @@ function renderSidebar(u) {
   const item = (route, icon, label) => { const c = cntOf(route); return `<a class="sidebar-link ${cur === route ? "active" : ""}" data-nav="${route}"><span class="ic">${icon}</span>${label}${c ? `<span class="badge-count">${c}</span>` : ""}</a>`; };
   const staff = isStaff2(u), adm = u.role === "admin", ta = adm || u.role === "tcth";
   return `
+  <div class="sb-backdrop ${state.sidebarOpen ? "show" : ""}" data-action="toggleSidebar"></div>
   <div class="sidebar ${state.sidebarOpen ? "open" : ""}">
     <div class="sb-brand"><div class="sb-logo">🖥️</div><div><b>Quản lý tài sản</b><small>704 · TSCĐ & CCDC</small></div></div>
     <div class="sidebar-nav">
@@ -307,7 +317,7 @@ function viewDashboard(u) {
   const recent = list.slice().sort((a, b) => String(b.updated_at || "").localeCompare(String(a.updated_at || ""))).slice(0, 8);
   const badge = a => `<span class="badge badge-${a.status}">${esc(STATUS_LABELS[a.status] || a.status)}</span>`;
   const notifs = uiNotifs(u);
-  const money = ta => ta ? `<div class="kpis" style="grid-template-columns:repeat(2,minmax(0,1fr))">
+  const money = ta => ta ? `<div class="kpis money" style="grid-template-columns:repeat(2,minmax(0,1fr))">
       <div class="kpi" onclick="nav('assets')" style="grid-template-areas:'ico v' 'ico l';column-gap:14px"><div class="ico" style="background:#e0ecff">💰</div><div class="v" style="font-size:21px;align-self:end">${fmtVND(list.reduce((s, a) => s + Number(a.original_value || 0), 0))}</div><div class="l" style="align-self:start">Tổng nguyên giá</div></div>
       <div class="kpi" onclick="nav('assets')" style="grid-template-areas:'ico v' 'ico l';column-gap:14px"><div class="ico" style="background:#dcfce7">📉</div><div class="v" style="font-size:21px;align-self:end">${fmtVND(list.reduce((s, a) => s + Number(a.remaining_value || 0), 0))}</div><div class="l" style="align-self:start">Tổng giá trị còn lại</div></div></div>` : "";
   return `

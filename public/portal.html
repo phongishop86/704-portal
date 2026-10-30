@@ -39,6 +39,12 @@ input,select,textarea{width:100%;padding:8px 10px;border:1px solid var(--line);b
 .row{display:flex;gap:10px}.row>*{flex:1}.chk{display:flex;align-items:center;gap:6px;margin:6px 0}.chk input{width:auto}
 .roles{display:flex;flex-wrap:wrap;gap:4px 14px}
 [hidden]{display:none!important}
+@media(max-width:700px){
+.top{padding:8px 12px;gap:8px}.who{display:none}.brand{font-size:15px}.btn{padding:6px 10px;white-space:nowrap}
+.bar{padding:6px 12px;gap:8px}.bar b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;flex:1}
+body.embed .top{display:none}.frame{height:calc(100vh - 52px);height:calc(100dvh - 52px)}
+main{padding:16px 12px}.grid{grid-template-columns:1fr}
+}
 </style>
 </head>
 <body>
@@ -137,9 +143,11 @@ function pageView(id){
  document.getElementById("bk").onclick=function(){location.hash=""};
  document.getElementById("nt").onclick=function(){window.open(p.url,"_blank","noopener")};
  document.title=p.title+" · Cổng 704";
+ document.body.classList.add("embed");
 }
 
 function route(){
+ document.body.classList.remove("embed");
  if(!S.user)return loginView();
  var m=/^#\/p\/(.+)$/.exec(location.hash);
  document.title="Cổng 704";

@@ -8,6 +8,9 @@ const nextConfig = {
   },
   async headers() {
     return [
+      // Trang giao diện luôn kiểm tra bản mới (tránh trình duyệt điện thoại giữ bản cũ sau khi cập nhật)
+      { source: "/app.html", headers: [{ key: "Cache-Control", value: "no-cache, must-revalidate" }] },
+      { source: "/portal.html", headers: [{ key: "Cache-Control", value: "no-cache, must-revalidate" }] },
       {
         source: "/(.*)",
         headers: [
