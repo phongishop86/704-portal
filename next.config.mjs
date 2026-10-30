@@ -2,9 +2,9 @@
 const nextConfig = {
   // Bản nội bộ Windows: BUILD_STANDALONE=1 → .next/standalone (chạy bằng node server.js, không cần npm install ở máy chủ)
   ...(process.env.BUILD_STANDALONE === "1" ? { output: "standalone" } : {}),
-  // Trang chủ là Portal (public/portal.html); module CCDC/Tài sản là public/app.html.
+  // Trang chủ là ứng dụng Tài sản (public/app.html), vào thẳng không qua Portal. Portal vẫn truy cập được tại /portal.html.
   async rewrites() {
-    return { beforeFiles: [{ source: "/", destination: "/portal.html" }] };
+    return { beforeFiles: [{ source: "/", destination: "/app.html" }] };
   },
   async headers() {
     return [

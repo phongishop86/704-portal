@@ -32,7 +32,7 @@ body{background:var(--bg);}
 a{color:var(--brand);}
 .sidebar{background:linear-gradient(180deg,#0f2a5c 0%,#123a78 55%,#0c2552 100%);}
 .sb-brand{display:flex;align-items:center;gap:12px;padding:20px 18px 14px;color:#fff;}
-.sb-logo{width:40px;height:40px;border-radius:11px;background:#2f6df0;display:flex;align-items:center;justify-content:center;font-size:21px;box-shadow:0 4px 12px rgba(0,0,0,.25);}
+.sb-logo{width:42px;height:42px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(0,0,0,.25);flex:none;}.sb-logo img{width:38px;height:38px;display:block;}
 .sb-brand b{display:block;font-size:15px;line-height:1.2;} .sb-brand small{color:#9db6e3;font-size:11.5px;}
 .sidebar-nav{padding:6px 6px 12px;}
 .sidebar-section-title{color:#7f9bd1;padding:14px 18px 4px;font-size:10.5px;}
@@ -247,7 +247,7 @@ function renderSidebar(u) {
   return `
   <div class="sb-backdrop ${state.sidebarOpen ? "show" : ""}" data-action="toggleSidebar"></div>
   <div class="sidebar ${state.sidebarOpen ? "open" : ""}">
-    <div class="sb-brand"><div class="sb-logo">🖥️</div><div><b>Quản lý tài sản</b><small>704 · TSCĐ & CCDC</small></div></div>
+    <div class="sb-brand"><div class="sb-logo"><img src="/img/logo.png" alt="ASSETS"></div><div><b>Quản lý tài sản</b><small>704 · TSCĐ & CCDC</small></div></div>
     <div class="sidebar-nav">
       ${item("dashboard", "🏠", "Trang chủ")}
       ${item("assets", "🗄️", "Tài sản")}

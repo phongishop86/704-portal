@@ -1,6 +1,6 @@
 # Triển khai Cổng 704 + 704-ASSETS nội bộ trên Windows Server 2019
 
-**Chạy hoàn toàn trong mạng LAN, không cần Internet.** Trang chủ `/` là Cổng 704 (admin thêm/xóa/sắp xếp trang); phân hệ Quản lý CCDC & Tài sản mở trong cổng ở `/app.html`; mọi người dùng chung một đăng nhập và một nguồn dữ liệu. **Toàn bộ dữ liệu nằm trong một thư mục `C:\704-assets\data`** (dữ liệu + sao lưu): chép thư mục này là chuyển/sao lưu được cả hệ thống. Giao diện không gọi CDN/phông chữ ngoài.
+**Chạy hoàn toàn trong mạng LAN, không cần Internet.** Trang chủ `/` là **ứng dụng Quản lý tài sản (704-ASSETS)**, vào thẳng, không qua Cổng; Cổng 704 (admin thêm/xóa/sắp xếp trang) vẫn dùng được, tùy chọn, tại `/portal.html`; mọi người dùng chung một đăng nhập và một nguồn dữ liệu. **Toàn bộ dữ liệu nằm trong một thư mục `C:\704-assets\data`** (dữ liệu + sao lưu): chép thư mục này là chuyển/sao lưu được cả hệ thống. Giao diện không gọi CDN/phông chữ ngoài.
 
 Bản nội bộ chạy **độc lập**, không cần Vercel/Firebase: ứng dụng Node.js (Next.js) + dữ liệu lưu thành một file JSON
 (`C:\704-assets\data\data.json`, tự sao lưu hằng ngày). Dành cho **chạy thử trong nhóm nhỏ**; xem mục 8 về giới hạn.
