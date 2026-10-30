@@ -25,7 +25,7 @@ async function getUserByTelegramId(tgId: string): Promise<User | null> {
 }
 
 const HELP =
-  "Cách dùng:\n• /nhatky — khai báo nhật ký từng bước (công việc, phòng ban, user, thời gian, nguyên nhân, xử lý, kết quả)\n• /huy — thoát khi đang khai báo\n• Nhắn tự nhiên, ví dụ: Thay RAM máy FA0001, 30 phút\n• /lichsu FA0001 — lịch sử xử lý thiết bị\n• /phieu — phiếu đang chờ Điện toán xử lý\n• /homnay — việc bạn đã ghi hôm nay\n• /id — xem Telegram ID của bạn và ID nhóm đang chat";
+  "Cách dùng:\n• /nhatky — khai báo nhật ký từng bước (phòng ban, user báo, sự cố, thiết bị, serial, thời gian, xử lý, kết quả, khuyến nghị)\n• /huy — thoát khi đang khai báo\n• Nhắn tự nhiên, ví dụ: Thay RAM máy FA0001, 30 phút\n• /lichsu FA0001 — lịch sử xử lý thiết bị\n• /phieu — phiếu đang chờ Điện toán xử lý\n• /homnay — việc bạn đã ghi hôm nay\n• /id — xem Telegram ID của bạn và ID nhóm đang chat";
 
 export async function POST(req: Request) {
   // 1. Chặn request giả mạo (secret_token đặt khi setWebhook)

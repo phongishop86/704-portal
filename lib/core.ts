@@ -267,6 +267,9 @@ export async function handleCallback(user: User, data: string): Promise<string> 
       // Các trường khai báo theo biểu mẫu (cùng bộ trường với form Nhật ký IT trên web)
       title: d.title ?? d.description,
       requester_name: d.requester_name ?? "",
+      requester_id: d.requester_id ?? null,
+      reported_at: d.reported_at ?? null,
+      serial: d.serial ?? "",
       started_at: d.started_at ?? null,
       ended_at: d.ended_at ?? null,
       cause: d.cause ?? "",

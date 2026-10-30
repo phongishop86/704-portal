@@ -5790,14 +5790,16 @@ function itForm(u) {
       ${F("Hoặc nhập tên người yêu cầu", `<input class="form-control" name="requester_name_free" value="${esc(w.requester_id ? "" : w.requester_name || "")}" placeholder="Nếu không có trong danh sách">`)}
       ${F("Phòng ban được xử lý", `<select class="form-control" name="department_id" id="it_dept"><option value="">-- Chọn phòng ban --</option>${deps.map(d => o(d.id, w.department_id, d.name)).join("")}</select>`)}
       ${F("Mã tài sản liên quan (nếu có)", `<input class="form-control" name="asset_code" value="${esc(w.asset_code || "")}" placeholder="VD: TS-0001" onkeydown="if(event.key==='Enter')event.preventDefault()">`)}
+      ${F("Serial thiết bị (nếu có)", `<input class="form-control" name="serial" value="${esc(w.serial || "")}">`)}
+      ${F("Thời điểm báo sự cố", `<input class="form-control" type="datetime-local" name="reported_at" value="${itLocal(w.reported_at)}">`)}
       ${F("Mã phiếu (nếu có)", `<input class="form-control" name="ticket_code" value="${esc(w.ticket_code || "")}">`)}
       ${F("Thời gian bắt đầu *", `<input class="form-control" type="datetime-local" name="started_at" id="it_start" required value="${itLocal(w.started_at || w.created_at)}" onchange="itCalc()">`)}
       ${F("Thời gian kết thúc", `<input class="form-control" type="datetime-local" name="ended_at" id="it_end" value="${itLocal(w.ended_at)}" onchange="itCalc()">`)}
       ${F("Thời lượng (phút)", `<input class="form-control" type="number" min="0" name="duration_min" id="it_dur" value="${esc(w.duration_min ?? "")}" placeholder="Tự tính từ bắt đầu – kết thúc">`)}
       ${F("Kết quả", `<select class="form-control" name="result">${Object.entries(IT_RESULTS).map(([k, v]) => o(k, itResultOf(w) || "done", v[0])).join("")}</select>`)}
       ${F("Nguyên nhân", ta("cause", w.cause, "Nguyên nhân sự cố / yêu cầu"), true)}
-      ${F("Hướng xử lý", ta("solution", w.solution, "Các bước đã làm / giải pháp"), true)}
-      ${F("Ghi chú thêm", ta("note", w.note, "Vật tư thay thế, đề xuất, theo dõi tiếp…"), true)}
+      ${F("Hướng xử lý / công việc đã thực hiện", ta("solution", w.solution, "Các bước đã làm / giải pháp"), true)}
+      ${F("Khuyến nghị / ghi chú", ta("note", w.note, "Khuyến nghị thay thế, bảo trì, theo dõi tiếp…"), true)}
     </div>
     <button class="btn btn-primary" type="submit">💾 Lưu nhật ký</button> <button type="button" class="btn btn-outline-secondary" onclick="itCancel()">Hủy</button>
   </form></div>`;
@@ -5821,7 +5823,7 @@ function submit_itlog(form) {
     requester_id: req ? req.id : null, requester_name: req ? req.full_name : g("requester_name_free"),
     department_id: g("department_id") || (req && req.department_id) || null,
     asset_id: asset ? asset.id : null, asset_code: asset ? asset.code : "", asset_name: asset ? asset.name : "",
-    ticket_code: g("ticket_code") || null, started_at: startIso, ended_at: en ? new Date(en).toISOString() : null, ts_ms: Date.parse(startIso),
+    ticket_code: g("ticket_code") || null, serial: g("serial") || (asset && asset.serial) || "", reported_at: g("reported_at") ? new Date(g("reported_at")).toISOString() : null, started_at: startIso, ended_at: en ? new Date(en).toISOString() : null, ts_ms: Date.parse(startIso),
     duration_min: dur || 0, cause: g("cause"), solution: g("solution"), result, status: result === "done" ? "done" : "open", note: g("note"), updated_at: nowIso(),
   };
   if (id) { const w = byId(DB.worklogs, id); if (!w || !itCanEdit(u, w)) return; Object.assign(w, vals); }
@@ -5836,7 +5838,7 @@ function submit_itlog(form) {
 function itDetail(w, u) {
   const r = (k, v) => v ? `<div style="margin-bottom:8px"><div class="text-muted small">${k}</div><div style="white-space:pre-wrap">${esc(v)}</div></div>` : "";
   return `<tr class="it-detail"><td colspan="8" style="background:#f8fafc"><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:4px 20px;padding:6px 4px">
-    ${r("Nguyên nhân", w.cause)}${r("Hướng xử lý", w.solution)}${r("Ghi chú", w.note)}${r("Người yêu cầu", w.requester_name)}${r("Bắt đầu", fmtDateTime(w.started_at))}${r("Kết thúc", fmtDateTime(w.ended_at))}${r("Nguồn", w.source === "web" ? "Nhập trên web" : "Telegram")}
+    ${r("Nguyên nhân", w.cause)}${r("Hướng xử lý", w.solution)}${r("Khuyến nghị / ghi chú", w.note)}${r("Người yêu cầu", w.requester_name)}${r("Thời điểm báo", fmtDateTime(w.reported_at))}${r("Serial", w.serial)}${r("Bắt đầu xử lý", fmtDateTime(w.started_at))}${r("Kết thúc", fmtDateTime(w.ended_at))}${r("Nguồn", w.source === "web" ? "Nhập trên web" : "Telegram")}
     </div><div style="padding:4px"><button class="btn btn-sm btn-primary" onclick="itReport('${w.id}')">🖨️ Biên bản (A4 / PDF)</button></div>${itCanEdit(u, w) ? `<div style="padding:4px"><button class="btn btn-sm btn-outline" onclick="itEdit('${w.id}')">✏️ Sửa</button> <button class="btn btn-sm btn-outline" style="color:#dc2626" onclick="itDelete('${w.id}')">🗑️ Xóa</button></div>` : ""}</td></tr>`;
 }
 
@@ -5895,8 +5897,9 @@ function itReport(id) {
       ${row("Người yêu cầu / đại diện", esc(req))}
       ${row("Công việc / sự cố", `<b>${esc(w.title || w.description || "")}</b>`)}
       ${row("Loại công việc", esc(w.category || ""))}
-      ${row("Thiết bị / tài sản liên quan", a ? `${esc(a.code)} · ${esc(a.name)}${a.serial ? " · SN: " + esc(a.serial) : ""}` : esc(w.asset_code ? w.asset_code + " " + (w.asset_name || "") : "Không"))}
-      ${row("Thời gian bắt đầu", esc(fmtDateTime(itWhen(w))))}
+      ${row("Thiết bị / tài sản liên quan", a ? `${esc(a.code)} · ${esc(a.name)}${(w.serial || a.serial) ? " · SN: " + esc(w.serial || a.serial) : ""}` : esc((w.asset_code ? w.asset_code + " " : "") + (w.asset_name || "") + (w.serial ? " · SN: " + w.serial : "") || "Không"))}
+      ${row("Thời điểm báo sự cố", esc(fmtDateTime(w.reported_at)))}
+      ${row("Thời gian bắt đầu xử lý", esc(fmtDateTime(itWhen(w))))}
       ${row("Thời gian kết thúc", esc(fmtDateTime(w.ended_at)))}
       ${row("Thời lượng xử lý", w.duration_min ? esc(w.duration_min) + " phút" : "")}
       ${row("Kết quả", esc((IT_RESULTS[itResultOf(w)] || [""])[0]))}
@@ -5905,7 +5908,7 @@ function itReport(id) {
     <p style="margin:14px 0 2px"><b>II. NỘI DUNG XỬ LÝ</b></p>
     ${para("1. Nguyên nhân", w.cause)}
     ${para("2. Hướng xử lý / các bước đã thực hiện", w.solution)}
-    ${w.note ? para("3. Ghi chú / đề xuất", w.note) : ""}
+    ${w.note ? para("3. Khuyến nghị", w.note) : ""}
     <p style="margin:14px 0 0">Hai bên đã kiểm tra và xác nhận nội dung trên là đúng. Biên bản lập thành 02 bản: phòng ban lưu 01 bản, bộ phận CNTT lưu 01 bản.</p>
     <table style="width:100%;border:none;margin-top:18px;page-break-inside:avoid"><tr>
       <td style="border:none;text-align:center;width:34%"><b>CÁN BỘ IT THỰC HIỆN</b><div style="font-style:italic;font-size:11px">(Ký, ghi rõ họ tên)</div><div style="margin-top:62px">${esc(w.it_user || "")}</div></td>
