@@ -2216,7 +2216,7 @@ function viewRepairDetail(u, id){
     </div>
     <div class="col col-7">
       <div class="card">
-        <h4>Tiến độ quy trình (5 bước)</h4>
+        <h4>Tiến độ quy trình (${rt.route === "it" ? "4 bước · chuyển thẳng Điện toán" : "5 bước"})</h4>
         ${steps.map(s=>`<div class="wf-step ${s.cls}"><b>${s.label}</b>${s.at?`<span class="small">${esc(s.who)} · ${fmtDateTime(s.at)}</span>`:(s.cls==="active"?`<span class="small">Đang chờ ${s.who ? esc(s.who) + " " : ""}xử lý...</span>`:`<span class="small">Chưa thực hiện</span>`)}</div>`).join("")}
         ${rt.status==="rejected"?`<div class="wf-step rejected"><b>Đã huỷ phiếu</b><span class="small">${esc(userName(rt.rejected_by))} · ${fmtDateTime(rt.rejected_at)}</span></div>`:""}
       </div>

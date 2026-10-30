@@ -203,6 +203,14 @@ sub_once('{label:"3. TCTH điều phối", who:userName(rt.tcth_id), at:rt.tcth_
 sub_once('  if(rt.status === "pending_manager") steps[1].cls = "active";', '  if(rt.route === "it") steps[2].cls = "skipped";\n  if(rt.status === "pending_manager") steps[1].cls = "active";', "rp-route-skipcls")
 sub_once('<tr><td class="text-muted">Ngày lập</td><td>${fmtDateTime(rt.created_at)}</td></tr>', '<tr><td class="text-muted">Ngày lập</td><td>${fmtDateTime(rt.created_at)}</td></tr>\n          ${rt.route ? `<tr><td class="text-muted">LĐP chuyển tới</td><td>${rt.route === "it" ? "Điện toán (IT) trực tiếp" : "TCTH (hư hỏng lớn)"}</td></tr>` : ""}', "rp-route-row")
 
+
+# Tiêu đề khung tiến độ phiếu báo hỏng: 4 bước khi LĐP chuyển thẳng Điện toán
+_h = '<h4>Tiến độ quy trình (5 bước)</h4>'
+_pos = [m.start() for m in re.finditer(re.escape(_h), s) if 'rt.status==="rejected"' in s[m.start():m.start()+600]]
+if len(_pos) != 1:
+    raise SystemExit(f"[rp-title] mong đợi 1 vị trí, tìm thấy {len(_pos)}")
+s = s[:_pos[0]] + '<h4>Tiến độ quy trình (${rt.route === "it" ? "4 bước · chuyển thẳng Điện toán" : "5 bước"})</h4>' + s[_pos[0]+len(_h):]
+
 out = root / "public" / "app.html"
 out.write_text(s, encoding="utf8")
 print("OK ->", out, len(s), "ký tự")
