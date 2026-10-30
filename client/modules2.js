@@ -406,7 +406,7 @@ function qrShow(id) {
   const url = qrUrl(a);
   const d = modal2(`<h3 style="margin:0 0 4px">🔳 ${esc(a.code)}</h3><div class="text-muted" style="margin-bottom:10px">${esc(a.name)}</div>
     <div style="text-align:center">${qrSvg(qrPayload(a), 220)}</div><div class="mono small text-muted" style="word-break:break-all;margin:8px 0 14px">${esc(qrPayload(a))}</div>
-    <div style="display:flex;gap:8px;justify-content:flex-end"><button class="btn" onclick="closeModal2()">Đóng</button><button class="btn btn-primary" onclick="qrPrintIds(['${a.id}'],'kj60')">🖨️ In tem</button></div>`);
+    <div style="display:flex;gap:8px;justify-content:flex-end"><button class="btn" onclick="closeModal2()">Đóng</button><button class="btn btn-primary" onclick="qrPrintDialog('${a.id}')">🖨️ In tem</button></div>`);
   return d;
 }
 const QR_LAYOUTS = {
@@ -414,6 +414,24 @@ const QR_LAYOUTS = {
   kj60: { label: "King Jim / Tepra · băng 24 mm · tem 60 × 24 mm (cuộn)", cols: 1, h: 24, qr: 20, page: "60mm 24mm", margin: "0", roll: true },
   kj80: { label: "King Jim / Tepra · băng 24 mm · tem 80 × 24 mm (cuộn)", cols: 1, h: 24, qr: 20, page: "80mm 24mm", margin: "0", roll: true },
 };
+function qrLayoutPref() { try { const v = localStorage.getItem("qrLayoutPref"); if (v && QR_LAYOUTS[v]) return v; } catch (e) { /* bỏ qua */ } return qrF.layout; }
+const qrDlgHint = k => { const L = QR_LAYOUTS[k]; return L.roll ? `Khổ giấy <b>${L.page.replace(" ", " × ")}</b> (băng 24 mm), lề 0, tỷ lệ 100%. Tại hộp thoại in tiếp theo, chọn máy in <b>KING JIM SR5900P</b> (hoặc máy Tepra của bạn).` : `Khổ <b>A4</b>, lề 0, tỷ lệ 100% (không chọn “Vừa trang”). Chọn máy in A4 ở hộp thoại in tiếp theo.`; };
+function qrDlgChange() { const k = document.getElementById("qpd_layout").value; document.getElementById("qpd_hint").innerHTML = qrDlgHint(k); }
+function qrPrintDialog(id) {
+  closeModal2(); const a = byId(DB.assets, id); if (!a) return;
+  const cur = qrLayoutPref();
+  modal2(`<h3 style="margin:0 0 4px">🏷️ In tem QR</h3><div class="text-muted" style="margin-bottom:12px">${esc(a.code)} · ${esc(a.name)}</div>
+    <div class="form-group"><label>Mẫu tem / cỡ giấy</label><select class="form-control" id="qpd_layout" onchange="qrDlgChange()">${Object.entries(QR_LAYOUTS).map(([k, v]) => `<option value="${k}" ${cur === k ? "selected" : ""}>${esc(v.label)}</option>`).join("")}</select></div>
+    <div class="form-group"><label>Số tem in</label><input class="form-control" type="number" id="qpd_copies" min="1" max="50" value="1" style="max-width:120px"></div>
+    <div class="small text-muted" id="qpd_hint" style="margin-bottom:14px">${qrDlgHint(cur)}</div>
+    <div style="display:flex;gap:8px;justify-content:flex-end"><button class="btn" onclick="closeModal2()">Hủy</button><button class="btn btn-primary" onclick="qrPrintGo('${a.id}')">🖨️ In…</button></div>`);
+}
+function qrPrintGo(id) {
+  const k = document.getElementById("qpd_layout").value, n = Math.max(1, Math.min(50, Number(document.getElementById("qpd_copies").value) || 1));
+  try { localStorage.setItem("qrLayoutPref", k); } catch (e) { /* bỏ qua */ }
+  qrF.layout = k; closeModal2();
+  qrPrintIds(Array(n).fill(id), k);
+}
 function qrPrintIds(ids, layoutKey) {
   const L = QR_LAYOUTS[layoutKey] || QR_LAYOUTS.a3x11;
   const assets = ids.map(id => byId(DB.assets, id)).filter(Boolean);
@@ -803,8 +821,8 @@ function assetExtraCards(a, u) {
   const sw = isStaff2(u) ? (DB.software || []).filter(s => (s.installs || []).some(i => i.asset_id === a.id)) : [];
   const acc = isStaff2(u) ? (DB.accessories || []).flatMap(x => (x.assignments || []).filter(s => !s.returned_at && (s.to_asset_id === a.id || (a.current_user_id && s.to_user_id === a.current_user_id))).map(s => ({ x, s }))) : [];
   return `
-  <div class="row"><div class="col col-4"><div class="card"><h4 style="margin-top:0">🔳 Mã QR tài sản</h4><div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap"><span style="display:block;width:120px">${qrSvg(url, 120)}</span>
-    <div style="min-width:0"><div class="mono small text-muted" style="word-break:break-all;margin-bottom:8px">${esc(url)}</div><button class="btn btn-sm btn-outline" onclick="qrPrintIds(['${a.id}'],'kj60')">🏷️ In tem</button></div></div></div></div>
+  <div class="row"><div class="col col-4"><div class="card"><h4 style="margin-top:0">🔳 Mã QR tài sản</h4><div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap"><span style="display:block;width:120px">${qrSvg(qrPayload(a), 120)}</span>
+    <div style="min-width:0"><div class="mono small text-muted" style="word-break:break-all;margin-bottom:8px">${esc(url)}</div><button class="btn btn-sm btn-outline" onclick="qrPrintDialog('${a.id}')">🏷️ In tem</button></div></div></div></div>
   ${isStaff2(u) ? `<div class="col col-8"><div class="card"><h4 style="margin-top:0">💿 Phần mềm đã cài (${sw.length}) · 🧩 Phụ kiện đang dùng (${acc.length})</h4>
     ${sw.length || acc.length ? `<ul style="margin:0;padding-left:18px">${sw.map(s => `<li><a data-nav="software_detail" data-params='{"id":"${s.id}"}'>${esc(s.name)}</a> ${esc(s.version || "")}</li>`).join("")}${acc.map(({ x, s }) => `<li><a data-nav="accessory_detail" data-params='{"id":"${x.id}"}'>${esc(x.name)}</a> × ${s.qty} <span class="text-muted small">(${esc(s.to_label)})</span></li>`).join("")}</ul>` : `<p class="text-muted" style="margin:0">Chưa ghi nhận phần mềm / phụ kiện cho tài sản này.</p>`}</div></div>` : ""}</div>`;
 }
