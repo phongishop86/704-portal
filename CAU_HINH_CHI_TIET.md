@@ -223,6 +223,15 @@ Bỏ qua mục này nếu không cần bản chiếu nhật ký ra Sheet; chỉ 
 
 Ghi chú: Sheet chỉ là **bản chiếu một chiều**. Sửa trong Sheet **không** ảnh hưởng dữ liệu hệ thống. Nội dung được ghi dạng văn bản thuần nên không thể chèn công thức. Nếu ghi Sheet lỗi, nhật ký vẫn được lưu trong Firestore (Sheet không làm hỏng luồng chính).
 
+
+### 8.1 Sao lưu toàn bộ dữ liệu ra Google Sheet (admin/IT)
+
+Dùng cùng service account và cách chia sẻ Sheet như trên (quyền Editor). Có thể dùng Sheet riêng: đặt `BACKUP_SHEET_ID` (bỏ trống thì dùng `SHEET_ID`). Hệ thống tự tạo các tab `BK_<tên bảng>` và `BK_info`; không đụng tab `WorkLog`.
+- **Thủ công:** Cấu hình → Nhập/Xuất dữ liệu → "📤 Sao lưu ngay ra Google Sheet" (admin, IT).
+- **Định kỳ:** `vercel.json` có cron mỗi Chủ nhật 18:00 UTC (01:00 thứ Hai giờ VN) gọi `/api/admin/backup-sheets` (cần đặt `CRON_SECRET`, đã dùng cho nhắc việc). Muốn đổi tần suất, sửa `schedule` trong `vercel.json`.
+- Không xuất mật khẩu và khóa bản quyền phần mềm. Là bản sao một chiều: sửa trong Sheet không ảnh hưởng hệ thống, và không có chức năng khôi phục tự động từ Sheet (khôi phục dùng file Backup .json).
+- Giới hạn Google Sheet: 10 triệu ô mỗi bảng tính, 50.000 ký tự mỗi ô; dữ liệu lớn hơn nên tách `BACKUP_SHEET_ID` riêng.
+
 ---
 
 ## 9. Vercel: nhập biến môi trường và triển khai

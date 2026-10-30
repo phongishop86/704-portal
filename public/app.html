@@ -2332,6 +2332,7 @@ function viewAdminBackup(u) {
       <button class="btn btn-primary" onclick="exportFullDatabase()">💾 Tải file Backup (.json)</button>
     </div>
 
+    ${sheetsBackupCard()}
     <div style="margin: 24px 0; padding: 20px; border: 1px dashed var(--border); border-radius: 8px; background: #fff1f2;">
       <h5 style="color:var(--red)">2. Import Backup (Khôi phục toàn vẹn dữ liệu)</h5>
       <p style="font-size:14px;">Tải lên file Backup đã lưu trước đó. <br><strong>LƯU Ý:</strong> Quá trình này sẽ XÓA SẠCH dữ liệu hiện hành trên máy và GHI ĐÈ toàn bộ bằng dữ liệu từ file Backup để đảm bảo tính đồng nhất!</p>
@@ -5836,7 +5837,7 @@ function itDetail(w, u) {
   const r = (k, v) => v ? `<div style="margin-bottom:8px"><div class="text-muted small">${k}</div><div style="white-space:pre-wrap">${esc(v)}</div></div>` : "";
   return `<tr class="it-detail"><td colspan="8" style="background:#f8fafc"><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:4px 20px;padding:6px 4px">
     ${r("Nguyên nhân", w.cause)}${r("Hướng xử lý", w.solution)}${r("Ghi chú", w.note)}${r("Người yêu cầu", w.requester_name)}${r("Bắt đầu", fmtDateTime(w.started_at))}${r("Kết thúc", fmtDateTime(w.ended_at))}${r("Nguồn", w.source === "web" ? "Nhập trên web" : "Telegram")}
-    </div>${itCanEdit(u, w) ? `<div style="padding:4px"><button class="btn btn-sm btn-outline" onclick="itEdit('${w.id}')">✏️ Sửa</button> <button class="btn btn-sm btn-outline" style="color:#dc2626" onclick="itDelete('${w.id}')">🗑️ Xóa</button></div>` : ""}</td></tr>`;
+    </div><div style="padding:4px"><button class="btn btn-sm btn-primary" onclick="itReport('${w.id}')">🖨️ Biên bản (A4 / PDF)</button></div>${itCanEdit(u, w) ? `<div style="padding:4px"><button class="btn btn-sm btn-outline" onclick="itEdit('${w.id}')">✏️ Sửa</button> <button class="btn btn-sm btn-outline" style="color:#dc2626" onclick="itDelete('${w.id}')">🗑️ Xóa</button></div>` : ""}</td></tr>`;
 }
 
 function viewItLog(u) {
@@ -5850,7 +5851,7 @@ function viewItLog(u) {
   return `<div class="card">
     <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap">
       <h4 style="margin:0">🧰 Nhật ký công việc IT (${list.length} việc · ${total} phút)</h4>
-      <div style="display:flex;gap:8px"><button class="btn btn-sm btn-outline" onclick="itExport()">⬇️ Xuất CSV</button><button class="btn btn-primary btn-sm" onclick="itNew()">➕ Tạo nhật ký</button></div>
+      <div style="display:flex;gap:8px"><button class="btn btn-sm btn-outline" onclick="itExport()">⬇️ Xuất CSV</button><button class="btn btn-sm btn-outline" onclick="itReportList()" title="In biên bản tổng hợp theo bộ lọc hiện tại">🖨️ Biên bản tổng hợp</button><button class="btn btn-primary btn-sm" onclick="itNew()">➕ Tạo nhật ký</button></div>
     </div>
     <div class="toolbar" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
       <input class="form-control" id="itlogSearch" placeholder="🔍 Mã tài sản, nội dung, người ghi… (Enter)" value="${esc(itF.q)}" style="width:auto;max-width:280px;flex:1 1 200px;min-width:180px" onkeydown="if(event.key==='Enter') itApply()">
@@ -5871,6 +5872,94 @@ function viewItLog(u) {
     ${pages > 1 ? `<div style="display:flex;gap:8px;align-items:center;justify-content:center;margin-top:10px"><button class="btn btn-sm btn-outline-secondary" ${itF.page <= 1 ? "disabled" : ""} onclick="itPage(${itF.page - 1})">‹ Trước</button><span class="small text-muted">Trang ${itF.page}/${pages}</span><button class="btn btn-sm btn-outline-secondary" ${itF.page >= pages ? "disabled" : ""} onclick="itPage(${itF.page + 1})">Sau ›</button></div>` : ""}`
       : `<p class="text-muted">Chưa có nhật ký nào. Bấm “Tạo nhật ký” hoặc ghi qua chatbot Telegram.</p>`}
   </div>`;
+}
+
+/* ============================================================================
+   BIÊN BẢN XỬ LÝ CÔNG VIỆC IT (in A4 → "Lưu thành PDF" → gửi phòng ban xác nhận)
+   ============================================================================ */
+function itReport(id) {
+  const w = byId(DB.worklogs, id); if (!w) return;
+  const t = DB.templateConfig || {}, a = w.asset_id ? byId(DB.assets, w.asset_id) : null;
+  const dep = depName(w.department_id) || "…………………………";
+  const req = w.requester_name || "…………………………";
+  const row = (k, v) => `<tr><td style="width:30%;font-weight:600;background:#f3f4f6">${k}</td><td>${v || "&nbsp;"}</td></tr>`;
+  const para = (title, txt) => `<p style="margin:10px 0 3px"><b>${title}</b></p><div style="border:1px solid #333;min-height:48px;padding:6px 8px;white-space:pre-wrap">${esc(txt || "")}</div>`;
+  const d = new Date(itMs(w));
+  const body = `
+    ${reportLetterheadHtml()}
+    <h2 style="text-align:center;margin:16px 0 2px">BIÊN BẢN XÁC NHẬN XỬ LÝ CÔNG VIỆC CÔNG NGHỆ THÔNG TIN</h2>
+    <div style="text-align:center;margin-bottom:12px">Số: ${esc(w.id)} &nbsp;·&nbsp; Ngày ${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}</div>
+    <p style="margin:8px 0 4px"><b>I. THÔNG TIN CHUNG</b></p>
+    <table class="print-table" style="width:100%">
+      ${row("Phòng ban / đơn vị được hỗ trợ", esc(dep))}
+      ${row("Người yêu cầu / đại diện", esc(req))}
+      ${row("Công việc / sự cố", `<b>${esc(w.title || w.description || "")}</b>`)}
+      ${row("Loại công việc", esc(w.category || ""))}
+      ${row("Thiết bị / tài sản liên quan", a ? `${esc(a.code)} · ${esc(a.name)}${a.serial ? " · SN: " + esc(a.serial) : ""}` : esc(w.asset_code ? w.asset_code + " " + (w.asset_name || "") : "Không"))}
+      ${row("Thời gian bắt đầu", esc(fmtDateTime(itWhen(w))))}
+      ${row("Thời gian kết thúc", esc(fmtDateTime(w.ended_at)))}
+      ${row("Thời lượng xử lý", w.duration_min ? esc(w.duration_min) + " phút" : "")}
+      ${row("Kết quả", esc((IT_RESULTS[itResultOf(w)] || [""])[0]))}
+      ${row("Cán bộ IT thực hiện", esc(w.it_user || ""))}
+    </table>
+    <p style="margin:14px 0 2px"><b>II. NỘI DUNG XỬ LÝ</b></p>
+    ${para("1. Nguyên nhân", w.cause)}
+    ${para("2. Hướng xử lý / các bước đã thực hiện", w.solution)}
+    ${w.note ? para("3. Ghi chú / đề xuất", w.note) : ""}
+    <p style="margin:14px 0 0">Hai bên đã kiểm tra và xác nhận nội dung trên là đúng. Biên bản lập thành 02 bản: phòng ban lưu 01 bản, bộ phận CNTT lưu 01 bản.</p>
+    <table style="width:100%;border:none;margin-top:18px;page-break-inside:avoid"><tr>
+      <td style="border:none;text-align:center;width:34%"><b>CÁN BỘ IT THỰC HIỆN</b><div style="font-style:italic;font-size:11px">(Ký, ghi rõ họ tên)</div><div style="margin-top:62px">${esc(w.it_user || "")}</div></td>
+      <td style="border:none;text-align:center;width:33%"><b>NGƯỜI YÊU CẦU / ĐẠI DIỆN PHÒNG BAN</b><div style="font-style:italic;font-size:11px">(Ký, ghi rõ họ tên)</div><div style="margin-top:62px">${w.requester_name ? esc(w.requester_name) : ""}</div></td>
+      <td style="border:none;text-align:center;width:33%"><b>TRƯỞNG PHÒNG / ĐƠN VỊ XÁC NHẬN</b><div style="font-style:italic;font-size:11px">(Ký, ghi rõ họ tên, đóng dấu)</div><div style="margin-top:62px">&nbsp;</div></td>
+    </tr></table>`;
+  openPrintWindow(body, "Bien_ban_" + w.id);
+}
+function itReportList() {
+  const list = itFiltered().slice().sort((a, b) => itMs(a) - itMs(b));
+  if (!list.length) { flash("Không có nhật ký nào để lập biên bản (kiểm tra bộ lọc).", "error"); render(); return; }
+  const dep = itF.dept ? depName(itF.dept) : "Tất cả phòng ban";
+  const total = list.reduce((s, w) => s + (Number(w.duration_min) || 0), 0);
+  const period = itF.from || itF.to ? `Từ ${itF.from || "…"} đến ${itF.to || "…"}` : "Toàn bộ thời gian";
+  const body = `
+    ${reportLetterheadHtml()}
+    <h2 style="text-align:center;margin:16px 0 2px">BIÊN BẢN TỔNG HỢP CÔNG VIỆC HỖ TRỢ CÔNG NGHỆ THÔNG TIN</h2>
+    <div style="text-align:center;margin-bottom:10px">Phòng ban: <b>${esc(dep)}</b> · ${esc(period)} · ${list.length} việc · ${total} phút</div>
+    <table class="print-table" style="width:100%"><thead><tr><th style="width:4%">STT</th><th style="width:13%">Thời gian</th><th>Công việc</th><th style="width:15%">Người yêu cầu</th><th style="width:22%">Nguyên nhân / hướng xử lý</th><th style="width:11%">Kết quả</th><th style="width:7%">Phút</th></tr></thead><tbody>
+    ${list.map((w, i) => `<tr><td style="text-align:center">${i + 1}</td><td>${esc(fmtDateTime(itWhen(w)))}</td><td><b>${esc(w.title || w.description || "")}</b>${w.asset_code ? `<div>${esc(w.asset_code)}</div>` : ""}${itF.dept ? "" : `<div>${esc(depName(w.department_id) || "")}</div>`}</td><td>${esc(w.requester_name || "")}</td><td>${esc([w.cause, w.solution].filter(Boolean).join(" → "))}</td><td>${esc((IT_RESULTS[itResultOf(w)] || [""])[0])}</td><td style="text-align:right">${esc(w.duration_min || 0)}</td></tr>`).join("")}
+    </tbody></table>
+    <p style="margin:12px 0 0">Đại diện phòng ban đã đối chiếu và xác nhận các nội dung trên.</p>
+    <table style="width:100%;border:none;margin-top:18px;page-break-inside:avoid"><tr>
+      <td style="border:none;text-align:center;width:50%"><b>BỘ PHẬN CNTT</b><div style="font-style:italic;font-size:11px">(Ký, ghi rõ họ tên)</div><div style="margin-top:62px">&nbsp;</div></td>
+      <td style="border:none;text-align:center;width:50%"><b>TRƯỞNG PHÒNG / ĐƠN VỊ XÁC NHẬN</b><div style="font-style:italic;font-size:11px">(Ký, ghi rõ họ tên, đóng dấu)</div><div style="margin-top:62px">&nbsp;</div></td>
+    </tr></table>`;
+  openPrintWindow(body, "Bien_ban_tong_hop_IT");
+}
+
+/* ---- Sao lưu ra Google Sheet (admin / IT) ---- */
+const bkS = { info: null, loading: false, running: false, msg: "" };
+function bkLoad() {
+  if (bkS.loading || bkS.info) return; bkS.loading = true;
+  fetch("/api/admin/backup-sheets", { credentials: "same-origin" }).then(r => r.json()).then(j => { bkS.info = j; }).catch(() => { bkS.info = { error: true }; }).finally(() => { bkS.loading = false; if (state.route === "admin_data") render(); });
+}
+function sheetsBackupCard() {
+  const u = currentUser();
+  if (!u || !["admin", "it"].includes(u.role)) return "";
+  bkLoad();
+  const i = bkS.info, last = i && i.last;
+  const st = !i ? "Đang kiểm tra…" : i.error ? "Không kiểm tra được trạng thái." : !i.configured ? "Chưa cấu hình (cần GOOGLE_CLIENT_EMAIL, GOOGLE_PRIVATE_KEY, BACKUP_SHEET_ID trên máy chủ). Bản chạy nội bộ không dùng mục này." : last ? (last.ok ? `Lần gần nhất: ${fmtDateTime(last.at)} bởi ${esc(last.by || "")} — ` + Object.entries(last.counts || {}).map(([k, v]) => k + " " + v).join(", ") : `<span style="color:#dc2626">Lần gần nhất lỗi (${fmtDateTime(last.at)}): ${esc(last.error || "")}</span>`) : "Chưa có lần sao lưu nào.";
+  return `<div style="margin: 24px 0; padding: 20px; border: 1px dashed var(--border); border-radius: 8px; background: #f0fdf4;">
+    <h5>📊 Sao lưu ra Google Sheet</h5>
+    <p style="font-size:14px;">Ghi toàn bộ dữ liệu (tài sản, nhật ký IT, phiếu, người dùng không kèm mật khẩu, khóa bản quyền được loại bỏ…) ra các tab <code>BK_…</code> trong Google Sheet của đơn vị. Chạy tay tại đây hoặc tự động mỗi tuần (Chủ nhật 18:00 UTC).</p>
+    <div class="small text-muted" style="margin-bottom:10px">${st}</div>
+    <button class="btn btn-primary" ${bkS.running || (i && !i.configured) ? "disabled" : ""} onclick="sheetsBackupNow()">${bkS.running ? "⏳ Đang sao lưu…" : "📤 Sao lưu ngay ra Google Sheet"}</button>
+    ${bkS.msg ? `<div style="margin-top:8px">${bkS.msg}</div>` : ""}</div>`;
+}
+function sheetsBackupNow() {
+  if (bkS.running) return; bkS.running = true; bkS.msg = ""; render();
+  fetch("/api/admin/backup-sheets", { method: "POST", credentials: "same-origin" }).then(r => r.json().then(j => ({ ok: r.ok, j }))).then(({ ok, j }) => {
+    bkS.msg = ok ? `<span style="color:#16a34a">✅ Đã sao lưu ${Object.values(j.counts || {}).reduce((s, n) => s + n, 0)} bản ghi.</span>` : `<span style="color:#dc2626">❌ ${esc(j.error || "Lỗi")}</span>`;
+    bkS.info = null;
+  }).catch(() => { bkS.msg = `<span style="color:#dc2626">❌ Không kết nối được máy chủ.</span>`; }).finally(() => { bkS.running = false; render(); });
 }
 
 boot();

@@ -178,6 +178,8 @@ sub_once('  ${ccdcKindCard(a,u)}`;', '  ${ccdcKindCard(a,u)}\n  ${assetExtraCard
 sub_once('        <div class="col col-6"><div class="form-group"><label>Địa chỉ</label>\n          <input class="form-control" name="address"', '        ${assetFormExtra(a,u)}\n        <div class="col col-6"><div class="form-group"><label>Địa chỉ</label>\n          <input class="form-control" name="address"', "form-extra")
 sub_once('let assets = DB.assets.filter(a=>a.status==="in_use");', 'let assets = DB.assets.filter(a=>["in_use","unused"].includes(a.status));', "transfer-new-unused")
 
+sub_once('<div style="margin: 24px 0; padding: 20px; border: 1px dashed var(--border); border-radius: 8px; background: #fff1f2;">', '${sheetsBackupCard()}\n    <div style="margin: 24px 0; padding: 20px; border: 1px dashed var(--border); border-radius: 8px; background: #fff1f2;">', "sheets-backup-card")
+
 out = root / "public" / "app.html"
 out.write_text(s, encoding="utf8")
 print("OK ->", out, len(s), "ký tự")
