@@ -10,6 +10,15 @@ const isStaff2 = u => U2_STAFF.includes(u.role);
 const canLoc = u => ["admin", "tcth"].includes(u.role);
 const canStock = u => U2_STAFF.includes(u.role);
 const normTxt = s => String(s == null ? "" : s).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/đ/g, "d");
+/* Sắp xếp ABC (tiếng Việt) cho các danh mục nhỏ: phòng ban, nhóm, địa điểm, phần mềm, phụ kiện; người dùng theo TÊN (từ cuối) rồi họ đệm. */
+const VI_COLL = new Intl.Collator("vi", { numeric: true, sensitivity: "base" });
+const cmpName = (a, b) => VI_COLL.compare(String(a.name || ""), String(b.name || ""));
+const personKey = u => { const w = String(u.full_name || u.username || "").trim().split(/\s+/); return [w[w.length - 1] || "", w.slice(0, -1).join(" ")]; };
+const cmpPerson = (a, b) => { const x = personKey(a), y = personKey(b); return VI_COLL.compare(x[0], y[0]) || VI_COLL.compare(x[1], y[1]); };
+function sortLists() {
+  ["departments", "categories", "locations", "software", "accessories"].forEach(k => { if (Array.isArray(DB[k]) && DB[k].length > 1) DB[k].sort(cmpName); });
+  if (Array.isArray(DB.users) && DB.users.length > 1) DB.users.sort(cmpPerson);
+}
 const locName = id => { const l = id ? (DB.locations || []).find(x => x.id === id) : null; return l ? l.name : null; };
 const dayDiff = iso => { if (!iso) return null; const t = Date.parse(String(iso).slice(0, 10)); return isNaN(t) ? null : Math.floor((t - Date.now()) / 86400000); };
 const initials = n => String(n || "?").replace(/\(.*?\)/g, " ").trim().split(/\s+/).filter(w => /\p{L}/u.test(w[0] || "")).slice(-2).map(w => w[0]).join("").toUpperCase() || "?";

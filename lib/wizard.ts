@@ -35,6 +35,13 @@ const norm = (t: string) => t.normalize("NFD").replace(/[\u0300-\u036f]/g, "").r
 const btn = (text: string, data: string): Button => ({ text, data });
 const rowsOf = (bs: Button[], n: number): Button[][] => { const out: Button[][] = []; for (let i = 0; i < bs.length; i += n) out.push(bs.slice(i, i + n)); return out; };
 const SKIP = [btn("⏭ Bỏ qua", "w:skip")];
+const collator = new Intl.Collator("vi", { numeric: true, sensitivity: "base" });
+/** Người Việt sắp theo TÊN (từ cuối) rồi họ đệm. */
+const byPerson = (a: Cand, b: Cand) => {
+  const k = (n: string) => { const w = n.trim().split(/\s+/); return [w[w.length - 1] ?? "", w.slice(0, -1).join(" ")]; };
+  const x = k(a.name), y = k(b.name);
+  return collator.compare(x[0], y[0]) || collator.compare(x[1], y[1]);
+};
 const numbered = (c: Cand[]) => c.map((x, i) => `${i + 1}. ${x.name}`).join("\n");
 
 /* ---------- thời gian theo giờ Việt Nam ---------- */
@@ -67,14 +74,16 @@ export function parseDur(t: string): number | null {
 async function deptCands(): Promise<Cand[]> { return (await listDepartments()).slice(0, 60); }
 async function userCands(deptId: string): Promise<Cand[]> {
   const snap = await db.collection("users").where("department_id", "==", deptId).limit(40).get();
-  return snap.docs.filter((d) => !d.data()._del && d.data().is_active !== false).map((d) => ({ id: d.id, name: String(d.data().full_name ?? "") })).filter((x) => x.name).sort((a, b) => a.name.localeCompare(b.name, "vi")).slice(0, 15);
+  return snap.docs.filter((d) => !d.data()._del && d.data().is_active !== false).map((d) => ({ id: d.id, name: String(d.data().full_name ?? "") })).filter((x) => x.name).sort(byPerson).slice(0, 15);
 }
 async function assetCands(deptId: string | null, userId: string | null): Promise<Cand[]> {
   if (!deptId) return [];
   const snap = await db.collection("assets").where("department_id", "==", deptId).limit(80).get();
   const list = snap.docs.filter((d) => !d.data()._del).map((d) => ({ id: d.id, code: String(d.data().code ?? ""), name: String(d.data().name ?? ""), mine: !!userId && d.data().current_user_id === userId }));
-  list.sort((a, b) => Number(b.mine) - Number(a.mine) || a.code.localeCompare(b.code));
-  return list.slice(0, 10).map((a) => ({ id: a.id, name: `${a.code} · ${a.name.slice(0, 40)}` }));
+  const mine = list.filter((a) => a.mine); // có user báo sự cố và user đó đang dùng máy: chỉ hiện máy của họ
+  const pool = mine.length ? mine : list;
+  pool.sort((a, b) => collator.compare(a.name, b.name) || collator.compare(a.code, b.code));
+  return pool.slice(0, 10).map((a) => ({ id: a.id, name: `${a.code} · ${a.name.slice(0, 40)}` }));
 }
 
 async function prompt(st: State): Promise<Reply> {
@@ -281,7 +290,7 @@ export async function wizardText(user: User, text: string): Promise<Reply> {
       if (c) { const a = (await db.collection("assets").doc(c.id).get()).data(); if (a && !a._del) return (await pickAsset(st, { ...a, id: c.id })).next!; }
       const found = await findAssets(t);
       const inDept = st.data.department_id ? found.filter((a) => a.department_id === st.data.department_id) : found;
-      const list = inDept.length ? inDept : found;
+      const list = (inDept.length ? inDept : found).slice().sort((a, b) => collator.compare(String(a.name), String(b.name)));
       if (list.length === 1) return (await pickAsset(st, list[0])).next!;
       if (list.length > 1) {
         st.cands = list.slice(0, 5).map((a) => ({ id: a.id, name: `${a.code} · ${String(a.name).slice(0, 40)}` }));
