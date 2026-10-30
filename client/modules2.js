@@ -413,12 +413,9 @@ const QR_LAYOUTS = {
   a3x11: { label: "A4 · 3 cột × 11 hàng · tem cao 24 mm (khuyên dùng)", cols: 3, h: 24, qr: 20, page: "A4", margin: "8mm 8mm" },
   kj60: { label: "King Jim / Tepra · băng 24 mm · tem 60 × 24 mm (cuộn)", cols: 1, h: 24, qr: 20, page: "60mm 24mm", margin: "0", roll: true },
   kj80: { label: "King Jim / Tepra · băng 24 mm · tem 80 × 24 mm (cuộn)", cols: 1, h: 24, qr: 20, page: "80mm 24mm", margin: "0", roll: true },
-  a3x8: { label: "A4 · 3 cột × 8 hàng (70 × 34 mm)", cols: 3, h: 34, qr: 28, page: "A4", margin: "8mm" },
-  a4x10: { label: "A4 · 4 cột × 10 hàng (52 × 26 mm)", cols: 4, h: 26, qr: 21, page: "A4", margin: "8mm" },
-  roll: { label: "Tem cuộn 50 × 30 mm (1 tem / trang)", cols: 1, h: 30, qr: 24, page: "50mm 30mm", margin: "0", roll: true },
 };
 function qrPrintIds(ids, layoutKey) {
-  const L = QR_LAYOUTS[layoutKey] || QR_LAYOUTS.a3x8;
+  const L = QR_LAYOUTS[layoutKey] || QR_LAYOUTS.a3x11;
   const assets = ids.map(id => byId(DB.assets, id)).filter(Boolean);
   if (!assets.length) { alert("Chưa chọn tài sản nào."); return; }
   const w = window.open("", "_blank");
