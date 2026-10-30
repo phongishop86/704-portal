@@ -5303,12 +5303,13 @@ function qrShow(id) {
   const url = qrUrl(a);
   const d = modal2(`<h3 style="margin:0 0 4px">🔳 ${esc(a.code)}</h3><div class="text-muted" style="margin-bottom:10px">${esc(a.name)}</div>
     <div style="text-align:center">${qrSvg(qrPayload(a), 220)}</div><div class="mono small text-muted" style="word-break:break-all;margin:8px 0 14px">${esc(qrPayload(a))}</div>
-    <div style="display:flex;gap:8px;justify-content:flex-end"><button class="btn" onclick="closeModal2()">Đóng</button><button class="btn btn-primary" onclick="qrPrintIds(['${a.id}'],'roll24')">🖨️ In tem</button></div>`);
+    <div style="display:flex;gap:8px;justify-content:flex-end"><button class="btn" onclick="closeModal2()">Đóng</button><button class="btn btn-primary" onclick="qrPrintIds(['${a.id}'],'kj60')">🖨️ In tem</button></div>`);
   return d;
 }
 const QR_LAYOUTS = {
   a3x11: { label: "A4 · 3 cột × 11 hàng · tem cao 24 mm (khuyên dùng)", cols: 3, h: 24, qr: 20, page: "A4", margin: "8mm 8mm" },
-  roll24: { label: "Tem cuộn 60 × 24 mm (1 tem / trang)", cols: 1, h: 24, qr: 20, page: "60mm 24mm", margin: "0", roll: true },
+  kj60: { label: "King Jim / Tepra · băng 24 mm · tem 60 × 24 mm (cuộn)", cols: 1, h: 24, qr: 20, page: "60mm 24mm", margin: "0", roll: true },
+  kj80: { label: "King Jim / Tepra · băng 24 mm · tem 80 × 24 mm (cuộn)", cols: 1, h: 24, qr: 20, page: "80mm 24mm", margin: "0", roll: true },
   a3x8: { label: "A4 · 3 cột × 8 hàng (70 × 34 mm)", cols: 3, h: 34, qr: 28, page: "A4", margin: "8mm" },
   a4x10: { label: "A4 · 4 cột × 10 hàng (52 × 26 mm)", cols: 4, h: 26, qr: 21, page: "A4", margin: "8mm" },
   roll: { label: "Tem cuộn 50 × 30 mm (1 tem / trang)", cols: 1, h: 30, qr: 24, page: "50mm 30mm", margin: "0", roll: true },
@@ -5321,12 +5322,12 @@ function qrPrintIds(ids, layoutKey) {
   if (!w) { alert("Trình duyệt đang chặn cửa sổ in. Hãy cho phép cửa sổ bật lên cho trang này rồi thử lại."); return; }
   const labels = assets.map(a => `<div class="lab"><div class="q">${qrSvg(qrPayload(a), 0)}</div><div class="t"><b>${esc(a.code)}</b><span>${esc(a.name)}</span>${a.serial ? `<small>SN: ${esc(a.serial)}</small>` : ""}<small>${esc(depName(a.department_id) || "-")}</small><small>${esc(userName(a.current_user_id || a.assigned_user_id) || "Chưa cấp phát")}</small></div></div>`).join("");
   w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Tem QR tài sản</title><style>
-    @page{size:${L.page};margin:${L.margin}} body{margin:0;font-family:Arial,sans-serif}
+    @page{size:${L.page};margin:${L.margin}} body{margin:0;font-family:Arial,sans-serif} .hint{font:12px Arial;background:#fff8d6;padding:6px 10px;border-bottom:1px solid #e6d98a} @media print{.hint{display:none}}
     .grid{display:grid;grid-template-columns:repeat(${L.cols},1fr)}
     .lab{height:${L.h}mm;box-sizing:border-box;display:flex;align-items:center;gap:2mm;padding:1.5mm;${L.roll ? "page-break-after:always;" : "border:0.2mm dashed #bbb;"}page-break-inside:avoid;overflow:hidden}
     .q{width:${L.qr}mm;height:${L.qr}mm;flex-shrink:0}.q svg{width:100%;height:100%;display:block}
     .t{display:flex;flex-direction:column;min-width:0;line-height:1.15;overflow:hidden}.t b{font-size:${L.h <= 24 ? 9 : L.roll ? 10 : 11}pt}.t span{font-size:${L.h <= 24 ? 7 : L.roll ? 7 : 8}pt;overflow:hidden;display:-webkit-box;-webkit-line-clamp:${L.h <= 24 ? 1 : 2};-webkit-box-orient:vertical}.t small{font-size:6.5pt;color:#444}
-  </style></head><body><div class="grid">${labels}</div><script>setTimeout(function(){window.print()},350)<\/script></body></html>`);
+  </style></head><body><div class="hint">Khổ giấy in: <b>${L.page.replace(" ", " × ")}</b> · Lề: Không · Tỷ lệ: 100%${L.roll ? " · Máy King Jim: chọn đúng bề rộng băng 24 mm" : ""}</div><div class="grid">${labels}</div><script>setTimeout(function(){window.print()},350)<\/script></body></html>`);
   w.document.close();
 }
 
@@ -5373,7 +5374,7 @@ function viewQR(u) {
     <div class="form-group"><label>Nhóm</label><select class="form-control" id="qr_cat" onchange="qrApply()"><option value="">Tất cả</option>${opt(DB.categories, qrF.cat, c => c.name)}</select></div>
     <div class="form-group"><label>Loại</label><select class="form-control" id="qr_kind" onchange="qrApply()"><option value="">Tất cả</option><option value="asset" ${qrF.kind === "asset" ? "selected" : ""}>TSCĐ</option><option value="ccdc" ${qrF.kind === "ccdc" ? "selected" : ""}>CCDC</option></select></div>
     <div class="form-group"><label>Địa điểm</label><select class="form-control" id="qr_loc" onchange="qrApply()"><option value="">Tất cả</option>${opt(DB.locations || [], qrF.loc, l => l.name)}</select></div>
-    <div class="form-group"><label>Mẫu tem</label><select class="form-control" id="qr_layout" onchange="qrApply()">${Object.entries(QR_LAYOUTS).map(([k, v]) => `<option value="${k}" ${qrF.layout === k ? "selected" : ""}>${esc(v.label)}</option>`).join("")}</select></div>
+    <div class="form-group" style="min-width:240px"><label>Mẫu tem / cỡ giấy</label><select class="form-control" id="qr_layout" onchange="qrApply()">${Object.entries(QR_LAYOUTS).map(([k, v]) => `<option value="${k}" ${qrF.layout === k ? "selected" : ""}>${esc(v.label)}</option>`).join("")}</select><div class="small text-muted" style="margin-top:4px">${QR_LAYOUTS[qrF.layout] && QR_LAYOUTS[qrF.layout].roll ? "Khi in: chọn máy in King Jim/Tepra, khổ giấy " + QR_LAYOUTS[qrF.layout].page.replace(" ", " × ") + ", lề 0, tỷ lệ 100%." : "Khi in: khổ A4, lề 0, tỷ lệ 100% (không chọn “Vừa trang”)."}</div></div>
     <button class="btn btn-sm" onclick="qrApply()" style="height:36px">🔍 Lọc</button>
   </div>
   <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;align-items:center">
@@ -5703,7 +5704,7 @@ function assetExtraCards(a, u) {
   const acc = isStaff2(u) ? (DB.accessories || []).flatMap(x => (x.assignments || []).filter(s => !s.returned_at && (s.to_asset_id === a.id || (a.current_user_id && s.to_user_id === a.current_user_id))).map(s => ({ x, s }))) : [];
   return `
   <div class="row"><div class="col col-4"><div class="card"><h4 style="margin-top:0">🔳 Mã QR tài sản</h4><div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap"><span style="display:block;width:120px">${qrSvg(url, 120)}</span>
-    <div style="min-width:0"><div class="mono small text-muted" style="word-break:break-all;margin-bottom:8px">${esc(url)}</div><button class="btn btn-sm btn-outline" onclick="qrPrintIds(['${a.id}'],'roll24')">🏷️ In tem</button></div></div></div></div>
+    <div style="min-width:0"><div class="mono small text-muted" style="word-break:break-all;margin-bottom:8px">${esc(url)}</div><button class="btn btn-sm btn-outline" onclick="qrPrintIds(['${a.id}'],'kj60')">🏷️ In tem</button></div></div></div></div>
   ${isStaff2(u) ? `<div class="col col-8"><div class="card"><h4 style="margin-top:0">💿 Phần mềm đã cài (${sw.length}) · 🧩 Phụ kiện đang dùng (${acc.length})</h4>
     ${sw.length || acc.length ? `<ul style="margin:0;padding-left:18px">${sw.map(s => `<li><a data-nav="software_detail" data-params='{"id":"${s.id}"}'>${esc(s.name)}</a> ${esc(s.version || "")}</li>`).join("")}${acc.map(({ x, s }) => `<li><a data-nav="accessory_detail" data-params='{"id":"${x.id}"}'>${esc(x.name)}</a> × ${s.qty} <span class="text-muted small">(${esc(s.to_label)})</span></li>`).join("")}</ul>` : `<p class="text-muted" style="margin:0">Chưa ghi nhận phần mềm / phụ kiện cho tài sản này.</p>`}</div></div>` : ""}</div>`;
 }
