@@ -13,7 +13,16 @@ const ROLES = ["admin", "it"];
  */
 async function status() {
   const s = await db.collection("counters").doc("backup_sheets").get();
-  return { configured: backupConfigured() && !LOCAL_MODE, last: s.exists ? s.data() : null };
+  const sheetId = process.env.BACKUP_SHEET_ID || process.env.SHEET_ID || "";
+  const missing = [!process.env.GOOGLE_CLIENT_EMAIL && "GOOGLE_CLIENT_EMAIL", !process.env.GOOGLE_PRIVATE_KEY && "GOOGLE_PRIVATE_KEY", !sheetId && "BACKUP_SHEET_ID"].filter(Boolean);
+  return {
+    configured: backupConfigured() && !LOCAL_MODE,
+    local: LOCAL_MODE,
+    missing,
+    email: process.env.GOOGLE_CLIENT_EMAIL || "",
+    sheetUrl: sheetId ? `https://docs.google.com/spreadsheets/d/${sheetId}/edit` : "",
+    last: s.exists ? s.data() : null,
+  };
 }
 
 export async function GET(req: Request) {

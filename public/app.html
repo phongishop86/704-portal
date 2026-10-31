@@ -6019,11 +6019,18 @@ function sheetsBackupCard() {
   if (!u || !["admin", "it"].includes(u.role)) return "";
   bkLoad();
   const i = bkS.info, last = i && i.last;
-  const st = !i ? "Đang kiểm tra…" : i.error ? "Không kiểm tra được trạng thái." : !i.configured ? "Chưa cấu hình (cần GOOGLE_CLIENT_EMAIL, GOOGLE_PRIVATE_KEY, BACKUP_SHEET_ID trên máy chủ). Bản chạy nội bộ không dùng mục này." : last ? (last.ok ? `Lần gần nhất: ${fmtDateTime(last.at)} bởi ${esc(last.by || "")} — ` + Object.entries(last.counts || {}).map(([k, v]) => k + " " + v).join(", ") : `<span style="color:#dc2626">Lần gần nhất lỗi (${fmtDateTime(last.at)}): ${esc(last.error || "")}</span>`) : "Chưa có lần sao lưu nào.";
+  const target = i && i.sheetUrl ? `<div style="margin-bottom:6px">📁 Nơi lưu: <a href="${esc(i.sheetUrl)}" target="_blank" rel="noopener">mở Google Sheet sao lưu</a>${i.email ? ` · Tài khoản ghi: <code>${esc(i.email)}</code> (phải được chia sẻ quyền <b>Người chỉnh sửa</b> trên Sheet)` : ""}</div>` : "";
+  const guide = i && !i.error && !i.configured && !i.local ? `<div style="background:#fff;border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:10px;font-size:13px;line-height:1.6">
+      <b>Chưa thể sao lưu — cần thiết lập 3 bước (một lần):</b><ol style="margin:6px 0 0 18px;padding:0">
+      <li>Vào <b>Google Drive</b> của đơn vị → tạo một <b>Google Sheet mới</b> (tên tùy ý, ví dụ “704-ASSETS Backup”) trong thư mục muốn lưu. Chép <b>ID</b> trong địa chỉ: <code>docs.google.com/spreadsheets/d/<u>ID</u>/edit</code>.</li>
+      <li>Bấm <b>Chia sẻ</b> Sheet đó cho email <code>${esc(i.email || "client_email của service account (file JSON khóa)")}</code> với quyền <b>Người chỉnh sửa</b>.</li>
+      <li>Vercel → Project → Settings → Environment Variables, thêm: ${(i.missing || []).map(m => `<code>${esc(m)}</code>`).join(", ") || "đủ biến"}. <code>BACKUP_SHEET_ID</code> = ID ở bước 1; <code>GOOGLE_CLIENT_EMAIL</code>, <code>GOOGLE_PRIVATE_KEY</code> lấy từ file JSON của service account. Rồi <b>Redeploy</b>.</li></ol>
+      Cũng cần bật <b>Google Sheets API</b> trong Google Cloud của service account đó. Chi tiết: mục “Sao lưu Google Sheet” trong CAU_HINH_CHI_TIET.md.</div>` : "";
+  const st = !i ? "Đang kiểm tra…" : i.error ? "Không kiểm tra được trạng thái." : i.local ? "Bản chạy nội bộ không dùng mục này (dùng Sao lưu .json)." : !i.configured ? "Chưa cấu hình." : last ? (last.ok ? `Lần gần nhất: ${fmtDateTime(last.at)} bởi ${esc(last.by || "")} — ` + Object.entries(last.counts || {}).map(([k, v]) => k + " " + v).join(", ") : `<span style="color:#dc2626">Lần gần nhất lỗi (${fmtDateTime(last.at)}): ${esc(last.error || "")}</span>`) : "Chưa có lần sao lưu nào.";
   return `<div style="margin: 24px 0; padding: 20px; border: 1px dashed var(--border); border-radius: 8px; background: #f0fdf4;">
     <h5>📊 Sao lưu ra Google Sheet</h5>
     <p style="font-size:14px;">Ghi toàn bộ dữ liệu (tài sản, nhật ký IT, phiếu, người dùng không kèm mật khẩu, khóa bản quyền được loại bỏ…) ra các tab <code>BK_…</code> trong Google Sheet của đơn vị. Chạy tay tại đây hoặc tự động mỗi tuần (Chủ nhật 18:00 UTC).</p>
-    <div class="small text-muted" style="margin-bottom:10px">${st}</div>
+    ${guide}${target}<div class="small text-muted" style="margin-bottom:10px">${st}</div>
     <button class="btn btn-primary" ${bkS.running || (i && !i.configured) ? "disabled" : ""} onclick="sheetsBackupNow()">${bkS.running ? "⏳ Đang sao lưu…" : "📤 Sao lưu ngay ra Google Sheet"}</button>
     ${bkS.msg ? `<div style="margin-top:8px">${bkS.msg}</div>` : ""}</div>`;
 }
