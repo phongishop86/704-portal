@@ -36,14 +36,26 @@ export async function backupToSheets(by: string): Promise<{ counts: Record<strin
   });
   const sheets = google.sheets({ version: "v4", auth });
 
-  const meta = await sheets.spreadsheets.get({ spreadsheetId, fields: "sheets.properties.title" });
+  const getMeta = () => sheets.spreadsheets.get({ spreadsheetId, fields: "sheets.properties(sheetId,title,gridProperties)" });
+  let meta = await getMeta();
   const have = new Set((meta.data.sheets ?? []).map((s) => s.properties?.title));
   const cols = COLS.filter((c) => !SKIP_COLS.has(c));
   const tabs = [...cols.map((c) => "BK_" + c), "BK_info"];
   const add = tabs.filter((t) => !have.has(t));
   if (add.length) {
     await sheets.spreadsheets.batchUpdate({ spreadsheetId, requestBody: { requests: add.map((title) => ({ addSheet: { properties: { title } } })) } });
+    meta = await getMeta();
   }
+  const props = new Map((meta.data.sheets ?? []).map((s) => [s.properties?.title as string, s.properties]));
+  /** Mở rộng lưới của tab nếu thiếu dòng/cột (tab mới chỉ có 1000 dòng × 26 cột). */
+  const ensureGrid = async (tab: string, rows: number, colsN: number) => {
+    const p = props.get(tab), gp = p?.gridProperties;
+    const needR = Math.max(rows + 1, 2), needC = Math.max(colsN, 1);
+    if (!p || (gp?.rowCount ?? 0) >= needR && (gp?.columnCount ?? 0) >= needC) return;
+    await sheets.spreadsheets.batchUpdate({ spreadsheetId, requestBody: { requests: [{ updateSheetProperties: {
+      properties: { sheetId: p.sheetId, gridProperties: { rowCount: Math.max(gp?.rowCount ?? 0, needR), columnCount: Math.max(gp?.columnCount ?? 0, needC) } },
+      fields: "gridProperties.rowCount,gridProperties.columnCount" } }] } });
+  };
 
   const counts: Record<string, number> = {};
   for (const c of cols) {
@@ -55,8 +67,9 @@ export async function backupToSheets(by: string): Promise<{ counts: Record<strin
     const keys = [...new Set(rows.flatMap((r) => Object.keys(r)))].sort((a, b) => (a === "id" ? -1 : b === "id" ? 1 : a.localeCompare(b)));
     counts[c] = rows.length;
     const tab = "BK_" + c;
-    await sheets.spreadsheets.values.clear({ spreadsheetId, range: `${tab}!A:ZZ` });
     const values = [keys, ...rows.map((r) => keys.map((k) => cell((r as any)[k])))];
+    await ensureGrid(tab, values.length, keys.length);
+    await sheets.spreadsheets.values.clear({ spreadsheetId, range: tab });
     for (let i = 0; i < values.length; i += CHUNK) {
       await sheets.spreadsheets.values.update({
         spreadsheetId,
@@ -67,7 +80,8 @@ export async function backupToSheets(by: string): Promise<{ counts: Record<strin
     }
   }
   const at = new Date().toISOString();
-  await sheets.spreadsheets.values.clear({ spreadsheetId, range: "BK_info!A:C" });
+  await ensureGrid("BK_info", counts ? Object.keys(counts).length + 6 : 8, 3);
+  await sheets.spreadsheets.values.clear({ spreadsheetId, range: "BK_info" });
   await sheets.spreadsheets.values.update({
     spreadsheetId,
     range: "BK_info!A1",
