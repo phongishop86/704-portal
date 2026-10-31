@@ -505,21 +505,41 @@ function qrPrintGo(id) {
   qrF.layout = k; closeModal2();
   qrPrintIds(Array(n).fill(id), k);
 }
+/* ---------- Khung in ngay trong ứng dụng (không mở tab mới: tránh treo/kẹt trên điện thoại & PWA) ---------- */
+function printOverlay(title, css, bodyHtml, hint) {
+  closePrintOverlay();
+  const ov = document.createElement("div"); ov.id = "printOv";
+  ov.innerHTML = `<style id="printOvCss">${css}
+    #printOv{position:fixed;inset:0;z-index:9999;background:#e5e7eb;overflow:auto;-webkit-overflow-scrolling:touch}
+    #printOv .po-bar{position:sticky;top:0;z-index:2;display:flex;gap:8px;align-items:center;flex-wrap:wrap;background:#0f2a5c;color:#fff;padding:10px 12px;font:14px Arial}
+    #printOv .po-bar b{flex:1;min-width:120px} #printOv .po-bar button{border:0;border-radius:8px;padding:9px 14px;font-weight:700;font-size:14px}
+    #printOv .po-pg{background:#fff;margin:10px auto;max-width:900px;box-shadow:0 2px 10px rgba(0,0,0,.2)}
+    #printOv .po-hint{font:12px Arial;background:#fff8d6;padding:6px 10px;border-bottom:1px solid #e6d98a}
+    @media print{ body>*:not(#printOv){display:none !important} #printOv{position:static !important;background:#fff;overflow:visible} #printOv .po-bar,#printOv .po-hint{display:none !important} #printOv .po-pg{margin:0;max-width:none;box-shadow:none} }
+  </style>
+  <div class="po-bar"><button style="background:#fff;color:#0f2a5c" onclick="closePrintOverlay()">← Quay lại</button><b>${esc(title)}</b><button style="background:#2f6df0;color:#fff" onclick="window.print()">🖨️ In</button></div>
+  ${hint ? `<div class="po-hint">${hint}</div>` : ""}<div class="po-pg">${bodyHtml}</div>`;
+  document.body.appendChild(ov); ov.scrollTop = 0;
+  document.documentElement.style.overflow = "hidden";
+}
+function closePrintOverlay() { const o = document.getElementById("printOv"); if (o) o.remove(); document.documentElement.style.overflow = ""; }
+window.addEventListener("afterprint", () => { /* giữ khung xem trước để người dùng in lại hoặc bấm Quay lại */ });
+// Biên bản / báo cáo cũng dùng khung này thay vì tab mới
+function openPrintWindow(bodyHtml, titleHint) {
+  printOverlay(titleHint || "In", `body{font-family:Arial,Helvetica,sans-serif;color:#111} #printOv .po-pg{padding:18px;font-size:13px} #printOv table{border-collapse:collapse;width:100%} #printOv table.print-table th,#printOv table.print-table td{border:1px solid #333;padding:5px 7px;font-size:12.5px} #printOv table.print-table th{color:#f8fafc;background:#111827;border:none;font-size:12px;text-transform:uppercase} #printOv .text-end{text-align:right} #printOv h2{margin-bottom:4px} @media print{#printOv .po-pg{padding:0}}`, bodyHtml, "");
+}
+
 function qrPrintIds(ids, layoutKey) {
   const L = QR_LAYOUTS[layoutKey] || QR_LAYOUTS.a3x11;
   const assets = ids.map(id => byId(DB.assets, id)).filter(Boolean);
   if (!assets.length) { alert("Chưa chọn tài sản nào."); return; }
-  const w = window.open("", "_blank");
-  if (!w) { alert("Trình duyệt đang chặn cửa sổ in. Hãy cho phép cửa sổ bật lên cho trang này rồi thử lại."); return; }
   const labels = assets.map(a => `<div class="lab"><div class="q">${qrSvg(qrPayload(a), 0)}</div><div class="t"><b>${esc(a.code)}</b><span>${esc(a.name)}</span>${a.serial ? `<small>SN: ${esc(a.serial)}</small>` : ""}<small>${esc(depName(a.department_id) || "-")}</small><small>${esc(userName(a.current_user_id || a.assigned_user_id) || "Chưa cấp phát")}</small></div></div>`).join("");
-  w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Tem QR tài sản</title><style>
-    @page{size:${L.page};margin:${L.margin}} body{margin:0;font-family:Arial,sans-serif} .hint{font:12px Arial;background:#fff8d6;padding:6px 10px;border-bottom:1px solid #e6d98a} @media print{.hint{display:none}}
-    .grid{display:grid;grid-template-columns:repeat(${L.cols},1fr)}
-    .lab{height:${L.h}mm;box-sizing:border-box;display:flex;align-items:center;gap:2mm;padding:1.5mm;${L.roll ? "page-break-after:always;" : "border:0.2mm dashed #bbb;"}page-break-inside:avoid;overflow:hidden}
-    .q{width:${L.qr}mm;height:${L.qr}mm;flex-shrink:0}.q svg{width:100%;height:100%;display:block}
-    .t{display:flex;flex-direction:column;min-width:0;line-height:1.15;overflow:hidden}.t b{font-size:${L.h <= 24 ? 9 : L.roll ? 10 : 11}pt}.t span{font-size:${L.h <= 24 ? 7 : L.roll ? 7 : 8}pt;overflow:hidden;display:-webkit-box;-webkit-line-clamp:${L.h <= 24 ? 1 : 2};-webkit-box-orient:vertical}.t small{font-size:6.5pt;color:#444}
-  </style></head><body><div class="hint">Khổ giấy in: <b>${L.page.replace(" ", " × ")}</b> · Lề: Không · Tỷ lệ: 100%${L.roll ? " · Máy King Jim: chọn đúng bề rộng băng 24 mm" : ""}</div><div class="grid">${labels}</div><script>setTimeout(function(){window.print()},350)<\/script></body></html>`);
-  w.document.close();
+  const css = `@page{size:${L.page};margin:${L.margin}}
+    #printOv .grid{display:grid;grid-template-columns:repeat(${L.cols},1fr)}
+    #printOv .lab{height:${L.h}mm;box-sizing:border-box;display:flex;align-items:center;gap:2mm;padding:1.5mm;font-family:Arial,sans-serif;${L.roll ? "page-break-after:always;break-after:page;" : "border:0.2mm dashed #bbb;"}page-break-inside:avoid;overflow:hidden}
+    #printOv .q{width:${L.qr}mm;height:${L.qr}mm;flex-shrink:0}#printOv .q svg{width:100%;height:100%;display:block}
+    #printOv .t{display:flex;flex-direction:column;min-width:0;line-height:1.15;overflow:hidden}#printOv .t b{font-size:${L.h <= 24 ? 9 : L.roll ? 10 : 11}pt}#printOv .t span{font-size:${L.h <= 24 ? 7 : L.roll ? 7 : 8}pt;overflow:hidden;display:-webkit-box;-webkit-line-clamp:${L.h <= 24 ? 1 : 2};-webkit-box-orient:vertical}#printOv .t small{font-size:6.5pt;color:#444}`;
+  printOverlay("Tem QR tài sản (" + assets.length + ")", css, `<div class="grid">${labels}</div>`, `Khổ giấy: <b>${L.page.replace(" ", " × ")}</b> · Lề: Không · Tỷ lệ: 100%${L.roll ? " · Máy King Jim: chọn đúng bề rộng băng 24 mm" : ""} — bấm <b>🖨️ In</b>, xong bấm <b>← Quay lại</b>.`);
 }
 
 const qrF = { q: "", dept: "", cat: "", kind: "", loc: "", page: 1, layout: "a3x11", sel: new Set() };

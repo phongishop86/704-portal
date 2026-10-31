@@ -59,7 +59,7 @@ sub_once('loadDB();\nrender();\n</script>', modules.rstrip("\n") + "\n\n" + qr.r
 
 # 5. Bỏ biểu ngữ "OFFLINE", sửa chân trang
 regex_once(r'<div id="notice" class="notice-banner">.*?</div>\n', '', "notice")
-sub_once('704-assets Offline · dữ liệu lưu trên trình duyệt này', '704-assets · dữ liệu lưu trên máy chủ, dùng chung với chatbot IT', "footer")
+sub_once('704-assets Offline · dữ liệu lưu trên trình duyệt này', 'Bản quyền thuộc tác giả Nguyễn Thanh Phong · 078 649 6867', "footer")
 
 # 6. Khôi phục backup: đẩy lên máy chủ, giữ nguyên phiên đăng nhập hiện tại
 sub_once('''      Object.assign(DB, importedDB);
