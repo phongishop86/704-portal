@@ -19,7 +19,7 @@ type Step = "dept" | "requester" | "title" | "category" | "asset" | "ticket" | "
 const ORDER: Step[] = ["dept", "requester", "title", "category", "asset", "ticket", "serial", "reported", "start", "end", "solution", "result", "note"];
 const OPTIONAL: Step[] = ["dept", "requester", "category", "asset", "serial", "end", "solution", "note"];
 
-interface Cand { id: string; name: string }
+interface Cand { id: string; name: string; no?: string }
 interface State {
   kind: "wizard";
   user_id: string;
@@ -42,7 +42,7 @@ const byPerson = (a: Cand, b: Cand) => {
   const x = k(a.name), y = k(b.name);
   return collator.compare(x[0], y[0]) || collator.compare(x[1], y[1]);
 };
-const numbered = (c: Cand[]) => c.map((x, i) => `${i + 1}. ${x.name}`).join("\n");
+const numbered = (c: Cand[]) => c.map((x, i) => `${x.no ?? i + 1}. ${x.name}`).join("\n");
 
 /* ---------- thời gian theo giờ Việt Nam ---------- */
 const VN = 7 * 3600 * 1000;
@@ -71,7 +71,22 @@ export function parseDur(t: string): number | null {
 }
 
 /* ---------- câu hỏi từng bước ---------- */
-async function deptCands(): Promise<Cand[]> { return (await listDepartments()).slice(0, 60); }
+/** Mã số phòng ban chỉ dùng cho chatbot Telegram (hiển thị & gõ số). Khớp theo tên (bỏ dấu, bỏ ký tự phân cách). */
+const TG_DEPTS: [string, string][] = [
+  ["01", "Ban giám đốc"], ["02", "Phòng Tổ chức - Tổng hợp"], ["03", "Phòng Dịch vụ khách hàng"], ["05", "Phòng KHDN - chung"],
+  ["09", "Phòng Bán lẻ"], ["10", "Phòng Hỗ trợ tín dụng"], ["13", "Phòng Tổng hợp/Tổ Tổng hợp"], ["28", "Phòng KHDN FDI"],
+  ["30", "CN Bến Lức - PGD Cần Giuộc"], ["31", "CN Bến Lức - PGD Phước Lợi"], ["32", "CN Bến Lức - PGD Cần Đước"],
+  ["33", "CN Bến Lức - PGD Thủ Thừa"], ["34", "CN Bến Lức - PGD Kỳ Son"], ["35", "CN Bến Lức - PGD Châu Thành"],
+  ["40", "Phòng Tổ chức Hành chính"], ["98", "CN Bến Lức - Hội sở"], ["99", "Khong xac dinh"],
+];
+const nkey = (t: string) => norm(t).replace(/[^a-z0-9]+/g, "");
+async function allDepts(): Promise<Cand[]> { return (await listDepartments()).slice(0, 80); }
+async function deptCands(): Promise<Cand[]> {
+  const all = await allDepts(), byKey = new Map(all.map((d) => [nkey(d.name), d]));
+  const out: Cand[] = [];
+  for (const [no, name] of TG_DEPTS) { const d = byKey.get(nkey(name)); if (d) out.push({ id: d.id, name, no }); }
+  return out.length ? out : all.slice(0, 60);
+}
 async function userCands(deptId: string): Promise<Cand[]> {
   const snap = await db.collection("users").where("department_id", "==", deptId).limit(40).get();
   return snap.docs.filter((d) => !d.data()._del && d.data().is_active !== false).map((d) => ({ id: d.id, name: String(d.data().full_name ?? "") })).filter((x) => x.name).sort(byPerson).slice(0, 15);
@@ -251,6 +266,7 @@ export async function wizardCallback(user: User, data: string): Promise<WizardOu
 
 const pickNum = (st: State, t: string): Cand | null => {
   if (!/^\d{1,3}$/.test(t)) return null;
+  if (st.cands?.some((c) => c.no)) return st.cands.find((c) => c.no && +c.no === +t) ?? null;
   return st.cands?.[+t - 1] ?? null;
 };
 
@@ -268,7 +284,7 @@ export async function wizardText(user: User, text: string): Promise<Reply> {
     case "dept": {
       let c = pickNum(st, t);
       if (!c) {
-        const q = norm(t), hit = (await deptCands()).filter((d) => norm(d.name).includes(q));
+        const q = norm(t), hit = (await allDepts()).filter((d) => norm(d.name).includes(q));
         if (hit.length === 1) c = hit[0];
         else if (hit.length > 1) { st.cands = hit.slice(0, 20); await save(st); return { text: "Có nhiều phòng ban, gõ SỐ để chọn:\n" + numbered(st.cands), buttons: [SKIP] }; }
         else return { text: `Không thấy phòng ban “${t}”. Gõ số trong danh sách hoặc một phần tên.`, buttons: [SKIP] };
