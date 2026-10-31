@@ -28,7 +28,7 @@ Object.assign(PAGE_TITLES, {
   dashboard: "Trang chủ", assets: "Tài sản", ccdc: "Công cụ dụng cụ", transfers: "Cấp phát / Điều chuyển",
   repairs: "Bảo trì - Bảo hành", reports: "Báo cáo", itlog: "Nhật ký IT", admin_inventory: "Kiểm kê",
   admin_users: "Người sử dụng", admin_departments: "Phòng ban", admin_data: "Nhập / Xuất dữ liệu", admin_settings: "Cấu hình hệ thống",
-  locations: "Địa điểm", qr: "QR Code", accessories: "Phụ kiện", accessory_detail: "Chi tiết phụ kiện",
+  monitor: "Giám sát & truy cập", locations: "Địa điểm", qr: "QR Code", accessories: "Phụ kiện", accessory_detail: "Chi tiết phụ kiện",
   software: "Phần mềm & bản quyền", software_detail: "Chi tiết phần mềm",
 });
 
@@ -275,7 +275,9 @@ function renderSidebar(u) {
       ${staff ? item("itlog", "🧰", "Nhật ký IT") : ""}
       ${ta ? item("admin_data", "🔄", "Nhập / Xuất dữ liệu") : ""}
       ${ta ? item("admin_settings", "⚙️", "Cấu hình") : ""}
+      ${["admin", "it"].includes(u.role) ? item("monitor", "📡", "Giám sát & truy cập") : ""}
     </div>
+    ${pwaBtn()}
     <div class="sb-user"><span class="avatar">${esc(initials(u.full_name))}</span>
       <div style="min-width:0"><div class="nm">${esc(u.full_name)}</div><div class="rl">${esc(ROLE_LABELS[u.role] || u.role)}${u.department_id ? " · " + esc(depName(u.department_id) || "") : ""}</div></div></div>
   </div>`;
@@ -1090,4 +1092,204 @@ function sheetsBackupNow() {
     bkS.msg = ok ? `<span style="color:#16a34a">✅ Đã sao lưu ${Object.values(j.counts || {}).reduce((s, n) => s + n, 0)} bản ghi.</span>` : `<span style="color:#dc2626">❌ ${esc(j.error || "Lỗi")}</span>`;
     bkS.info = null;
   }).catch(() => { bkS.msg = `<span style="color:#dc2626">❌ Không kết nối được máy chủ.</span>`; }).finally(() => { bkS.running = false; render(); });
+}
+
+/* ============================================================================
+   GHI NHẬN TRUY CẬP (gửi gộp, nhẹ) + TRANG GIÁM SÁT & TRUY CẬP
+   ============================================================================ */
+const trk = { routes: {}, route: null, lastFlush: 0, timer: null };
+function trkFlush(ping, beacon) {
+  const body = JSON.stringify({ routes: trk.routes, ping: !!ping, route: trk.route });
+  trk.routes = {}; trk.lastFlush = Date.now();
+  try {
+    if (beacon && navigator.sendBeacon) navigator.sendBeacon("/api/activity", new Blob([body], { type: "text/plain" }));
+    else fetch("/api/activity", { method: "POST", credentials: "same-origin", body, keepalive: true }).catch(() => {});
+  } catch (e) { /* bỏ qua */ }
+}
+function trackRoute() {
+  const u = typeof currentUser === "function" ? currentUser() : null;
+  if (!u || !/^https?:/.test(location.protocol)) return;
+  if (state.route !== trk.route) { trk.route = state.route; trk.routes[state.route] = (trk.routes[state.route] || 0) + 1; }
+  if (!trk.timer) {
+    trk.timer = setInterval(() => { if (document.visibilityState === "visible" && currentUser()) trkFlush(true); }, 180000);
+    document.addEventListener("visibilitychange", () => { if (document.visibilityState === "hidden" && Object.keys(trk.routes).length) trkFlush(false, true); });
+  }
+  if (Date.now() - trk.lastFlush > 60000 && Object.keys(trk.routes).length) trkFlush(false);
+}
+
+const mon = { tab: "ov", days: 30, sys: null, use: null, loading: false, at: 0, err: "", q: "" };
+const isAdmin2 = u => u && u.role === "admin";
+function monLoad(force) {
+  const u = currentUser();
+  if (mon.loading || !u) return;
+  if (!force && mon.sys && Date.now() - mon.at < 60000) return;
+  mon.loading = true;
+  const reqs = [fetch("/api/admin/monitor", { credentials: "same-origin" }).then(r => r.json())];
+  if (isAdmin2(u)) reqs.push(fetch("/api/admin/usage?days=" + mon.days, { credentials: "same-origin" }).then(r => r.json()));
+  Promise.all(reqs).then(([s, us]) => { mon.sys = s; mon.use = us && us.days ? us.days : null; mon.at = Date.now(); mon.err = s && s.error ? s.error : ""; })
+    .catch(() => { mon.err = "Không tải được số liệu (mất kết nối hoặc đang dùng bản offline)."; })
+    .finally(() => { mon.loading = false; if (state.route === "monitor") render(); });
+}
+function monTab(t) { mon.tab = t; render(); }
+function monDays(n) { mon.days = Number(n) || 30; mon.use = null; mon.at = 0; monLoad(true); render(); }
+function monRefresh() { monLoad(true); render(); }
+function monQ(v) { mon.q = v; render(); const e = document.getElementById("monQ"); if (e) { e.focus(); e.setSelectionRange(e.value.length, e.value.length); } }
+
+const uaShort = ua => { ua = String(ua || ""); const dev = /iPhone|iPad/.test(ua) ? "iPhone/iPad" : /Android/.test(ua) ? "Android" : /Windows/.test(ua) ? "Windows" : /Mac OS/.test(ua) ? "Mac" : /Linux/.test(ua) ? "Linux" : "?"; const br = /Edg\//.test(ua) ? "Edge" : /CriOS|Chrome\//.test(ua) ? "Chrome" : /Firefox|FxiOS/.test(ua) ? "Firefox" : /Safari\//.test(ua) ? "Safari" : ""; return dev + (br ? " · " + br : ""); };
+const fmtUp = s => { s = Number(s) || 0; const d = Math.floor(s / 86400), h = Math.floor(s % 86400 / 3600), m = Math.floor(s % 3600 / 60); return (d ? d + " ngày " : "") + (h ? h + " giờ " : "") + m + " phút"; };
+const ago = ms => { if (!ms) return "chưa có"; const s = Math.max(0, Math.round((Date.now() - ms) / 1000)); return s < 90 ? "vừa xong" : s < 5400 ? Math.round(s / 60) + " phút trước" : s < 129600 ? Math.round(s / 3600) + " giờ trước" : Math.round(s / 86400) + " ngày trước"; };
+const dFmt = id => String(id).slice(6, 8) + "/" + String(id).slice(4, 6);
+
+function svgSeries(vals, labels, color) {
+  const W = 640, H = 190, padL = 34, padB = 26, padT = 12, n = vals.length || 1, max = Math.max(1, ...vals), step = (W - padL - 8) / n, bw = Math.max(3, Math.min(22, step - 4));
+  const bars = vals.map((v, i) => { const h = (H - padB - padT) * v / max, x = padL + i * step + (step - bw) / 2; return `<rect x="${x.toFixed(1)}" y="${(H - padB - h).toFixed(1)}" width="${bw.toFixed(1)}" height="${Math.max(h, v ? 1.5 : 0).toFixed(1)}" rx="3" fill="${color}"><title>${esc(labels[i])}: ${v}</title></rect>`; }).join("");
+  const every = Math.ceil(n / 10), xl = labels.map((l, i) => i % every === 0 ? `<text x="${(padL + i * step + step / 2).toFixed(1)}" y="${H - 8}" text-anchor="middle" font-size="10" fill="#64748b">${esc(l)}</text>` : "").join("");
+  const yl = (max < 4 ? [0, 1] : [0, .5, 1]).map(f => `<line x1="${padL}" x2="${W - 4}" y1="${(H - padB - (H - padB - padT) * f).toFixed(1)}" y2="${(H - padB - (H - padB - padT) * f).toFixed(1)}" stroke="#e8edf5"/><text x="${padL - 6}" y="${(H - padB - (H - padB - padT) * f + 3).toFixed(1)}" text-anchor="end" font-size="10" fill="#64748b">${Math.round(max * f)}</text>`).join("");
+  return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;display:block">${yl}${bars}${xl}</svg>`;
+}
+function hbars(items, color) {
+  const max = Math.max(1, ...items.map(i => i.v));
+  return items.map(i => `<div style="display:flex;align-items:center;gap:8px;margin:5px 0;font-size:13px"><div style="width:150px;flex:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(i.label)}">${esc(i.label)}</div><div style="flex:1;background:#eef2f8;border-radius:6px;height:14px"><div style="width:${Math.max(2, i.v / max * 100)}%;height:14px;border-radius:6px;background:${color}"></div></div><div style="width:48px;text-align:right">${i.v}</div></div>`).join("") || `<div class="text-muted">Chưa có dữ liệu.</div>`;
+}
+
+function monAgg() {
+  const days = mon.use || [], out = { days, byUser: {}, routes: {}, hourly: Array(24).fill(0), devices: { mobile: 0, desktop: 0 }, pv: 0, logins: 0, fails: 0, events: [] };
+  days.forEach(d => {
+    out.pv += d.pv || 0; out.logins += d.logins || 0; out.fails += d.fails || 0;
+    Object.entries(d.routes || {}).forEach(([k, v]) => out.routes[k] = (out.routes[k] || 0) + v);
+    Object.entries(d.hourly || {}).forEach(([h, v]) => out.hourly[+h] += v);
+    out.devices.mobile += (d.devices || {}).mobile || 0; out.devices.desktop += (d.devices || {}).desktop || 0;
+    Object.entries(d.users || {}).forEach(([id, x]) => { const a = out.byUser[id] ??= { pv: 0, mins: 0, logins: 0, last: 0 }; a.pv += x.pv || 0; a.mins += x.mins || 0; a.logins += x.logins || 0; a.last = Math.max(a.last, x.last || 0); });
+    (d.events || []).forEach(e => out.events.push(e));
+  });
+  out.events.sort((a, b) => b.t - a.t);
+  return out;
+}
+const routeLabel = r => (typeof PAGE_TITLES === "object" && PAGE_TITLES[r]) || ({ dashboard: "Trang chủ", assets: "Tài sản", asset_detail: "Chi tiết tài sản", itlog: "Nhật ký IT", repairs: "Bảo trì - Bảo hành", repair_detail: "Phiếu báo hỏng", transfers: "Cấp phát / Điều chuyển", reports: "Báo cáo", monitor: "Giám sát" })[r] || r;
+
+function monOverview(u, A) {
+  const s = mon.sys;
+  if (!s) return `<div class="card text-muted">${mon.err ? esc(mon.err) : "Đang tải…"}</div>`;
+  if (s.error) return `<div class="alert alert-error">${esc(s.error)}</div>`;
+  const today = A.days.length ? A.days[A.days.length - 1] : null, todayId = new Date(Date.now() + 7 * 3600e3).toISOString().slice(0, 10).replace(/-/g, "");
+  const td = today && today.date === todayId ? today : { users: {}, logins: 0, fails: 0, pv: 0 };
+  const online = Object.entries(td.users || {}).filter(([, x]) => x.last && Date.now() - x.last < 6 * 60000).map(([id, x]) => ({ id, x }));
+  const warn = [];
+  if (s.security && s.security.default_admin_password) warn.push("Tài khoản admin vẫn dùng mật khẩu mặc định A@123456, hãy đổi ngay (Cấu hình → Người sử dụng).");
+  if (td.fails >= 5) warn.push(`Hôm nay có ${td.fails} lần đăng nhập sai. Kiểm tra tab “Nhật ký đăng nhập”.`);
+  if (s.telegram && s.telegram.last_error) warn.push("Telegram báo lỗi gần nhất: " + s.telegram.last_error);
+  if (s.telegram && s.telegram.pending > 20) warn.push(`Telegram còn ${s.telegram.pending} tin chưa gửi được tới máy chủ.`);
+  if (s.mode === "firestore" && s.config.sheets && (!s.backup || !s.backup.ok || Date.now() - Date.parse(s.backup.at) > 8 * 86400000)) warn.push("Chưa có bản sao lưu Google Sheet trong 8 ngày gần đây.");
+  if (s.db_ms > 1500) warn.push(`Cơ sở dữ liệu phản hồi chậm (${s.db_ms} ms).`);
+  const noTg = DB.users.filter(x => x.is_active !== false && ["admin", "it"].includes(x.role) && !x.telegram_id).length;
+  if (noTg) warn.push(`${noTg} tài khoản IT/Admin chưa nhập Telegram ID (không dùng được bot).`);
+  const ok = v => v ? `<span style="color:#16a34a">● Đã cấu hình</span>` : `<span style="color:#94a3b8">○ Chưa cấu hình</span>`;
+  const openRep = DB.repairs.filter(r => ["pending_manager", "pending_tcth", "pending_it"].includes(r.status)).length;
+  return `
+  ${warn.length ? `<div class="card" style="border-left:4px solid #f59e0b"><h4 style="margin:0 0 6px">⚠️ Cần chú ý (${warn.length})</h4><ul style="margin:0;padding-left:18px">${warn.map(w => `<li>${esc(w)}</li>`).join("")}</ul></div>` : `<div class="card" style="border-left:4px solid #16a34a">✅ Hệ thống hoạt động bình thường.</div>`}
+  <div class="kpis">
+    <div class="kpi"><div class="ico" style="background:#dcfce7">🟢</div><div class="v">${isAdmin2(u) ? online.length : "-"}</div><div class="l">Đang trực tuyến (6 phút)</div></div>
+    <div class="kpi"><div class="ico" style="background:#e0ecff">🔑</div><div class="v">${isAdmin2(u) ? td.logins || 0 : "-"}</div><div class="l">Đăng nhập hôm nay${td.fails ? ` <span class="d" style="color:#dc2626">${td.fails} sai</span>` : ""}</div></div>
+    <div class="kpi"><div class="ico" style="background:#fef3c7">👥</div><div class="v">${isAdmin2(u) ? Object.keys(td.users || {}).length : "-"}</div><div class="l">Người dùng hoạt động hôm nay</div></div>
+    <div class="kpi"><div class="ico" style="background:#ede9fe">👁️</div><div class="v">${isAdmin2(u) ? td.pv || 0 : "-"}</div><div class="l">Lượt xem màn hình hôm nay</div></div>
+  </div>
+  <div class="row">
+   <div class="col col-6"><div class="card"><h4 style="margin-top:0">🖥️ Máy chủ</h4><table>
+     <tr><td class="text-muted">Chế độ dữ liệu</td><td><b>${s.mode === "local" ? "Nội bộ (JSON)" : "Firestore"}</b></td></tr>
+     <tr><td class="text-muted">Độ trễ cơ sở dữ liệu</td><td>${s.db_ms} ms</td></tr>
+     <tr><td class="text-muted">Thời gian chạy tiến trình</td><td>${fmtUp(s.uptime_s)}</td></tr>
+     <tr><td class="text-muted">Bộ nhớ / Node</td><td>${s.memory_mb} MB · ${esc(s.node)}</td></tr>
+     <tr><td class="text-muted">Phiên bản dữ liệu (rev)</td><td>${s.rev}</td></tr></table>
+     <div class="small text-muted" style="margin-top:8px">Điểm kiểm tra cho phần mềm giám sát ngoài (Uptime Kuma, Zabbix…): <code>/api/health</code></div></div></div>
+   <div class="col col-6"><div class="card"><h4 style="margin-top:0">🔌 Dịch vụ</h4><table>
+     <tr><td class="text-muted">Telegram bot</td><td>${s.telegram ? (s.telegram.ok && s.telegram.url_set ? `<span style="color:#16a34a">● Webhook hoạt động</span>${s.telegram.pending ? ` (chờ ${s.telegram.pending})` : ""}` : `<span style="color:#dc2626">● Lỗi / chưa đặt webhook</span>`) : ok(false)}</td></tr>
+     <tr><td class="text-muted">AI (Gemini/Claude)</td><td>${ok(s.config.ai)}</td></tr>
+     <tr><td class="text-muted">Google Sheet sao lưu</td><td>${ok(s.config.sheets)}${s.backup ? ` · lần cuối ${s.backup.ok ? "✅" : "❌"} ${ago(Date.parse(s.backup.at))}` : ""}</td></tr>
+     <tr><td class="text-muted">Lịch nhắc việc (CRON_SECRET)</td><td>${ok(s.config.cron_secret)}</td></tr></table></div></div>
+  </div>
+  <div class="card"><h4 style="margin-top:0">📦 Dữ liệu hiện có</h4><div style="display:flex;gap:22px;flex-wrap:wrap">
+   ${[["Tài sản", DB.assets.length], ["Người dùng", DB.users.length], ["Phòng ban", DB.departments.length], ["Phiếu báo hỏng đang mở", openRep], ["Nhật ký IT", (DB.worklogs || []).length], ["Địa điểm", (DB.locations || []).length], ["Phần mềm", (DB.software || []).length]].map(([k, v]) => `<div><div style="font-size:22px;font-weight:800">${v}</div><div class="text-muted small">${k}</div></div>`).join("")}</div></div>
+  ${isAdmin2(u) && online.length ? `<div class="card"><h4 style="margin-top:0">🟢 Đang trực tuyến</h4>${online.map(({ id, x }) => { const us = byId(DB.users, id); return `<span style="display:inline-block;background:#f1f5f9;border-radius:99px;padding:4px 10px;margin:3px;font-size:13px">${esc(us ? us.full_name : id)} <span class="text-muted">· ${esc(routeLabel(x.route || ""))} · ${ago(x.last)}</span></span>`; }).join("")}</div>` : ""}`;
+}
+
+function monStats(A) {
+  if (!mon.use) return `<div class="card text-muted">${mon.err ? esc(mon.err) : "Đang tải…"}</div>`;
+  const labels = A.days.map(d => dFmt(d.date));
+  const dau = A.days.map(d => Object.keys(d.users || {}).length);
+  const topRoutes = Object.entries(A.routes).map(([k, v]) => ({ label: routeLabel(k), v })).sort((a, b) => b.v - a.v).slice(0, 10);
+  const topUsers = Object.entries(A.byUser).map(([id, x]) => ({ label: (byId(DB.users, id) || {}).full_name || id, v: x.pv })).filter(x => x.v > 0).sort((a, b) => b.v - a.v).slice(0, 10);
+  const totalDev = A.devices.mobile + A.devices.desktop;
+  const uniq = Object.keys(A.byUser).length, active = DB.users.filter(x => x.is_active !== false).length;
+  return `
+  <div class="card" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><b>Khoảng thời gian:</b>${[7, 30, 90].map(n => `<button class="btn btn-sm ${mon.days === n ? "btn-primary" : "btn-outline"}" onclick="monDays(${n})">${n} ngày</button>`).join("")}
+    <span class="text-muted small" style="margin-left:auto">${uniq}/${active} tài khoản có truy cập · ${A.logins} lượt đăng nhập · ${A.fails} lần sai · ${A.pv} lượt xem</span></div>
+  <div class="card"><h4 style="margin-top:0">Người dùng hoạt động mỗi ngày</h4>${svgSeries(dau, labels, "#2f6df0")}</div>
+  <div class="row"><div class="col col-6"><div class="card"><h4 style="margin-top:0">Lượt xem màn hình mỗi ngày</h4>${svgSeries(A.days.map(d => d.pv || 0), labels, "#7c3aed")}</div></div>
+  <div class="col col-6"><div class="card"><h4 style="margin-top:0">Đăng nhập mỗi ngày</h4>${svgSeries(A.days.map(d => d.logins || 0), labels, "#16a34a")}</div></div></div>
+  <div class="row"><div class="col col-6"><div class="card"><h4 style="margin-top:0">Màn hình dùng nhiều nhất</h4>${hbars(topRoutes, "#2f6df0")}</div></div>
+  <div class="col col-6"><div class="card"><h4 style="margin-top:0">Người dùng nhiều nhất (lượt xem)</h4>${hbars(topUsers, "#f59e0b")}</div></div></div>
+  <div class="row"><div class="col col-8"><div class="card"><h4 style="margin-top:0">Giờ cao điểm (giờ Việt Nam)</h4>${svgSeries(A.hourly, A.hourly.map((_, h) => h + "h"), "#0ea5e9")}</div></div>
+  <div class="col col-4"><div class="card"><h4 style="margin-top:0">Thiết bị đăng nhập</h4><div style="display:flex;align-items:center;gap:14px">${svgDonut([{ v: A.devices.mobile, color: "#2f6df0" }, { v: A.devices.desktop, color: "#94a3b8" }], totalDev, 120).replace("Tổng tài sản", "lượt đăng nhập")}<div style="font-size:13px"><div>🔵 Điện thoại: <b>${A.devices.mobile}</b></div><div>⚪ Máy tính: <b>${A.devices.desktop}</b></div></div></div></div></div></div>`;
+}
+
+function monUsers(A, u) {
+  if (!mon.use) return `<div class="card text-muted">${mon.err ? esc(mon.err) : "Đang tải…"}</div>`;
+  const q = normTxt(mon.q).trim();
+  const rows = DB.users.filter(x => !q || normTxt([x.full_name, x.username, x.employee_code].join(" ")).includes(q));
+  return `<div class="card"><div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:10px"><h4 style="margin:0">Người dùng (${rows.length})</h4>
+    <input class="form-control" id="monQ" placeholder="🔍 Tên, tài khoản…" value="${esc(mon.q)}" oninput="monQ(this.value)" style="max-width:240px;width:auto">
+    <span class="text-muted small">Số liệu trong ${mon.days} ngày. Thêm / sửa / đặt lại mật khẩu: <a data-nav="admin_users">Người sử dụng</a></span></div>
+    <div style="overflow:auto"><table><thead><tr><th>Họ tên</th><th>Tài khoản</th><th>Vai trò</th><th>Phòng ban</th><th>Telegram</th><th>Truy cập gần nhất</th><th class="text-end">Đăng nhập</th><th class="text-end">Lượt xem</th><th class="text-end">Phút dùng</th><th>Trạng thái</th><th></th></tr></thead><tbody>
+    ${rows.map(x => { const a = A.byUser[x.id] || { pv: 0, mins: 0, logins: 0, last: 0 }, act = x.is_active !== false; return `<tr><td><b>${esc(x.full_name)}</b></td><td class="mono">${esc(x.username)}</td><td>${esc(ROLE_LABELS[x.role] || x.role)}</td><td>${esc(depName(x.department_id) || "-")}</td><td>${x.telegram_id ? "✅" : "-"}</td><td>${a.last ? `${ago(a.last)}` : `<span class="text-muted">chưa có</span>`}</td><td class="text-end">${a.logins}</td><td class="text-end">${a.pv}</td><td class="text-end">${a.mins}</td>
+      <td>${act ? `<span style="color:#16a34a">● Hoạt động</span>` : `<span style="color:#dc2626">● Đã khóa</span>`}</td><td style="white-space:nowrap">${x.id === u.id ? "" : `<a onclick="monToggleUser('${x.id}')" style="color:${act ? "#dc2626" : "#16a34a"}">${act ? "🔒 Khóa" : "🔓 Mở khóa"}</a>`}</td></tr>`; }).join("")}
+    </tbody></table></div></div>`;
+}
+function monToggleUser(id) {
+  const u = currentUser(), x = byId(DB.users, id); if (!x || !isAdmin2(u) || x.id === u.id) return;
+  const act = x.is_active !== false;
+  if (!confirm((act ? "Khóa tài khoản " : "Mở khóa tài khoản ") + x.full_name + "?" + (act ? "\nNgười này sẽ bị đăng xuất và không đăng nhập được." : ""))) return;
+  x.is_active = !act; x.updated_at = nowIso(); saveDB(); flash(act ? "Đã khóa tài khoản." : "Đã mở khóa tài khoản."); render();
+}
+
+function monEvents(A) {
+  if (!mon.use) return `<div class="card text-muted">${mon.err ? esc(mon.err) : "Đang tải…"}</div>`;
+  const ev = A.events.slice(0, 200);
+  return `<div class="card"><h4 style="margin-top:0">Nhật ký đăng nhập (${ev.length} lần gần nhất, trong ${mon.days} ngày)</h4><div style="overflow:auto"><table><thead><tr><th>Thời gian</th><th>Tài khoản nhập</th><th>Kết quả</th><th>Địa chỉ IP</th><th>Thiết bị</th></tr></thead><tbody>
+  ${ev.map(e => { const us = e.u ? byId(DB.users, e.u) : null; return `<tr><td class="text-nowrap">${fmtDateTime(new Date(e.t).toISOString())}</td><td>${esc(e.name)}${us ? `<div class="small text-muted">${esc(us.full_name)}</div>` : ""}</td><td>${e.ok ? `<span style="color:#16a34a">✓ Thành công</span>` : `<span style="color:#dc2626">✗ Sai</span>`}</td><td class="mono small">${esc(e.ip || "-")}</td><td class="small">${esc(uaShort(e.ua))}</td></tr>`; }).join("") || `<tr><td colspan="5" class="text-muted">Chưa có.</td></tr>`}
+  </tbody></table></div><div class="small text-muted" style="margin-top:8px">Mật khẩu không bao giờ được ghi lại. Mỗi ngày giữ tối đa 200 lần đăng nhập gần nhất.</div></div>`;
+}
+
+function viewMonitor(u) {
+  if (!["admin", "it"].includes(u.role)) return `<div class="alert alert-error">Bạn không có quyền truy cập.</div>`;
+  monLoad(false);
+  const admin = isAdmin2(u), A = monAgg();
+  const tabs = [["ov", "📡 Tổng quan"], ...(admin ? [["st", "📊 Thống kê truy cập"], ["us", "👥 Người dùng"], ["ev", "🔑 Nhật ký đăng nhập"]] : [])];
+  if (!admin) mon.tab = "ov";
+  return `<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;align-items:center">${tabs.map(([k, t]) => `<button class="btn btn-sm ${mon.tab === k ? "btn-primary" : "btn-outline"}" onclick="monTab('${k}')">${t}</button>`).join("")}
+    <button class="btn btn-sm btn-outline-secondary" style="margin-left:auto" onclick="monRefresh()">${mon.loading ? "⏳ Đang tải…" : "↻ Làm mới"}</button>${mon.at ? `<span class="small text-muted">cập nhật ${ago(mon.at)}</span>` : ""}</div>
+  ${mon.err && mon.tab !== "ov" ? `<div class="alert alert-error">${esc(mon.err)}</div>` : ""}
+  ${mon.tab === "ov" ? monOverview(u, A) : mon.tab === "st" ? monStats(A) : mon.tab === "us" ? monUsers(A, u) : monEvents(A)}`;
+}
+
+
+/* ============================================================================
+   PWA: cài như ứng dụng (Android/Chrome, iPhone/Safari "Thêm vào MH chính", Windows/Edge)
+   ============================================================================ */
+window.__pwa = null;
+window.addEventListener("beforeinstallprompt", e => { e.preventDefault(); window.__pwa = e; try { if (currentUser()) render(); } catch (x) { /* bỏ qua */ } });
+window.addEventListener("appinstalled", () => { window.__pwa = null; try { render(); } catch (x) { /* bỏ qua */ } });
+const isStandalone = () => (window.matchMedia && matchMedia("(display-mode: standalone)").matches) || navigator.standalone === true;
+const isIOS = () => /iPhone|iPad|iPod/.test(navigator.userAgent);
+function pwaBtn() {
+  if (!/^https?:/.test(location.protocol) || isStandalone()) return "";
+  if (window.__pwa) return `<button class="btn btn-sm" style="margin:8px 12px;background:#2f6df0;color:#fff;border:0" onclick="installApp()">📲 Cài ứng dụng</button>`;
+  if (isIOS()) return `<button class="btn btn-sm" style="margin:8px 12px;background:#2f6df0;color:#fff;border:0" onclick="installApp()">📲 Cài ứng dụng</button>`;
+  return "";
+}
+function installApp() {
+  if (window.__pwa) { window.__pwa.prompt(); window.__pwa.userChoice.finally(() => { window.__pwa = null; render(); }); return; }
+  alert("Cài ứng dụng trên iPhone/iPad:\n1. Mở trang này bằng Safari.\n2. Bấm nút Chia sẻ (hình vuông có mũi tên).\n3. Chọn “Thêm vào MH chính”.");
+}
+if ("serviceWorker" in navigator && /^https?:/.test(location.protocol)) {
+  window.addEventListener("load", () => { navigator.serviceWorker.register("/sw.js").catch(() => {}); });
 }

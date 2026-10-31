@@ -10,6 +10,8 @@ const nextConfig = {
     return [
       // Trang giao diện luôn kiểm tra bản mới (tránh trình duyệt điện thoại giữ bản cũ sau khi cập nhật)
       { source: "/app.html", headers: [{ key: "Cache-Control", value: "no-cache, must-revalidate" }] },
+      { source: "/sw.js", headers: [{ key: "Cache-Control", value: "no-cache, must-revalidate" }, { key: "Service-Worker-Allowed", value: "/" }] },
+      { source: "/manifest.webmanifest", headers: [{ key: "Content-Type", value: "application/manifest+json" }, { key: "Cache-Control", value: "public, max-age=3600" }] },
       { source: "/portal.html", headers: [{ key: "Cache-Control", value: "no-cache, must-revalidate" }] },
       {
         source: "/(.*)",

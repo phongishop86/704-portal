@@ -1,4 +1,5 @@
 import { db } from "@/lib/firebase";
+import { recordLogin } from "@/lib/usage";
 import {
   clearFailures,
   isLockedOut,
@@ -25,10 +26,12 @@ export async function POST(req: Request) {
   const ok = await verifyPassword(password, u?.password_hash);
   if (!doc || !u || !ok || u.is_active === false) {
     await recordFailure(username);
+    await recordLogin(req, { username, ok: false });
     return json({ error: "Sai tên đăng nhập hoặc mật khẩu." }, 401);
   }
 
   await clearFailures(username);
+  await recordLogin(req, { userId: doc.id, username, ok: true });
   return json(
     { ok: true, user: { id: doc.id, username: u.username, full_name: u.full_name, role: u.role } },
     200,

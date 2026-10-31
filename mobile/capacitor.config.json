@@ -1,0 +1,11 @@
+{
+  "appId": "vn.bank.assets704",
+  "appName": "704 ASSETS",
+  "webDir": "www",
+  "server": {
+    "url": "https://704-portal.vercel.app/app.html",
+    "cleartext": false,
+    "androidScheme": "https"
+  },
+  "android": { "allowMixedContent": false }
+}

@@ -211,6 +211,10 @@ if len(_pos) != 1:
     raise SystemExit(f"[rp-title] mong đợi 1 vị trí, tìm thấy {len(_pos)}")
 s = s[:_pos[0]] + '<h4>Tiến độ quy trình (${rt.route === "it" ? "4 bước · chuyển thẳng Điện toán" : "5 bước"})</h4>' + s[_pos[0]+len(_h):]
 
+
+sub_once('      case "locations": body = viewLocations(u); break;', '      case "locations": body = viewLocations(u); break;\n      case "monitor": body = viewMonitor(u); break;', "route-monitor")
+sub_once('function render(){\n  sortLists();', 'function render(){\n  sortLists();\n  trackRoute();', "render-track")
+
 out = root / "public" / "app.html"
 out.write_text(s, encoding="utf8")
 print("OK ->", out, len(s), "ký tự")
