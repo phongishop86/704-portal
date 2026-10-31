@@ -5439,20 +5439,44 @@ function viewQR(u) {
 async function qrScan() {
   const secure = window.isSecureContext && navigator.mediaDevices && navigator.mediaDevices.getUserMedia;
   if (!secure) { modal2(`<h3 style="margin-top:0">📷 Quét QR bằng camera</h3><p>Trình duyệt chỉ cho mở camera trên trang <b>HTTPS</b> (hoặc <code>localhost</code>). Trang này đang chạy HTTP trong mạng nội bộ nên chưa dùng được.</p><p><b>Cách dùng ngay:</b></p><ul><li>Mở ứng dụng <b>Camera</b> của điện thoại, quét tem QR → bấm vào liên kết, hồ sơ tài sản sẽ mở ra (cần đăng nhập).</li><li>Hoặc dùng máy quét mã vạch USB: bấm vào ô “Tra cứu nhanh” rồi quét.</li></ul><div style="text-align:right"><button class="btn" onclick="closeModal2()">Đóng</button></div>`); return; }
-  if (!("BarcodeDetector" in window)) { modal2(`<h3 style="margin-top:0">📷 Quét QR bằng camera</h3><p>Trình duyệt này chưa hỗ trợ quét QR trực tiếp. Hãy dùng Chrome / Edge bản mới, hoặc dùng ứng dụng Camera của điện thoại để quét tem.</p><div style="text-align:right"><button class="btn" onclick="closeModal2()">Đóng</button></div>`); return; }
-  const d = modal2(`<h3 style="margin-top:0">📷 Đưa tem QR vào khung hình</h3><video id="scanVid" playsinline muted style="width:100%;border-radius:12px;background:#000"></video><div id="scanMsg" class="small text-muted" style="margin:8px 0"></div><div style="text-align:right"><button class="btn" onclick="closeModal2()">Đóng</button></div>`);
+  const d = modal2(`<h3 style="margin-top:0">📷 Đưa tem QR vào khung hình</h3><div style="position:relative"><video id="scanVid" playsinline webkit-playsinline muted autoplay style="width:100%;border-radius:12px;background:#000;min-height:220px;object-fit:cover"></video><div style="position:absolute;inset:18% 18%;border:3px solid rgba(255,255,255,.85);border-radius:14px;pointer-events:none"></div></div><div id="scanMsg" class="small text-muted" style="margin:8px 0">Đang mở camera…</div><div style="text-align:right"><button class="btn" onclick="closeModal2()">Đóng</button></div>`);
+  const msg = (t) => { const m = document.getElementById("scanMsg"); if (m) m.textContent = t; };
   try {
-    const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
-    window.__scanStream = stream; window.__scanOn = true;
-    const vid = document.getElementById("scanVid"); vid.srcObject = stream; await vid.play();
-    const det = new BarcodeDetector({ formats: ["qr_code"] });
+    window.__scanOn = true;
+    let stream;
+    try { stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: "environment" }, width: { ideal: 1280 }, height: { ideal: 720 } }, audio: false }); }
+    catch (e) { if (e && (e.name === "NotAllowedError" || e.name === "SecurityError")) throw e; stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false }); }
+    window.__scanStream = stream;
+    const vid = document.getElementById("scanVid");
+    if (!vid) { stream.getTracks().forEach(t => t.stop()); return; }
+    vid.setAttribute("playsinline", ""); vid.muted = true; vid.srcObject = stream; await vid.play();
+    let det = null;
+    if ("BarcodeDetector" in window) { try { det = new BarcodeDetector({ formats: ["qr_code"] }); } catch (e) { det = null; } }
+    if (!det && !window.jsQR) await new Promise((ok, no) => { const sc = document.createElement("script"); sc.src = "/js/jsQR.js"; sc.onload = ok; sc.onerror = () => no(new Error("Không tải được bộ giải mã QR (cần mạng lần đầu)")); document.head.appendChild(sc); });
+    msg("Giữ tem QR trong khung, cách khoảng 15–25 cm.");
+    const cv = document.createElement("canvas"), cx = cv.getContext("2d", { willReadFrequently: true });
+    const found = (val) => { window.__scanOn = false; closeModal2(d); qrLookup(val, true); };
     const tick = async () => {
-      if (!window.__scanOn) return;
-      try { const r = await det.detect(vid); if (r.length) { const val = r[0].rawValue; closeModal2(d); if (!qrLookup(val, true)) { /* đã báo lỗi */ } return; } } catch (e) { /* khung hình chưa sẵn sàng */ }
-      setTimeout(tick, 250);
+      if (!window.__scanOn || !document.getElementById("scanVid")) return;
+      try {
+        if (vid.readyState >= 2 && vid.videoWidth) {
+          if (det) { const r = await det.detect(vid); if (r.length) return found(r[0].rawValue); }
+          else {
+            const k = Math.min(1, 640 / vid.videoWidth); cv.width = Math.round(vid.videoWidth * k); cv.height = Math.round(vid.videoHeight * k);
+            cx.drawImage(vid, 0, 0, cv.width, cv.height);
+            const im = cx.getImageData(0, 0, cv.width, cv.height);
+            const r = window.jsQR(im.data, cv.width, cv.height, { inversionAttempts: "attemptBoth" });
+            if (r && r.data) return found(r.data);
+          }
+        }
+      } catch (e) { /* khung hình chưa sẵn sàng */ }
+      setTimeout(tick, det ? 250 : 200);
     };
     tick();
-  } catch (e) { const m = document.getElementById("scanMsg"); if (m) m.textContent = "Không mở được camera: " + (e.message || e); }
+  } catch (e) {
+    const n = e && e.name;
+    msg(n === "NotAllowedError" ? "Chưa được cấp quyền camera. Trên iPhone: Cài đặt → Safari → Camera → Cho phép (hoặc bấm “aA” trên thanh địa chỉ → Cài đặt trang web → Camera). Sau đó thử lại." : n === "NotFoundError" ? "Thiết bị không có camera." : "Không mở được camera: " + ((e && e.message) || e));
+  }
 }
 
 /* ============================================================================

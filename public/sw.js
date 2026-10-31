@@ -1,5 +1,5 @@
 /* Service worker: giữ khung giao diện để mở nhanh và báo "mất kết nối" gọn gàng. KHÔNG lưu /api (dữ liệu luôn lấy từ máy chủ). */
-const VER = "v1";
+const VER = "v2";
 const SHELL = ["/app.html", "/img/logo.png", "/img/favicon.png", "/img/icon-192.png", "/offline.html"];
 self.addEventListener("install", (e) => { e.waitUntil(caches.open("shell-" + VER).then((c) => c.addAll(SHELL)).then(() => self.skipWaiting())); });
 self.addEventListener("activate", (e) => {
@@ -13,7 +13,7 @@ self.addEventListener("fetch", (e) => {
     e.respondWith(fetch(req).then((r) => { const cp = r.clone(); caches.open("shell-" + VER).then((c) => c.put("/app.html", cp)); return r; }).catch(() => caches.match("/app.html").then((r) => r || caches.match("/offline.html"))));
     return;
   }
-  if (url.pathname.startsWith("/img/")) {
+  if (url.pathname.startsWith("/img/") || url.pathname.startsWith("/js/")) {
     e.respondWith(caches.match(req).then((r) => r || fetch(req).then((n) => { const cp = n.clone(); caches.open("shell-" + VER).then((c) => c.put(req, cp)); return n; })));
   }
 });
