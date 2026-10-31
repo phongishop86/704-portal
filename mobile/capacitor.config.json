@@ -3,7 +3,7 @@
   "appName": "704 ASSETS",
   "webDir": "www",
   "server": {
-    "url": "https://704-portal.vercel.app/app.html",
+    "url": "https://704-assets.vercel.app/app.html",
     "cleartext": false,
     "androidScheme": "https"
   },
