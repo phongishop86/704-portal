@@ -2492,6 +2492,7 @@ function viewAdminUsers(u){
           <div class="form-group"><label>Mã số NV</label><input class="form-control" name="employee_code" placeholder="VD: NV0123" required></div>
           <div class="form-group"><label>Tên đăng nhập</label><input class="form-control" name="username" required></div>
           <div class="form-group"><label>Họ tên</label><input class="form-control" name="full_name" required></div>
+          <div class="form-group"><label>Chức vụ</label><input class="form-control" name="position" placeholder="VD: Chuyên viên"></div>
           <div class="form-group"><label>Vai trò</label>
             <select class="form-control" name="role">
               <option value="admin">Admin</option><option value="tcth">TCTH</option><option value="it">IT (Điện toán)</option>
@@ -2548,6 +2549,7 @@ function submit_new_user(form){
   if(DB.users.some(x=>x.username===username)){ flash(`Tài khoản '${username}' đã tồn tại.`, "error"); render(); return; }
   DB.users.push({id:uid(), username, password: fd.get("password")||"123456", full_name: fd.get("full_name").trim(),
     employee_code: (fd.get("employee_code")||"").trim(),
+    position: (fd.get("position")||"").trim(),
     telegram_id: (fd.get("telegram_id")||"").trim(),
     role: fd.get("role"), department_id: fd.get("department_id")||null,
     current_user_id: fd.get("current_user_id")||null, is_active:true});
@@ -2569,6 +2571,8 @@ function viewAdminUserEdit(u, id){
           <input class="form-control" name="username" value="${esc(x.username)}" required></div></div>
         <div class="col col-6"><div class="form-group"><label>Họ tên</label>
           <input class="form-control" name="full_name" value="${esc(x.full_name)}" required></div></div>
+        <div class="col col-6"><div class="form-group"><label>Chức vụ</label>
+          <input class="form-control" name="position" value="${esc(x.position||'')}" placeholder="VD: Chuyên viên, Phó phòng"></div></div>
         <div class="col col-6"><div class="form-group"><label>Vai trò</label>
           <select class="form-control" name="role">
             ${Object.entries(ROLE_LABELS).map(([k,v])=>`<option value="${k}" ${x.role===k?'selected':''}>${v}</option>`).join("")}
@@ -2603,6 +2607,7 @@ function submit_user_edit(form){
   }
   x.username = newUsername;
   x.full_name = fd.get("full_name").trim();
+  x.position = (fd.get("position")||"").trim();
   x.employee_code = (fd.get("employee_code")||"").trim();
   x.telegram_id = (fd.get("telegram_id")||"").trim();
   x.role = fd.get("role");
@@ -4973,6 +4978,11 @@ a{color:var(--brand);}
 .compact-tbl .btn{display:inline-flex !important;flex-direction:row !important;align-items:center;gap:4px;padding:3px 8px !important;font-size:12px !important;width:auto !important;height:auto !important;min-height:0 !important}
 #usersTable td:nth-child(4){white-space:nowrap}
 
+.avatar-big{width:56px;height:56px;font-size:20px;}
+.um-hd{display:flex;gap:12px;align-items:center;padding:10px;border-bottom:1px solid var(--border);margin-bottom:6px}
+.um-av{position:relative;cursor:pointer;flex-shrink:0;display:block}
+.um-av .um-cam{position:absolute;right:-4px;bottom:-4px;background:#fff;border:1px solid var(--border);border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:12px}
+.um-nm{font-weight:700;color:#0f2a5c;margin-bottom:3px}.um-ln{font-size:12.5px;display:flex;gap:6px;line-height:1.5}.um-ln span{color:#64748b;min-width:62px}.um-ln b{font-weight:600}
 .sb-user{margin:auto 12px 14px;padding:12px;border-radius:12px;background:rgba(255,255,255,.07);display:flex;align-items:center;gap:10px;color:#fff;}
 .avatar{width:34px;height:34px;border-radius:50%;background:#2f6df0;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0;}
 .sb-user .nm{font-size:13px;font-weight:600;line-height:1.25;} .sb-user .rl{font-size:11px;color:#9db6e3;}
@@ -5150,6 +5160,50 @@ if (!window.__ui2) {
   });
 }
 
+/* ---------- Ảnh đại diện & thông tin người dùng ---------- */
+const AV = { data: null, uid: null, loading: false };
+const posName = u => (u && u.position) || ROLE_LABELS[u && u.role] || (u && u.role) || "";
+function avatarLoad(u) {
+  if (!u || AV.uid === u.id) return; AV.uid = u.id; AV.data = null;
+  let c = null; try { c = JSON.parse(localStorage.getItem("av_" + u.id) || "null"); } catch (e) { c = null; }
+  if (c) AV.data = c.d || null;
+  if (c && Date.now() - c.t < 24 * 3600 * 1000) return;
+  AV.loading = true;
+  fetch("/api/profile/avatar", { credentials: "same-origin" }).then(r => r.ok ? r.json() : null).then(j => {
+    if (!j) return; const changed = (j.data || null) !== AV.data; AV.data = j.data || null;
+    try { localStorage.setItem("av_" + u.id, JSON.stringify({ d: AV.data, t: Date.now() })); } catch (e) { /* bỏ qua */ }
+    if (changed) render();
+  }).catch(() => {}).finally(() => { AV.loading = false; });
+}
+function avatarHtml(u, big) {
+  avatarLoad(u);
+  const st = AV.data ? `background-image:url(${AV.data});background-size:cover;background-position:center;color:transparent;` : "";
+  return `<span class="avatar ${big ? "avatar-big" : ""}" style="${st}">${AV.data ? "" : esc(initials(u.full_name))}</span>`;
+}
+function avatarSave(data) {
+  const u = currentUser(); if (!u) return;
+  fetch("/api/profile/avatar", { method: "POST", credentials: "same-origin", headers: { "content-type": "application/json" }, body: JSON.stringify({ data }) })
+    .then(r => r.json().then(j => ({ ok: r.ok, j }))).then(({ ok, j }) => {
+      if (!ok) { flash(j.error || "Không lưu được ảnh.", "error"); render(); return; }
+      AV.data = data; try { localStorage.setItem("av_" + u.id, JSON.stringify({ d: data, t: Date.now() })); } catch (e) { /* bỏ qua */ }
+      flash(data ? "Đã đổi ảnh đại diện." : "Đã xóa ảnh đại diện."); render();
+    }).catch(() => { flash("Không kết nối được máy chủ.", "error"); render(); });
+}
+function avatarPick(inp) {
+  const f = inp.files && inp.files[0]; inp.value = ""; if (!f) return;
+  if (!/^image\//.test(f.type)) { flash("Hãy chọn file ảnh.", "error"); render(); return; }
+  const img = new Image(), url = URL.createObjectURL(f);
+  img.onload = () => {
+    const S = 128, cv = document.createElement("canvas"); cv.width = cv.height = S;
+    const m = Math.min(img.width, img.height), sx = (img.width - m) / 2, sy = (img.height - m) / 2;
+    const cx = cv.getContext("2d"); cx.fillStyle = "#fff"; cx.fillRect(0, 0, S, S); cx.drawImage(img, sx, sy, m, m, 0, 0, S, S);
+    URL.revokeObjectURL(url); avatarSave(cv.toDataURL("image/jpeg", 0.82));
+  };
+  img.onerror = () => { URL.revokeObjectURL(url); flash("Không đọc được ảnh này.", "error"); render(); };
+  img.src = url;
+}
+function avatarRemove() { avatarSave(null); }
+
 function renderTopbar(u, title) {
   const n = uiNotifs(u);
   const nh = n.length ? n.map((x, i) => `<div class="nt ${x.level}" onclick="uiNotifGo(${i})"><span class="ni">${x.icon}</span><span>${esc(x.text)}</span></div>`).join("") : `<div class="nt-empty">🎉 Không có việc nào cần xử lý.</div>`;
@@ -5163,9 +5217,16 @@ function renderTopbar(u, title) {
     <div class="tb-right">
       <div class="dd" id="ddBell"><button class="dd-btn bell" onclick="uiToggle('ddBell')" title="Thông báo">🔔${n.length ? `<span class="cnt">${n.length}</span>` : ""}</button>
         <div class="dd-menu"><div class="hd">Thông báo</div>${nh}</div></div>
-      <div class="dd" id="ddUser"><button class="dd-btn" onclick="uiToggle('ddUser')"><span class="avatar">${esc(initials(u.full_name))}</span>
-        <span class="who2" style="text-align:left;line-height:1.2"><b style="font-size:13px">${esc(u.full_name)}</b><br><small class="text-muted">${esc(ROLE_LABELS[u.role] || u.role)}</small></span> <span class="who2">▾</span></button>
-        <div class="dd-menu" style="min-width:200px"><a class="menu-it" data-action="logout">🚪 Đăng xuất</a></div></div>
+      <div class="dd" id="ddUser"><button class="dd-btn" onclick="uiToggle('ddUser')">${avatarHtml(u)}
+        <span class="who2" style="text-align:left;line-height:1.2"><b style="font-size:13px">${esc(u.full_name)}</b><br><small class="text-muted">${esc(posName(u))}</small></span> <span class="who2">▾</span></button>
+        <div class="dd-menu" style="min-width:270px"><div class="um-hd">
+          <label class="um-av" title="Đổi ảnh đại diện">${avatarHtml(u, "big")}<span class="um-cam">📷</span><input type="file" accept="image/*" style="display:none" onchange="avatarPick(this)"></label>
+          <div class="um-info"><div class="um-nm">${esc(u.full_name)}</div>
+            <div class="um-ln"><span>Phòng/Ban</span><b>${esc(depName(u.department_id) || "—")}</b></div>
+            <div class="um-ln"><span>Chức vụ</span><b>${esc(posName(u))}</b></div></div></div>
+          <label class="menu-it" style="cursor:pointer">🖼️ Đổi ảnh đại diện<input type="file" accept="image/*" style="display:none" onchange="avatarPick(this)"></label>
+          ${AV.data ? `<a class="menu-it" onclick="avatarRemove()">🗑️ Xóa ảnh đại diện</a>` : ""}
+          <a class="menu-it" data-action="logout">🚪 Đăng xuất</a></div></div>
     </div>
   </div>`;
 }
@@ -5202,8 +5263,6 @@ function renderSidebar(u) {
       ${["admin", "it"].includes(u.role) ? item("monitor", "📡", "Giám sát & truy cập") : ""}
     </div>
     ${pwaBtn()}
-    <div class="sb-user"><span class="avatar">${esc(initials(u.full_name))}</span>
-      <div style="min-width:0"><div class="nm">${esc(u.full_name)}</div><div class="rl">${esc(ROLE_LABELS[u.role] || u.role)}${u.department_id ? " · " + esc(depName(u.department_id) || "") : ""}</div></div></div>
   </div>`;
 }
 

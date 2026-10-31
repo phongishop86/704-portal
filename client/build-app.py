@@ -81,7 +81,7 @@ sub_once('<div class="form-group"><label>Mật khẩu (mặc định 123456)</la
          '<div class="form-group"><label>Mật khẩu (mặc định 123456)</label><input class="form-control" name="password"></div>\n'
          '          <div class="form-group"><label>Telegram ID (tuỳ chọn, để dùng chatbot)</label><input class="form-control" name="telegram_id" placeholder="VD: 123456789"></div>', "user-new-form")
 sub_once('    employee_code: (fd.get("employee_code")||"").trim(),\n    role: fd.get("role")',
-         '    employee_code: (fd.get("employee_code")||"").trim(),\n    telegram_id: (fd.get("telegram_id")||"").trim(),\n    role: fd.get("role")', "user-new-submit")
+         '    employee_code: (fd.get("employee_code")||"").trim(),\n    position: (fd.get("position")||"").trim(),\n    telegram_id: (fd.get("telegram_id")||"").trim(),\n    role: fd.get("role")', "user-new-submit")
 sub_once('      </div>\n      <button class="btn" type="submit">💾 Lưu thay đổi</button>',
          '        <div class="col col-6"><div class="form-group"><label>Telegram ID (chatbot)</label>\n'
          '          <input class="form-control" name="telegram_id" value="${esc(x.telegram_id||\'\')}" placeholder="VD: 123456789"></div></div>\n'
