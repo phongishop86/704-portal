@@ -870,7 +870,7 @@ function renderSidebar(u){
     adminSection = `
       <div class="sidebar-section-title">Quản trị</div>
       ${item("admin_settings","⚙️","Cài đặt & Danh mục")}
-      ${item("admin_data","🔄","Nhập / Xuất dữ liệu")}
+      ${item("admin_data","🔄","Nhập - Xuất dữ liệu")}
       ${item("admin_inventory","📋","Kiểm kê tài sản")}`;
   }
 
@@ -4942,9 +4942,9 @@ const initials = n => String(n || "?").replace(/\(.*?\)/g, " ").trim().split(/\s
 const PALETTE = ["#3b82f6", "#22c55e", "#f59e0b", "#8b5cf6", "#ef4444", "#94a3b8", "#06b6d4", "#ec4899"];
 
 Object.assign(PAGE_TITLES, {
-  dashboard: "Trang chủ", assets: "Tài sản", ccdc: "Công cụ dụng cụ", transfers: "Cấp phát / Điều chuyển",
+  dashboard: "Trang chủ", assets: "Tài sản", ccdc: "Công cụ dụng cụ", transfers: "Cấp phát - Điều chuyển",
   repairs: "Bảo trì - Bảo hành", reports: "Báo cáo", itlog: "Nhật ký IT", admin_inventory: "Kiểm kê",
-  admin_users: "Người sử dụng", admin_departments: "Phòng ban", admin_data: "Nhập / Xuất dữ liệu", admin_settings: "Cấu hình hệ thống",
+  admin_users: "Người sử dụng", admin_departments: "Phòng ban", admin_data: "Nhập - Xuất dữ liệu", admin_settings: "Cấu hình hệ thống",
   monitor: "Giám sát & truy cập", locations: "Địa điểm", qr: "QR Code", accessories: "Phụ kiện", accessory_detail: "Chi tiết phụ kiện",
   software: "Phần mềm & bản quyền", software_detail: "Chi tiết phần mềm",
 });
@@ -4961,8 +4961,10 @@ a{color:var(--brand);}
 .sb-logo{width:42px;height:42px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(0,0,0,.25);flex:none;}.sb-logo img{width:38px;height:38px;display:block;}
 .sb-brand b{display:block;font-size:15px;line-height:1.2;} .sb-brand small{color:#9db6e3;font-size:11.5px;}
 .sidebar-nav{padding:6px 6px 12px;}
-.sidebar-section-title{color:#7f9bd1;padding:14px 18px 4px;font-size:10.5px;}
-.sidebar-link{color:#cfdcf4;margin:2px 8px;padding:9px 14px;border-radius:10px;font-size:13.5px;box-shadow:none;}
+.sidebar-section-title{color:#7f9bd1;padding:8px 18px 2px;font-size:10.5px;}
+.sidebar-link{color:#cfdcf4;margin:1px 8px;padding:6px 12px;gap:10px;border-radius:10px;font-size:13px;box-shadow:none;white-space:nowrap;}
+.sidebar-link .badge-count{margin-left:auto;flex-shrink:0;}
+.sidebar-nav{padding:6px 6px;}
 .sidebar-link:hover{background:rgba(255,255,255,.09);color:#fff;}
 .sidebar-link.active{background:#2f6df0;color:#fff;box-shadow:0 6px 14px rgba(47,109,240,.45);}
 .sidebar-link .ic{font-size:15px;}
@@ -5179,7 +5181,7 @@ function renderSidebar(u) {
       ${item("dashboard", "🏠", "Trang chủ")}
       ${item("assets", "🗄️", "Tài sản")}
       ${staff || u.role === "manager" ? item("ccdc", "🔧", "Công cụ dụng cụ") : ""}
-      ${item("transfers", "🔁", "Cấp phát / Điều chuyển")}
+      ${item("transfers", "🔁", "Cấp phát - Điều chuyển")}
       ${item("repairs", "🛠️", "Bảo trì - Bảo hành")}
       ${ta ? item("admin_inventory", "📋", "Kiểm kê") : (u.role === "manager" ? item("admin_inventory", "📋", "Kiểm kê phòng ban") : "")}
       ${staff ? `<div class="sidebar-section-title">Danh mục</div>
@@ -5190,7 +5192,7 @@ function renderSidebar(u) {
       <div class="sidebar-section-title">Hệ thống</div>
       ${item("reports", "📈", "Báo cáo")}
       ${staff ? item("itlog", "🧰", "Nhật ký IT") : ""}
-      ${ta ? item("admin_data", "🔄", "Nhập / Xuất dữ liệu") : ""}
+      ${ta ? item("admin_data", "🔄", "Nhập - Xuất dữ liệu") : ""}
       ${ta ? item("admin_settings", "⚙️", "Cấu hình") : ""}
       ${["admin", "it"].includes(u.role) ? item("monitor", "📡", "Giám sát & truy cập") : ""}
     </div>
@@ -5498,8 +5500,7 @@ function assetExtraRows(a) {
 function assetFormExtra(a, u) {
   const canStatus = ["admin", "tcth"].includes(u.role);
   return `<div class="col col-6"><div class="form-group"><label>Số serial</label><input class="form-control mono" name="serial" value="${a ? esc(a.serial || "") : ""}" placeholder="VD: 97H2F3"></div></div>
-    <div class="col col-6"><div class="form-group"><label>Địa điểm</label><select class="form-control" name="location_id"><option value="">-- Chưa gán --</option>
-      ${(DB.locations || []).slice().sort((x, y) => String(x.name).localeCompare(String(y.name))).map(l => `<option value="${l.id}" ${a && a.location_id === l.id ? "selected" : ""}>${esc(l.name)}</option>`).join("")}</select></div></div>
+    <div class="col col-6"><div class="form-group"><label>Địa điểm</label><input class="form-control" name="location" list="locList" autocomplete="off" value="${a ? esc(locName(a.location_id) || "") : ""}" placeholder="Nhập địa điểm, VD: Tầng 3 - Phòng họp"><datalist id="locList">${(DB.locations || []).slice().sort((x, y) => String(x.name).localeCompare(String(y.name), "vi")).map(l => `<option value="${esc(l.name)}">`).join("")}</datalist></div></div>
     <div class="col col-6"><div class="form-group"><label>Hết hạn bảo hành</label><input class="form-control" type="date" name="warranty_until" value="${a ? (a.warranty_until || "") : ""}"></div></div>
     ${canStatus ? `<div class="col col-6"><div class="form-group"><label>Trạng thái</label><select class="form-control" name="status">
       ${["in_use", "unused", "broken", "liquidation"].map(s => `<option value="${s}" ${(a ? a.status : "in_use") === s ? "selected" : ""}>${esc(STATUS_LABELS[s])}</option>`).join("")}</select></div></div>` : ""}`;
@@ -5511,7 +5512,10 @@ function submit_asset(form) {
   const a = id ? byId(DB.assets, id) : (DB.assets.length > before ? DB.assets.find(x => x.code === code) : null);
   if (!a) return;
   a.serial = (fd.get("serial") || "").trim();
-  a.location_id = fd.get("location_id") || null;
+  { const nm = (fd.get("location") || "").trim(); a.location_id = null;
+    if (nm) { DB.locations = DB.locations || []; let l = DB.locations.find(x => normTxt(x.name) === normTxt(nm));
+      if (!l) { l = { id: uid(), name: nm, code: "", parent: "", note: "", created_at: nowIso(), updated_at: nowIso() }; DB.locations.push(l); }
+      a.location_id = l.id; } }
   a.warranty_until = fd.get("warranty_until") || null;
   const st = fd.get("status");
   if (st && st !== a.status && STATUS_LABELS[st]) { a.status = st; a.status_changed_at = nowIso(); logHistory(a.id, "status_change", "Chuyển trạng thái sang: " + STATUS_LABELS[st]); }
@@ -6113,7 +6117,7 @@ function monAgg() {
   out.events.sort((a, b) => b.t - a.t);
   return out;
 }
-const routeLabel = r => (typeof PAGE_TITLES === "object" && PAGE_TITLES[r]) || ({ dashboard: "Trang chủ", assets: "Tài sản", asset_detail: "Chi tiết tài sản", itlog: "Nhật ký IT", repairs: "Bảo trì - Bảo hành", repair_detail: "Phiếu báo hỏng", transfers: "Cấp phát / Điều chuyển", reports: "Báo cáo", monitor: "Giám sát" })[r] || r;
+const routeLabel = r => (typeof PAGE_TITLES === "object" && PAGE_TITLES[r]) || ({ dashboard: "Trang chủ", assets: "Tài sản", asset_detail: "Chi tiết tài sản", itlog: "Nhật ký IT", repairs: "Bảo trì - Bảo hành", repair_detail: "Phiếu báo hỏng", transfers: "Cấp phát - Điều chuyển", reports: "Báo cáo", monitor: "Giám sát" })[r] || r;
 
 function monOverview(u, A) {
   const s = mon.sys;
