@@ -5408,6 +5408,8 @@ function qrShow(id) {
 const QR_LAYOUTS = {
   a3x11: { label: "A4 · 3 cột × 11 hàng · tem cao 24 mm (khuyên dùng)", cols: 3, h: 24, qr: 20, page: "A4", margin: "8mm 8mm" },
   kj60: { label: "King Jim / Tepra · băng 24 mm · tem 60 × 24 mm (cuộn)", cols: 1, h: 24, qr: 20, page: "60mm 24mm", margin: "0", roll: true },
+  kj36: { label: "King Jim / Tepra · băng 36 mm · tem 70 × 36 mm (cuộn)", cols: 1, h: 36, qr: 32, page: "70mm 36mm", margin: "0", roll: true },
+  kj18: { label: "King Jim / Tepra · băng 18 mm · tem 50 × 18 mm (cuộn)", cols: 1, h: 18, qr: 15, page: "50mm 18mm", margin: "0", roll: true },
   kj80: { label: "King Jim / Tepra · băng 24 mm · tem 80 × 24 mm (cuộn)", cols: 1, h: 24, qr: 20, page: "80mm 24mm", margin: "0", roll: true },
 };
 function qrLayoutPref() { try { const v = localStorage.getItem("qrLayoutPref"); if (v && QR_LAYOUTS[v]) return v; } catch (e) { /* bỏ qua */ } return qrF.layout; }
@@ -5429,7 +5431,7 @@ function qrPrintGo(id) {
   qrPrintIds(Array(n).fill(id), k);
 }
 /* ---------- Khung in ngay trong ứng dụng (không mở tab mới: tránh treo/kẹt trên điện thoại & PWA) ---------- */
-function printOverlay(title, css, bodyHtml, hint) {
+function printOverlay(title, css, bodyHtml, hint, extraBtns) {
   closePrintOverlay();
   const ov = document.createElement("div"); ov.id = "printOv";
   ov.innerHTML = `<style id="printOvCss">${css}
@@ -5440,7 +5442,7 @@ function printOverlay(title, css, bodyHtml, hint) {
     #printOv .po-hint{font:12px Arial;background:#fff8d6;padding:6px 10px;border-bottom:1px solid #e6d98a}
     @media print{ body>*:not(#printOv){display:none !important} #printOv{position:static !important;background:#fff;overflow:visible} #printOv .po-bar,#printOv .po-hint{display:none !important} #printOv .po-pg{margin:0;max-width:none;box-shadow:none} }
   </style>
-  <div class="po-bar"><button style="background:#fff;color:#0f2a5c" onclick="closePrintOverlay()">← Quay lại</button><b>${esc(title)}</b><button style="background:#2f6df0;color:#fff" onclick="window.print()">🖨️ In</button></div>
+  <div class="po-bar"><button style="background:#fff;color:#0f2a5c" onclick="closePrintOverlay()">← Quay lại</button><b>${esc(title)}</b><button style="background:#2f6df0;color:#fff" onclick="window.print()">🖨️ In</button>${extraBtns || ""}</div>
   ${hint ? `<div class="po-hint">${hint}</div>` : ""}<div class="po-pg">${bodyHtml}</div>`;
   document.body.appendChild(ov); ov.scrollTop = 0;
   document.documentElement.style.overflow = "hidden";
@@ -5452,6 +5454,60 @@ function openPrintWindow(bodyHtml, titleHint) {
   printOverlay(titleHint || "In", `body{font-family:Arial,Helvetica,sans-serif;color:#111} #printOv .po-pg{padding:18px;font-size:13px} #printOv table{border-collapse:collapse;width:100%} #printOv table.print-table th,#printOv table.print-table td{border:1px solid #333;padding:5px 7px;font-size:12.5px} #printOv table.print-table th{color:#f8fafc;background:#111827;border:none;font-size:12px;text-transform:uppercase} #printOv .text-end{text-align:right} #printOv h2{margin-bottom:4px} @media print{#printOv .po-pg{padding:0}}`, bodyHtml, "");
 }
 
+let QR_LAST = null;
+/* ---------- Xuất PDF đúng cỡ nhãn (mỗi tem 1 trang) để gửi sang ứng dụng King Jim / Lưu vào Tệp ---------- */
+function qrLabelCanvas(a, L) {
+  const wMm = parseFloat(L.page), hMm = L.h, K = 300 / 25.4;
+  const c = document.createElement("canvas"); c.width = Math.round(wMm * K); c.height = Math.round(hMm * K);
+  const g = c.getContext("2d"); g.fillStyle = "#fff"; g.fillRect(0, 0, c.width, c.height); g.fillStyle = "#000";
+  const pad = 1.5 * K, qpx = L.qr * K, m = qrMatrix(qrPayload(a)), cell = qpx / (m.length + 8);
+  const oy = (c.height - qpx) / 2;
+  for (let y = 0; y < m.length; y++) for (let x = 0; x < m.length; x++) if (m[y][x]) g.fillRect(pad + (x + 4) * cell, oy + (y + 4) * cell, Math.ceil(cell), Math.ceil(cell));
+  const tx = pad + qpx + 2 * K, tw = c.width - tx - pad, big = L.h <= 24;
+  const lines = [[`bold ${Math.round((big ? 9 : 11) * 300 / 72)}px Arial`, a.code], [`${Math.round(7 * 300 / 72)}px Arial`, a.name],
+    [`${Math.round(6.5 * 300 / 72)}px Arial`, a.serial ? "SN: " + a.serial : ""], [`${Math.round(6.5 * 300 / 72)}px Arial`, depName(a.department_id) || ""],
+    [`${Math.round(6.5 * 300 / 72)}px Arial`, userName(a.current_user_id || a.assigned_user_id) || "Chưa cấp phát"]].filter(l => l[1]);
+  let y = pad; g.textBaseline = "top";
+  for (const [f, t0] of lines) {
+    g.font = f; let t = String(t0); const lh = parseInt(f.match(/(\d+)px/)[1], 10) * 1.2;
+    if (y + lh > c.height) break;
+    while (t.length > 1 && g.measureText(t).width > tw) t = t.slice(0, -1);
+    g.fillText(t, tx, y); y += lh;
+  }
+  return c;
+}
+function qrBuildPdf(canvases, wMm, hMm) {
+  const pt = v => (v * 72 / 25.4).toFixed(2), enc = new TextEncoder(), parts = [], offs = []; let len = 0;
+  const push = d => { const b = typeof d === "string" ? enc.encode(d) : d; parts.push(b); len += b.length; };
+  const obj = (n, d) => { offs[n] = len; push(n + " 0 obj\n"); push(d); push("\nendobj\n"); };
+  const N = canvases.length; push("%PDF-1.4\n");
+  obj(1, "<< /Type /Catalog /Pages 2 0 R >>");
+  obj(2, `<< /Type /Pages /Kids [${canvases.map((_, i) => (3 + i * 3) + " 0 R").join(" ")}] /Count ${N} >>`);
+  canvases.forEach((cv, i) => {
+    const pg = 3 + i * 3, im = pg + 1, ct = pg + 2;
+    const b64 = cv.toDataURL("image/jpeg", 0.95).split(",")[1], bin = atob(b64), jb = new Uint8Array(bin.length);
+    for (let k = 0; k < bin.length; k++) jb[k] = bin.charCodeAt(k);
+    obj(pg, `<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${pt(wMm)} ${pt(hMm)}] /Resources << /XObject << /Im0 ${im} 0 R >> >> /Contents ${ct} 0 R >>`);
+    offs[im] = len; push(`${im} 0 obj\n<< /Type /XObject /Subtype /Image /Width ${cv.width} /Height ${cv.height} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${jb.length} >>\nstream\n`); push(jb); push("\nendstream\nendobj\n");
+    const cs = `q ${pt(wMm)} 0 0 ${pt(hMm)} 0 0 cm /Im0 Do Q`; obj(ct, `<< /Length ${cs.length} >>\nstream\n${cs}\nendstream`);
+  });
+  const total = 3 + N * 3, xr = len; push(`xref\n0 ${total}\n0000000000 65535 f \n`);
+  for (let i = 1; i < total; i++) push(String(offs[i]).padStart(10, "0") + " 00000 n \n");
+  push(`trailer\n<< /Size ${total} /Root 1 0 R >>\nstartxref\n${xr}\n%%EOF`);
+  return new Blob(parts, { type: "application/pdf" });
+}
+async function qrShareLabels() {
+  if (!QR_LAST) return;
+  const { assets, L } = QR_LAST;
+  try {
+    const cvs = assets.slice(0, 200).map(a => qrLabelCanvas(a, L));
+    const blob = qrBuildPdf(cvs, parseFloat(L.page), L.h), name = "tem-qr-" + L.page.replace(/[^0-9x]/g, "").replace(/mm/g, "") + ".pdf";
+    const file = new File([blob], name, { type: "application/pdf" });
+    if (navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file], title: "Tem QR tài sản" }); return; }
+    const url = URL.createObjectURL(blob), a = document.createElement("a"); a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 60000);
+  } catch (e) { if (!e || e.name !== "AbortError") alert("Không tạo được PDF tem: " + (e && e.message || e)); }
+}
 function qrPrintIds(ids, layoutKey) {
   const L = QR_LAYOUTS[layoutKey] || QR_LAYOUTS.a3x11;
   const assets = ids.map(id => byId(DB.assets, id)).filter(Boolean);
@@ -5462,7 +5518,11 @@ function qrPrintIds(ids, layoutKey) {
     #printOv .lab{height:${L.h}mm;box-sizing:border-box;display:flex;align-items:center;gap:2mm;padding:1.5mm;font-family:Arial,sans-serif;${L.roll ? "page-break-after:always;break-after:page;" : "border:0.2mm dashed #bbb;"}page-break-inside:avoid;overflow:hidden}
     #printOv .q{width:${L.qr}mm;height:${L.qr}mm;flex-shrink:0}#printOv .q svg{width:100%;height:100%;display:block}
     #printOv .t{display:flex;flex-direction:column;min-width:0;line-height:1.15;overflow:hidden}#printOv .t b{font-size:${L.h <= 24 ? 9 : L.roll ? 10 : 11}pt}#printOv .t span{font-size:${L.h <= 24 ? 7 : L.roll ? 7 : 8}pt;overflow:hidden;display:-webkit-box;-webkit-line-clamp:${L.h <= 24 ? 1 : 2};-webkit-box-orient:vertical}#printOv .t small{font-size:6.5pt;color:#444}`;
-  printOverlay("Tem QR tài sản (" + assets.length + ")", css, `<div class="grid">${labels}</div>`, `Khổ giấy: <b>${L.page.replace(" ", " × ")}</b> · Lề: Không · Tỷ lệ: 100%${L.roll ? " · Máy King Jim: chọn đúng bề rộng băng 24 mm" : ""} — bấm <b>🖨️ In</b>, xong bấm <b>← Quay lại</b>.`);
+  printOverlay("Tem QR tài sản (" + assets.length + ")", css, `<div class="grid">${labels}</div>`, L.roll
+    ? `Máy <b>King Jim</b>: iPhone/iPad không có sẵn khổ giấy nhãn trong hộp thoại in. Bấm <b>📤 Gửi PDF tem</b> (đúng cỡ <b>${L.page.replace(" ", " × ")}</b>, mỗi tem 1 trang) rồi chọn ứng dụng của King Jim/Tepra, hoặc <b>Lưu vào Tệp</b> để mở trong ứng dụng đó. Máy tính/Android có máy in King Jim: dùng <b>🖨️ In</b>, khổ ${L.page.replace(" ", " × ")}, lề 0, tỷ lệ 100%.`
+    : `Khổ giấy: <b>${L.page}</b> · Lề: Không · Tỷ lệ: 100% — bấm <b>🖨️ In</b>, xong bấm <b>← Quay lại</b>.`,
+    L.roll ? `<button style="background:#16a34a;color:#fff" onclick="qrShareLabels()">📤 Gửi PDF tem</button>` : "");
+  QR_LAST = { assets, L };
 }
 
 const qrF = { q: "", dept: "", cat: "", kind: "", loc: "", page: 1, layout: "a3x11", sel: new Set() };
@@ -5508,7 +5568,7 @@ function viewQR(u) {
     <div class="form-group"><label>Nhóm</label><select class="form-control" id="qr_cat" onchange="qrApply()"><option value="">Tất cả</option>${opt(DB.categories, qrF.cat, c => c.name)}</select></div>
     <div class="form-group"><label>Loại</label><select class="form-control" id="qr_kind" onchange="qrApply()"><option value="">Tất cả</option><option value="asset" ${qrF.kind === "asset" ? "selected" : ""}>TSCĐ</option><option value="ccdc" ${qrF.kind === "ccdc" ? "selected" : ""}>CCDC</option></select></div>
     <div class="form-group"><label>Địa điểm</label><select class="form-control" id="qr_loc" onchange="qrApply()"><option value="">Tất cả</option>${opt(DB.locations || [], qrF.loc, l => l.name)}</select></div>
-    <div class="form-group" style="min-width:240px"><label>Mẫu tem / cỡ giấy</label><select class="form-control" id="qr_layout" onchange="qrApply()">${Object.entries(QR_LAYOUTS).map(([k, v]) => `<option value="${k}" ${qrF.layout === k ? "selected" : ""}>${esc(v.label)}</option>`).join("")}</select><div class="small text-muted" style="margin-top:4px">${QR_LAYOUTS[qrF.layout] && QR_LAYOUTS[qrF.layout].roll ? "Khi in: chọn máy in King Jim/Tepra, khổ giấy " + QR_LAYOUTS[qrF.layout].page.replace(" ", " × ") + ", lề 0, tỷ lệ 100%." : "Khi in: khổ A4, lề 0, tỷ lệ 100% (không chọn “Vừa trang”)."}</div></div>
+    <div class="form-group" style="min-width:240px"><label>Mẫu tem / cỡ giấy</label><select class="form-control" id="qr_layout" onchange="qrApply()">${Object.entries(QR_LAYOUTS).map(([k, v]) => `<option value="${k}" ${qrF.layout === k ? "selected" : ""}>${esc(v.label)}</option>`).join("")}</select><div class="small text-muted" style="margin-top:4px">${QR_LAYOUTS[qrF.layout] && QR_LAYOUTS[qrF.layout].roll ? "Khi in: chọn máy in King Jim/Tepra (hoặc bấm “Gửi PDF tem” trên iPhone), khổ giấy " + QR_LAYOUTS[qrF.layout].page.replace(" ", " × ") + ", lề 0, tỷ lệ 100%." : "Khi in: khổ A4, lề 0, tỷ lệ 100% (không chọn “Vừa trang”)."}</div></div>
     <button class="btn btn-sm" onclick="qrApply()" style="height:36px">🔍 Lọc</button>
   </div>
   <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;align-items:center">
