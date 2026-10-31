@@ -5496,11 +5496,17 @@ function qrBuildPdf(canvases, wMm, hMm) {
   push(`trailer\n<< /Size ${total} /Root 1 0 R >>\nstartxref\n${xr}\n%%EOF`);
   return new Blob(parts, { type: "application/pdf" });
 }
-async function qrShareLabels() {
+async function qrShareLabels(asPng) {
   if (!QR_LAST) return;
   const { assets, L } = QR_LAST;
   try {
     const cvs = assets.slice(0, 200).map(a => qrLabelCanvas(a, L));
+    if (asPng) {
+      const files = await Promise.all(cvs.slice(0, 30).map((cv, i) => new Promise(r => cv.toBlob(b => r(new File([b], `tem-${i + 1}-${assets[i].code}.png`, { type: "image/png" })), "image/png"))));
+      if (navigator.canShare && navigator.canShare({ files })) { await navigator.share({ files, title: "Tem QR tài sản" }); return; }
+      files.forEach(f => { const u = URL.createObjectURL(f), a = document.createElement("a"); a.href = u; a.download = f.name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(u), 60000); });
+      return;
+    }
     const blob = qrBuildPdf(cvs, parseFloat(L.page), L.h), name = "tem-qr-" + L.page.replace(/[^0-9x]/g, "").replace(/mm/g, "") + ".pdf";
     const file = new File([blob], name, { type: "application/pdf" });
     if (navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file], title: "Tem QR tài sản" }); return; }
@@ -5519,9 +5525,9 @@ function qrPrintIds(ids, layoutKey) {
     #printOv .q{width:${L.qr}mm;height:${L.qr}mm;flex-shrink:0}#printOv .q svg{width:100%;height:100%;display:block}
     #printOv .t{display:flex;flex-direction:column;min-width:0;line-height:1.15;overflow:hidden}#printOv .t b{font-size:${L.h <= 24 ? 9 : L.roll ? 10 : 11}pt}#printOv .t span{font-size:${L.h <= 24 ? 7 : L.roll ? 7 : 8}pt;overflow:hidden;display:-webkit-box;-webkit-line-clamp:${L.h <= 24 ? 1 : 2};-webkit-box-orient:vertical}#printOv .t small{font-size:6.5pt;color:#444}`;
   printOverlay("Tem QR tài sản (" + assets.length + ")", css, `<div class="grid">${labels}</div>`, L.roll
-    ? `Máy <b>King Jim</b>: iPhone/iPad không có sẵn khổ giấy nhãn trong hộp thoại in. Bấm <b>📤 Gửi PDF tem</b> (đúng cỡ <b>${L.page.replace(" ", " × ")}</b>, mỗi tem 1 trang) rồi chọn ứng dụng của King Jim/Tepra, hoặc <b>Lưu vào Tệp</b> để mở trong ứng dụng đó. Máy tính/Android có máy in King Jim: dùng <b>🖨️ In</b>, khổ ${L.page.replace(" ", " × ")}, lề 0, tỷ lệ 100%.`
+    ? `Máy <b>King Jim</b>: iPhone/iPad không có sẵn khổ giấy nhãn trong hộp thoại in. Bấm <b>📤 Gửi PDF tem</b> (đúng cỡ <b>${L.page.replace(" ", " × ")}</b>, mỗi tem 1 trang) hoặc <b>🖼️ Gửi ảnh PNG</b>, rồi chọn <b>TEPRA LINK 2</b> hoặc <b>Lưu ảnh</b> (vào Ảnh) để chèn ảnh tem vào nhãn trong ứng dụng. Máy tính/Android có máy in King Jim: dùng <b>🖨️ In</b>, khổ ${L.page.replace(" ", " × ")}, lề 0, tỷ lệ 100%.`
     : `Khổ giấy: <b>${L.page}</b> · Lề: Không · Tỷ lệ: 100% — bấm <b>🖨️ In</b>, xong bấm <b>← Quay lại</b>.`,
-    L.roll ? `<button style="background:#16a34a;color:#fff" onclick="qrShareLabels()">📤 Gửi PDF tem</button>` : "");
+    L.roll ? `<button style="background:#16a34a;color:#fff" onclick="qrShareLabels()">📤 Gửi PDF tem</button><button style="background:#0ea5a4;color:#fff" onclick="qrShareLabels(true)">🖼️ Gửi ảnh PNG</button>` : "");
   QR_LAST = { assets, L };
 }
 
