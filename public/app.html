@@ -1654,7 +1654,7 @@ function viewAssetDetail(u, id){
     <div>
 
         <button class="btn btn-sm btn-outline-secondary" data-action="printBM05:${a.id}">🖨️ In BM05 (Giao nhận ban đầu)</button>
-      ${["admin","tcth","manager"].includes(u.role)?`<a class="btn btn-sm btn-outline-secondary" data-nav="asset_form" data-params=\'{"id":"${a.id}"}\'>✏️ Điều chỉnh & Cập nhật</a>`:""}
+      ${["admin","tcth"].includes(u.role)?`<a class="btn btn-sm btn-outline-secondary" data-nav="asset_form" data-params=\'{"id":"${a.id}"}\'>✏️ Điều chỉnh & Cập nhật</a>`:""}
       ${["in_use","unused"].includes(a.status) && (u.role==="admin" || a.department_id===u.department_id) ? `
         <a class="btn btn-sm btn-outline" data-nav="transfer_new" data-params='{"assetId":"${a.id}"}'>🔁 Lập lệnh điều chuyển</a>
         <a class="btn btn-sm btn-outline-danger" data-nav="repair_new" data-params='{"assetId":"${a.id}"}'>🛠️ Báo hỏng</a>`:""}
@@ -1769,6 +1769,7 @@ function setLiquidation(assetId){
 
 function viewAssetForm(u, id){
   const a = id ? byId(DB.assets, id) : null;
+  if(id ? !["admin","tcth","it"].includes(u.role) : u.role!=="admin") return `<div class="alert alert-error">Không có quyền. Chỉ Admin được thêm tài sản; Admin/TCTH/Điện toán được sửa.</div>`;
   return `
   <h3>${a ? "Sửa tài sản: "+esc(a.code) : "Thêm tài sản mới"}</h3>
   <div class="card" style="max-width:720px">

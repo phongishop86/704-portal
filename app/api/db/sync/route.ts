@@ -1,5 +1,6 @@
 import { db } from "@/lib/firebase";
 import { getSessionUser, hashPassword, json } from "@/lib/auth";
+import { allowWrite, POLICY_COLS } from "@/lib/policy";
 import { assetKeywords, bumpRev, clientData, isCol, WRITE_ROLES, type Col } from "@/lib/store";
 
 export const maxDuration = 60;
@@ -52,6 +53,15 @@ export async function POST(req: Request) {
       }
       if (Buffer.byteLength(JSON.stringify(o.data)) > MAX_DOC_BYTES) {
         return json({ error: `Bản ghi ${o.col}/${o.id} quá lớn (giới hạn ~900KB).` }, 413);
+      }
+    }
+    if (POLICY_COLS.includes(o.col)) {
+      const pd = (await db.collection(o.col).doc(o.id).get()).data();
+      const prev = pd && !pd._del ? pd : undefined;
+      const data = o.op === "set" ? (clientData(o.data!) as Record<string, unknown>) : undefined;
+      if (!(await allowWrite(user, o.col, o.op, o.id, prev, data))) {
+        rejected.push({ col: o.col, id: o.id });
+        continue;
       }
     }
     permitted.push(o);

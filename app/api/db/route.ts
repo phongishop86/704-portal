@@ -5,6 +5,18 @@ import { isCol, publicData, readRev } from "@/lib/store";
 /** Khóa bản quyền phần mềm chỉ gửi cho nhóm được phép xem. */
 const LICENSE_ROLES = ["admin", "tcth", "it"];
 
+/** Vai trò thấp chỉ thấy các trường danh bạ cần thiết của tài khoản khác (không lộ Telegram ID, v.v.). */
+const USER_PUBLIC = ["id", "username", "full_name", "role", "department_id", "position", "active", "locked"];
+
+/** Nhân viên (role user) chỉ nhận tài sản/phiếu của phòng mình hoặc do mình lập/được giao. */
+function visibleToUser(col: string, d: Record<string, unknown>, u: { id: string; department_id: string | null }): boolean {
+  const dep = String(u.department_id ?? "");
+  if (col === "assets") return (dep !== "" && String(d.department_id) === dep) || d.current_user_id === u.id;
+  if (col === "repairs") return d.reported_by === u.id;
+  if (col === "transfers") return d.requested_by === u.id;
+  return true;
+}
+
 export const maxDuration = 60;
 
 const MAX_PAGE_BYTES = 3_000_000;
@@ -41,9 +53,17 @@ export async function GET(req: Request) {
   const items: { id: string; deleted?: boolean; data?: Record<string, unknown> }[] = [];
   let bytes = 0;
   let truncated = false;
+  let lastDoc: string | null = null;
   for (const d of snap.docs) {
     const data = d.data();
-    const pub = data._del ? null : publicData(data);
+    let pub = data._del ? null : publicData(data);
+    if (pub && col === "users" && !["admin", "tcth"].includes(user.role) && d.id !== user.id) {
+      pub = Object.fromEntries(Object.entries(pub).filter(([k]) => USER_PUBLIC.includes(k)));
+    }
+    if (pub && user.role === "user" && !visibleToUser(col, pub, user)) {
+      lastDoc = d.id;
+      continue;
+    }
     if (pub && col === "software" && !LICENSE_ROLES.includes(user.role)) delete pub.license_key;
     const item = data._del ? { id: d.id, deleted: true } : { id: d.id, data: pub as Record<string, unknown> };
     const n = Buffer.byteLength(JSON.stringify(item));
@@ -52,8 +72,9 @@ export async function GET(req: Request) {
       break;
     }
     items.push(item);
+    lastDoc = d.id;
     bytes += n;
   }
-  const next = truncated || snap.size === limit ? items[items.length - 1].id : null;
+  const next = truncated || snap.size === limit ? lastDoc : null;
   return json({ now, items, next });
 }
