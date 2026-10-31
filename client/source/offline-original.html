@@ -99,9 +99,9 @@ h2,h3,h4{color:#1e1b4b;}
 .container{padding:22px 26px;max-width:1400px;}
 .row{display:flex;flex-wrap:wrap;margin:-8px;}
 .col{padding:8px;box-sizing:border-box;}
-.col-4{width:33.33%;} .col-5{width:41.66%;} .col-6{width:50%;} .col-7{width:58.33%;} .col-8{width:66.66%;} .col-12{width:100%;}
+.col-3{width:25%;} .col-9{width:75%;} .col-4{width:33.33%;} .col-5{width:41.66%;} .col-6{width:50%;} .col-7{width:58.33%;} .col-8{width:66.66%;} .col-12{width:100%;}
 @media(max-width:980px){
-  .col-4,.col-5,.col-6,.col-7,.col-8{width:100%;}
+  .col-3,.col-9,.col-4,.col-5,.col-6,.col-7,.col-8{width:100%;}
   .sidebar{
   width:var(--sidebar-w); flex-shrink:0; min-height:100vh;
   background:#0f172a;
@@ -2018,7 +2018,7 @@ function viewAdminUsers(u){
   users.sort((a,b)=>a.role.localeCompare(b.role)||a.full_name.localeCompare(b.full_name));
   return `
   <div class="row">
-    <div class="col col-5">
+    <div class="col col-3">
       <div class="card">
         <h4>➕ Thêm tài khoản</h4>
         <form data-form="new_user">
@@ -2044,14 +2044,14 @@ function viewAdminUsers(u){
         <button class="btn btn-sm btn-outline" data-action="importUsersExcel">Import Excel</button>
       </div>
     </div>
-    <div class="col col-7">
+    <div class="col col-9">
       <div class="card">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; gap:10px;">
           <h4 style="margin:0; white-space:nowrap;">Danh sách (${users.length})</h4>
           <input type="text" id="userSearchInput" class="form-control" placeholder="🔍 Tìm mã, tên, phòng ban..." onkeyup="filterUserTable()" style="flex:1; max-width:250px; padding:6px 12px; font-size:13px;">
           <button id="bulkDeleteUsersBtn" class="btn btn-sm btn-outline-danger" style="display:none; white-space:nowrap;" onclick="bulkDeleteUsers()">🗑️ Xoá (0) đã chọn</button>
         </div>
-        <table id="usersTable">
+        <table id="usersTable" class="compact-tbl">
           <thead><tr>
             <th style="width:40px; text-align:center;"><input type="checkbox" id="selectAllUsers" onclick="toggleAllUsers(this)"></th>
             <th>Mã NV</th><th>Tên đăng nhập</th><th>Họ tên</th><th>Vai trò</th><th>Phòng ban</th><th></th>
@@ -2265,7 +2265,7 @@ function viewAdminDepartments(u){
   if(u.role!=="admin") return `<div class="alert alert-error">Bạn không có quyền truy cập.</div>`;
   return `
   <div class="row">
-    <div class="col col-4"><div class="card">
+    <div class="col col-3"><div class="card">
       <h4>➕ Thêm phòng ban</h4>
       <form data-form="new_department">
         <div class="form-group"><label>Mã phòng ban</label><input class="form-control" name="code" required></div>
@@ -2280,9 +2280,9 @@ function viewAdminDepartments(u){
         <button class="btn btn-sm btn-outline" data-action="importDeptsExcel">Import Excel</button>
       </div>
     </div></div>
-    <div class="col col-8"><div class="card">
+    <div class="col col-9"><div class="card">
       <h4>Danh sách (${DB.departments.length})</h4>
-      <table><thead><tr><th>Mã</th><th>Tên</th><th style="width:140px"></th></tr></thead><tbody>
+      <table class="compact-tbl"><thead><tr><th>Mã</th><th>Tên</th><th style="width:210px"></th></tr></thead><tbody>
       ${DB.departments.map(d=>`<tr style="cursor:pointer" data-dblclick="admin_users" data-params='{"department_id":"${d.id}"}' title="Click đúp để xem người dùng thuộc phòng này">
         <td>${esc(d.code)}</td>
         <td>

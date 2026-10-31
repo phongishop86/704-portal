@@ -51,6 +51,11 @@ a{color:var(--brand);}
 .sidebar-link:hover{background:rgba(255,255,255,.09);color:#fff;}
 .sidebar-link.active{background:#2f6df0;color:#fff;box-shadow:0 6px 14px rgba(47,109,240,.45);}
 .sidebar-link .ic{font-size:15px;}
+.compact-tbl th{padding:6px 10px !important;white-space:nowrap}
+.compact-tbl td{padding:3px 10px !important;vertical-align:middle;line-height:1.3}
+.compact-tbl .btn{display:inline-flex !important;flex-direction:row !important;align-items:center;gap:4px;padding:3px 8px !important;font-size:12px !important;width:auto !important;height:auto !important;min-height:0 !important}
+#usersTable td:nth-child(4){white-space:nowrap}
+
 .sb-user{margin:auto 12px 14px;padding:12px;border-radius:12px;background:rgba(255,255,255,.07);display:flex;align-items:center;gap:10px;color:#fff;}
 .avatar{width:34px;height:34px;border-radius:50%;background:#2f6df0;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0;}
 .sb-user .nm{font-size:13px;font-weight:600;line-height:1.25;} .sb-user .rl{font-size:11px;color:#9db6e3;}
@@ -1327,4 +1332,51 @@ function installApp() {
 }
 if ("serviceWorker" in navigator && /^https?:/.test(location.protocol)) {
   window.addEventListener("load", () => { navigator.serviceWorker.register("/sw.js").catch(() => {}); });
+}
+
+
+/* ============================================================================
+   QUẢN LÝ BIỂU MẪU: một danh sách loại + duyệt tới file (không tách cố định / tự do)
+   ============================================================================ */
+const TPL_FIXED = [["kk", "Biên bản kiểm kê", "template_kiem_ke_name", "template_kiem_ke_data"], ["tl", "Biên bản thanh lý", "template_thanh_ly_name", "template_thanh_ly_data"]];
+function tplTypeChange(sel) { const e = document.getElementById("tplNewName"); if (e) e.style.display = sel.value === "__new" ? "" : "none"; }
+function viewAdminTemplates(u) {
+  if (!["admin", "tcth"].includes(u.role)) return `<div class="alert alert-error">Bạn không có quyền truy cập.</div>`;
+  const t = DB.templateConfig || {}, custom = DB.customTemplates || [];
+  const names = [...new Set(custom.map(x => x.type_name))].sort((a, b) => String(a).localeCompare(String(b), "vi"));
+  const rows = [
+    ...TPL_FIXED.map(f => ({ type: f[1], file: t[f[2]], href: t[f[3]], fixed: true })),
+    ...custom.slice().sort((a, b) => String(a.type_name).localeCompare(String(b.type_name), "vi")).map(x => ({ type: x.type_name, file: x.filename, href: x.data, id: x.id })),
+  ];
+  return `<div class="card" style="margin-bottom:14px"><h4>Tải lên / thay mẫu biểu</h4>
+    <form data-form="tpl_upload" style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end">
+      <div class="form-group" style="margin:0;min-width:260px;flex:1"><label>Loại biểu mẫu</label>
+        <select class="form-control" name="tpl_type" onchange="tplTypeChange(this)">
+          <optgroup label="Dùng tự động trong hệ thống">${TPL_FIXED.map(f => `<option value="${f[0]}">${f[1]}</option>`).join("")}</optgroup>
+          ${names.length ? `<optgroup label="Biểu mẫu khác">${names.map(n => `<option value="c:${esc(n)}">${esc(n)}</option>`).join("")}</optgroup>` : ""}
+          <option value="__new">➕ Loại biểu mẫu mới…</option></select></div>
+      <div class="form-group" id="tplNewName" style="margin:0;min-width:220px;flex:1;display:none"><label>Tên loại mới</label><input class="form-control" name="tpl_new" placeholder="VD: BM05 - Bàn giao CCDC"></div>
+      <div class="form-group" style="margin:0;min-width:240px;flex:1"><label>Duyệt đến file biểu mẫu (.docx, .xlsx…)</label><input type="file" class="form-control" id="tplFile" required></div>
+      <button class="btn btn-sm" type="submit">💾 Lưu</button></form></div>
+    <div class="card"><h4>Danh sách biểu mẫu (${rows.length})</h4>
+      <table class="compact-tbl"><thead><tr><th>Loại biểu mẫu</th><th>Tên file</th><th class="text-end">Thao tác</th></tr></thead><tbody>
+      ${rows.map(r => `<tr><td><b>${esc(r.type)}</b>${r.fixed ? ` <span class="small text-muted">(hệ thống)</span>` : ""}</td><td>${r.file ? esc(r.file) : `<span class="text-muted">Chưa có</span>`}</td>
+        <td class="text-end" style="white-space:nowrap">${r.href ? `<a href="${r.href}" download="${esc(r.file || "bieu-mau")}" class="btn btn-sm btn-outline">⬇️ Tải</a>` : ""}${r.id ? ` <button class="btn btn-sm btn-outline-danger" data-action="deleteTemplate:${r.id}" data-confirm="Xoá biểu mẫu này?">🗑️</button>` : ""}</td></tr>`).join("")}
+      </tbody></table></div>`;
+}
+function submit_tpl_upload(form) {
+  const fd = new FormData(form), file = (document.getElementById("tplFile") || {}).files && document.getElementById("tplFile").files[0];
+  if (!file) return;
+  let type = fd.get("tpl_type");
+  const fx = TPL_FIXED.find(f => f[0] === type);
+  let custName = null;
+  if (!fx) { custName = type === "__new" ? String(fd.get("tpl_new") || "").trim() : String(type).replace(/^c:/, ""); if (!custName) { flash("Nhập tên loại biểu mẫu.", "error"); render(); return; } }
+  const rd = new FileReader();
+  rd.onload = e => {
+    if (fx) { DB.templateConfig = DB.templateConfig || {}; DB.templateConfig[fx[2]] = file.name; DB.templateConfig[fx[3]] = e.target.result; }
+    else { DB.customTemplates = DB.customTemplates || []; const ex = DB.customTemplates.find(x => normTxt(x.type_name) === normTxt(custName));
+      if (ex) { ex.filename = file.name; ex.data = e.target.result; ex.created_at = nowIso(); } else DB.customTemplates.push({ id: uid(), type_name: custName, filename: file.name, data: e.target.result, created_at: nowIso() }); }
+    saveDB(); flash("Đã lưu biểu mẫu."); nav("admin_templates");
+  };
+  rd.readAsDataURL(file);
 }
