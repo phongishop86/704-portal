@@ -138,6 +138,8 @@ class Query {
   limit(n: number) { return this.with({ lim: n }); }
   startAfter(s: Snap | any) {
     const vals = s instanceof Snap ? this.order.map((o) => s.get(o.f)) : [s];
+    // Kèm id tài liệu để phá thế hòa (nhiều bản ghi cùng _u, ví dụ khi nạp hàng loạt) - giống Firestore (__name__)
+    (vals as any).id = s instanceof Snap ? s.id : undefined;
     return this.with({ after: vals });
   }
   async get() {
@@ -169,12 +171,13 @@ class Query {
     });
     if (this.after && this.order.length) {
       const av = this.after;
-      rows = rows.filter(([, d]) => {
+      rows = rows.filter(([id, d]) => {
         for (let i = 0; i < this.order.length; i++) {
           const c = cmp(d[this.order[i].f], av[i]);
           if (c) return this.order[i].dir === "desc" ? c < 0 : c > 0;
         }
-        return false;
+        const aid = (av as any).id;
+        return aid === undefined ? false : id > aid;
       });
     }
     if (Number.isFinite(this.lim)) rows = rows.slice(0, this.lim);
