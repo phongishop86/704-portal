@@ -16,7 +16,7 @@ param(
 $ErrorActionPreference = "Stop"
 $deploy = $PSScriptRoot
 $repo = Split-Path $deploy -Parent
-function Step($n, $m) { Write-Host ""; Write-Host "===== BƯỚC $n: $m =====" -ForegroundColor Cyan }
+function Step($n, $m) { Write-Host ""; Write-Host "===== BƯỚC ${n}: ${m} =====" -ForegroundColor Cyan }
 if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) { throw "Hãy chạy bằng quyền Administrator (bấm đúp CAI-DAT.bat)." }
 if (-not (Test-Path "$repo\package.json")) { throw "Không thấy package.json ở $repo - hãy giải nén đủ gói zip và giữ nguyên thư mục deploy\." }
 
