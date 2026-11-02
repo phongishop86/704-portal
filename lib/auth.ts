@@ -76,17 +76,24 @@ export async function getSessionUser(req: Request): Promise<SessionUser | null> 
   }
   if (!data.u || !data.e || data.e < Date.now()) return null;
 
+  // Đệm 60 giây trong bộ nhớ của máy chủ để giảm lượt đọc Firestore (mỗi lần thăm dò của mỗi máy trước đây tốn 1 lượt đọc).
+  const hit = USER_CACHE.get(data.u);
+  if (hit && hit.exp > Date.now()) return hit.user;
   const snap = await db.collection("users").doc(data.u).get();
   const u = snap.data();
-  if (!snap.exists || !u || u._del || u.is_active === false) return null;
-  return {
+  if (!snap.exists || !u || u._del || u.is_active === false) { USER_CACHE.delete(data.u); return null; }
+  const user: SessionUser = {
     id: snap.id,
     username: String(u.username ?? ""),
     full_name: String(u.full_name ?? ""),
     role: String(u.role ?? "user"),
     department_id: (u.department_id as string | null) ?? null,
   };
+  USER_CACHE.set(data.u, { user, exp: Date.now() + 60_000 });
+  return user;
 }
+const USER_CACHE = new Map<string, { user: SessionUser; exp: number }>();
+export const invalidateUser = (id?: string) => { if (id) USER_CACHE.delete(id); else USER_CACHE.clear(); };
 
 /* ---------- Chống dò mật khẩu ---------- */
 

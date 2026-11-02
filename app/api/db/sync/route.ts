@@ -1,5 +1,5 @@
 import { db } from "@/lib/firebase";
-import { getSessionUser, hashPassword, json } from "@/lib/auth";
+import { getSessionUser, hashPassword, invalidateUser, json } from "@/lib/auth";
 import { allowWrite, POLICY_COLS } from "@/lib/policy";
 import { notifyRepairs, type RepairEvent } from "@/lib/notify";
 import { assetKeywords, bumpRev, clientData, isCol, WRITE_ROLES, type Col } from "@/lib/store";
@@ -125,6 +125,7 @@ export async function POST(req: Request) {
     await db.collection("users").doc(o.id).set({ ...data, password_hash, _u: now, _del: false });
   }
 
+  if (permitted.some((o) => o.col === "users")) invalidateUser();
   if (permitted.length - skipped > 0) await bumpRev();
   // Thông báo Telegram cho phiếu báo hỏng mới / đổi bước (không chặn kết quả lưu nếu gửi lỗi)
   if (repairEvents.length) {

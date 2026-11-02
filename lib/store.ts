@@ -103,10 +103,16 @@ export function uid(): string {
  * Giao diện chỉ cần đọc 1 document `meta/rev` mỗi lần thăm dò; thấy số đổi mới truy vấn các bảng.
  */
 export async function bumpRev(): Promise<void> {
-  await db.collection("meta").doc("rev").set({ rev: Date.now() });
+  const v = Date.now();
+  await db.collection("meta").doc("rev").set({ rev: v });
+  REV_CACHE = { v, exp: Date.now() + 5000 };
 }
 
+let REV_CACHE: { v: number; exp: number } | null = null;
 export async function readRev(): Promise<number> {
+  if (REV_CACHE && REV_CACHE.exp > Date.now()) return REV_CACHE.v; // đệm 5 giây: nhiều máy thăm dò cùng lúc chỉ tốn 1 lượt đọc
   const d = (await db.collection("meta").doc("rev").get()).data();
-  return typeof d?.rev === "number" ? d.rev : 0;
+  const v = typeof d?.rev === "number" ? d.rev : 0;
+  REV_CACHE = { v, exp: Date.now() + 5000 };
+  return v;
 }

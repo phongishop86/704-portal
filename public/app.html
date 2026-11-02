@@ -345,7 +345,7 @@ function migrateDB(db){
 const SYNC_COLS = ["departments","categories","users","assets","assetHistory","transfers","repairs","inventoryChecks","inventoryLines","worklogs","locations","accessories","software"];
 const ALL_SYNC_COLS = SYNC_COLS.concat(["config"]);   // "config" = templateConfig, mỗi khoá một bản ghi {id,value}
 const CACHE_KEY = "assets704_cloud_cache_v1";
-const POLL_MS = 20000;
+const POLL_MS = 45000;
 const FLUSH_DELAY_MS = 500;
 
 function emptyDB(){
