@@ -88,6 +88,16 @@ async function deptCands(): Promise<Cand[]> {
   for (const [no, name] of TG_DEPTS) { const d = byKey.get(nkey(name)); if (d) out.push({ id: d.id, name, no }); }
   return out.length ? out : all.slice(0, 60);
 }
+const AFTER = ["Máy tính hoạt động bình thường", "Đang theo dõi thêm", "Chưa khắc phục, chờ linh kiện / chuyển tuyến"];
+const PREV_FIELD: Partial<Record<Step, string>> = { phone: "unit_phone", address: "unit_address", supervisor: "supervisor" };
+/** Lấy thông tin lần lập biên bản gần nhất của đơn vị để gợi ý (điện thoại, địa chỉ, cán bộ giám sát). */
+async function prevForDept(deptId: string | null): Promise<Record<string, string>> {
+  if (!deptId) return {};
+  const snap = await db.collection("worklogs").where("department_id", "==", deptId).limit(60).get();
+  const rows = snap.docs.map((d) => d.data()).filter((x) => !x._del).sort((a, b) => (b.ts_ms ?? 0) - (a.ts_ms ?? 0));
+  const pick = (k: string) => String(rows.find((x) => x[k])?.[k] ?? "");
+  return { unit_phone: pick("unit_phone"), unit_address: pick("unit_address"), supervisor: pick("supervisor") };
+}
 async function userCands(deptId: string): Promise<Cand[]> {
   const snap = await db.collection("users").where("department_id", "==", deptId).limit(40).get();
   return snap.docs.filter((d) => !d.data()._del && d.data().is_active !== false).map((d) => ({ id: d.id, name: String(d.data().full_name ?? "") })).filter((x) => x.name).sort(byPerson).slice(0, 15);
@@ -110,9 +120,16 @@ async function prompt(st: State): Promise<Reply> {
       await save(st);
       return { text: `📝 Biên bản xử lý sự cố mới (gõ /huy để thoát).\n\nI. ĐƠN VỊ GẶP SỰ CỐ\nPhòng ban phát sinh sự cố? Gõ SỐ hoặc tên phòng:\n${numbered(st.cands)}` + opt, buttons: [SKIP] };
     }
-    case "phone": return { text: "Điện thoại đơn vị?" + opt, buttons: [SKIP] };
-    case "address": return { text: "Địa chỉ đơn vị?" + opt, buttons: [SKIP] };
-    case "supervisor": return { text: "Cán bộ giám sát (phía đơn vị, ký xác nhận biên bản)? Gõ họ tên." + opt, buttons: [SKIP] };
+    case "phone": case "address": {
+      const v = st.data.prev?.[PREV_FIELD[st.step]!] as string | undefined;
+      return { text: (st.step === "phone" ? "Điện thoại đơn vị?" : "Địa chỉ đơn vị?") + opt, buttons: v ? [[btn(`✅ Dùng lại: ${v.slice(0, 40)}`, "w:use")], SKIP] : [SKIP] };
+    }
+    case "supervisor": {
+      st.cands = st.data.department_id ? await userCands(st.data.department_id) : [];
+      await save(st);
+      const v = st.data.prev?.supervisor as string | undefined;
+      return { text: `Cán bộ giám sát (phía đơn vị, ký xác nhận biên bản)?${st.cands.length ? " Gõ SỐ để chọn hoặc gõ họ tên:\n" + numbered(st.cands) : " Gõ họ tên."}` + opt, buttons: v ? [[btn(`✅ Dùng lại: ${v.slice(0, 40)}`, "w:use")], SKIP] : [SKIP] };
+    }
     case "requester": {
       st.cands = st.data.department_id ? await userCands(st.data.department_id) : [];
       await save(st);
@@ -132,7 +149,7 @@ async function prompt(st: State): Promise<Reply> {
     case "reported": return { text: "Thời điểm báo sự cố?\nBấm nút hoặc gõ giờ dạng 14:30 (hoặc 28/10 14:30).", buttons: [[btn("Bây giờ", "w:rp:0"), btn("30 phút trước", "w:rp:30"), btn("1 giờ trước", "w:rp:60")]] };
     case "start": return { text: "Ngày, giờ có mặt tại đơn vị (bắt đầu xử lý)?\nBấm nút hoặc gõ giờ (14:30 hoặc 29/10 16:40).", buttons: [[btn("Bằng giờ báo", "w:st:rep"), btn("Bây giờ", "w:st:0")]] };
     case "parts": return { text: "Linh kiện được sử dụng để sửa chữa, thay thế? Mỗi dòng một linh kiện, dạng: Tên linh kiện - ghi chú\nVí dụ: CPU Dell 5050 - đang lưu kho điện toán" + opt, buttons: [SKIP] };
-    case "after": return { text: "Tình trạng sau xử lý? (ví dụ: máy tính hoạt động bình thường)" + opt, buttons: [SKIP] };
+    case "after": return { text: "Tình trạng sau xử lý? Bấm một nút hoặc gõ nội dung." + opt, buttons: [...AFTER.map((a, i) => [btn(a, `w:af:${i}`)]), SKIP] };
     case "end": return { text: "Ngày, giờ bàn giao (xử lý xong) / mất bao lâu?\nGõ giờ (15:15) hoặc thời lượng (45 phút, 1h30p)." + opt, buttons: [[btn("Vừa xong", "w:en:now"), btn("Chưa xong", "w:skip")]] };
     case "solution": return { text: "2. Các công việc đã thực hiện?" + opt, buttons: [SKIP] };
     case "result": return { text: "Kết quả?", buttons: Object.entries(RESULTS).map(([k, v]) => [btn(v, `w:res:${k}`)]) };
@@ -270,6 +287,8 @@ export async function wizardCallback(user: User, data: string): Promise<WizardOu
     if (!OPTIONAL.includes(s)) return { next: await prompt(st) };
     return { ack: "⏭ Bỏ qua", next: await advance(st, s) };
   }
+  if (kind === "use" && PREV_FIELD[s]) { const f = PREV_FIELD[s]!, v = String(st.data.prev?.[f] ?? ""); if (!v) return { next: await prompt(st) }; return accept(st, s, { [f]: v }, `✓ ${v}`); }
+  if (kind === "af" && s === "after") { const v = AFTER[+arg]; if (!v) return {}; return accept(st, s, { status_after: v }, `✓ Tình trạng sau xử lý: ${v}`); }
   if (kind === "cat" && s === "category") { const c = CATS[+arg]; if (!c) return {}; return accept(st, s, { category: c }, `✓ Loại: ${c}`); }
   if (kind === "res" && s === "result") { if (!RESULTS[arg]) return {}; return accept(st, s, { result: arg }, `✓ Kết quả: ${RESULTS[arg]}`); }
   if (kind === "rp" && s === "reported") { const ms = Date.now() - (+arg || 0) * 60000; return accept(st, s, { reported_ms: ms }, `✓ Thời điểm báo: ${fmtVN(ms)}`); }
@@ -309,7 +328,7 @@ export async function wizardText(user: User, text: string): Promise<Reply> {
         else if (hit.length > 1) { st.cands = hit.slice(0, 20); await save(st); return { text: "Có nhiều phòng ban, gõ SỐ để chọn:\n" + numbered(st.cands), buttons: [SKIP] }; }
         else return { text: `Không thấy phòng ban “${t}”. Gõ số trong danh sách hoặc một phần tên.`, buttons: [SKIP] };
       }
-      return done({ department_id: c.id });
+      return done({ department_id: c.id, prev: await prevForDept(c.id) });
     }
     case "requester": {
       const c = pickNum(st, t);
@@ -318,7 +337,7 @@ export async function wizardText(user: User, text: string): Promise<Reply> {
     }
     case "phone": return done({ unit_phone: t.slice(0, 40) });
     case "address": return done({ unit_address: t.slice(0, 200) });
-    case "supervisor": return done({ supervisor: t.slice(0, 100) });
+    case "supervisor": { const c = pickNum(st, t); return done({ supervisor: c ? c.name : t.slice(0, 100) }); }
     case "model": return done({ model: t.slice(0, 80) });
     case "pcname": return done({ pc_name_ip: t.slice(0, 80) });
     case "parts": {
