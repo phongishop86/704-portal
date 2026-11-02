@@ -25,7 +25,11 @@ $os = (Get-CimInstance Win32_OperatingSystem).Caption; Write-Host "Hệ điều 
 $free = (Get-PSDrive -Name $InstallDir.Substring(0,1)).Free / 1GB; Write-Host ("Ổ đĩa cài đặt còn trống: {0:N1} GB" -f $free)
 powercfg /change standby-timeout-ac 0 | Out-Null; powercfg /change hibernate-timeout-ac 0 | Out-Null; powercfg /change monitor-timeout-ac 15 | Out-Null; Write-Host "Đã tắt chế độ ngủ/ngủ đông khi cắm điện (máy chủ phải luôn thức)."
 if ($free -lt 3) { throw "Cần tối thiểu ~3 GB trống để build." }
-if (-not $SkipBuild) { try { Invoke-WebRequest "https://registry.npmjs.org/" -UseBasicParsing -TimeoutSec 15 | Out-Null } catch { throw "Không ra được Internet (registry.npmjs.org). Lần cài đầu cần Internet; hoặc build ở máy khác rồi dùng dist-win\704-assets-win.zip + install.ps1." } }
+[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+if (-not $SkipBuild) {
+  try { Invoke-WebRequest "https://registry.npmjs.org/npm" -UseBasicParsing -TimeoutSec 20 | Out-Null; Write-Host "Kết nối npm: OK" }
+  catch { if ($_.Exception.Response) { Write-Host "Kết nối npm: OK" } else { Write-Host "CẢNH BÁO: kiểm tra trước không ra được registry.npmjs.org ($($_.Exception.Message)). Vẫn thử build; nếu npm install lỗi thì mới là mất kết nối thật (proxy/tường lửa cơ quan)." -ForegroundColor Yellow } }
+}
 
 Step 2 "Cài Node.js (nếu chưa có)"
 $node = (Get-Command node -ErrorAction SilentlyContinue).Source
