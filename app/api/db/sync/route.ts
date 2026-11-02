@@ -1,6 +1,7 @@
 import { db } from "@/lib/firebase";
 import { getSessionUser, hashPassword, json } from "@/lib/auth";
 import { allowWrite, POLICY_COLS } from "@/lib/policy";
+import { notifyRepairs, type RepairEvent } from "@/lib/notify";
 import { assetKeywords, bumpRev, clientData, isCol, WRITE_ROLES, type Col } from "@/lib/store";
 
 export const maxDuration = 60;
@@ -35,6 +36,7 @@ export async function POST(req: Request) {
   //    không được để việc đó làm kẹt cả hàng đợi đồng bộ).
   const rejected: { col: string; id: string }[] = [];
   const permitted: Op[] = [];
+  const repairEvents: RepairEvent[] = [];
   for (const o of ops) {
     if (!isCol(o?.col) || (o.op !== "set" && o.op !== "delete")) {
       return json({ error: "Thao tác không hợp lệ." }, 400);
@@ -63,6 +65,10 @@ export async function POST(req: Request) {
         rejected.push({ col: o.col, id: o.id });
         continue;
       }
+    }
+    if (o.col === "repairs" && o.op === "set") {
+      const pd = (await db.collection("repairs").doc(o.id).get()).data();
+      repairEvents.push({ prev: pd && !pd._del ? pd : undefined, next: clientData(o.data!) });
     }
     permitted.push(o);
   }
@@ -120,5 +126,9 @@ export async function POST(req: Request) {
   }
 
   if (permitted.length - skipped > 0) await bumpRev();
+  // Thông báo Telegram cho phiếu báo hỏng mới / đổi bước (không chặn kết quả lưu nếu gửi lỗi)
+  if (repairEvents.length) {
+    try { await Promise.race([notifyRepairs(repairEvents), new Promise((r) => setTimeout(r, 8000))]); } catch (e) { console.error("notifyRepairs", e); }
+  }
   return json({ ok: true, now, applied: permitted.length - skipped, skipped, rejected });
 }
