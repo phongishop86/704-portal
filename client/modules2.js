@@ -1046,10 +1046,10 @@ function itApply() {
   const e = document.getElementById("itlogSearch"); if (e && itF.q) { e.focus(); e.setSelectionRange(e.value.length, e.value.length); }
 }
 function itReset() { Object.assign(itF, { q: "", dept: "", result: "", cat: "", from: "", to: "", page: 1 }); render(); }
-function itNew() { itF.edit = "new"; itF.view = null; render(); window.scrollTo(0, 0); }
-function itEdit(id) { itF.edit = id; itF.view = null; render(); window.scrollTo(0, 0); }
+function itNew() { itF.view = null; itOpenForm("new"); }
+function itEdit(id) { itF.view = null; itOpenForm(id); }
 function itView(id) { itF.view = itF.view === id ? null : id; render(); }
-function itCancel() { itF.edit = null; render(); }
+function itCancel() { itF.edit = null; closeModal2(); }
 function itPage(p) { itF.page = Number(p) || 1; render(); }
 function itCalc() {
   const s = document.getElementById("it_start"), e = document.getElementById("it_end"), d = document.getElementById("it_dur");
@@ -1073,38 +1073,85 @@ function itExport() {
   downloadCSV(lines, "nhat_ky_it");
 }
 
-function itForm(u) {
-  const w = itF.edit === "new" ? { source: "web", started_at: new Date().toISOString(), result: "done", it_user_id: u.id } : byId(DB.worklogs, itF.edit);
-  if (!w) { itF.edit = null; return ""; }
+function itOpenForm(id) {
+  const u = currentUser(); itF.edit = id;
+  const html = itFormHtml(u, id);
+  if (!html) { itF.edit = null; return; }
+  const d = modal2(html); d.classList.add("it-doc");
+}
+const IT_AFTER = ["Thiết bị hoạt động bình thường", "Đang theo dõi thêm", "Chưa khắc phục, chờ linh kiện / chuyển tuyến"];
+/** Chọn phòng ban → gợi ý điện thoại, địa chỉ, cán bộ giám sát từ lần lập gần nhất của phòng đó; gợi ý danh sách giám sát theo nhân sự phòng. */
+function itDeptChange(sel) {
+  const f = sel.form, dep = sel.value; if (!dep) return;
+  const last = DB.worklogs.filter(w => w.department_id === dep).sort((a, b) => (b.ts_ms || 0) - (a.ts_ms || 0));
+  const pick = k => (last.find(w => w[k]) || {})[k] || "";
+  [["unit_phone", "unit_phone"], ["unit_address", "unit_address"], ["supervisor", "supervisor"]].forEach(([el, k]) => { if (f.elements[el] && !f.elements[el].value) f.elements[el].value = pick(k); });
+  const dl = document.getElementById("it_sup_list");
+  if (dl) dl.innerHTML = (DB.users || []).filter(x => x.department_id === dep && x.is_active !== false).map(x => `<option value="${esc(x.full_name)}">`).join("");
+}
+/** Nhập mã tài sản → điền sẵn serial / dòng máy / PC name / phòng ban nếu có. */
+function itAssetFill(inp) {
+  const code = inp.value.trim(); if (!code) return;
+  const a = qrFind(code), f = inp.form; if (!a) return;
+  const set = (n, v) => { if (f.elements[n] && !f.elements[n].value && v) f.elements[n].value = v; };
+  set("serial", a.serial); set("model", a.model); set("pc_name_ip", a.hostname || a.ip);
+  if (a.department_id && f.elements.department_id && !f.elements.department_id.value) { f.elements.department_id.value = a.department_id; itDeptChange(f.elements.department_id); }
+}
+function itFormHtml(u, editId) {
+  const isNew = editId === "new";
+  const w = isNew ? { source: "web", started_at: new Date().toISOString(), result: "done", it_user_id: u.id } : byId(DB.worklogs, editId);
+  if (!w) return "";
+  const t = DB.templateConfig || {};
   const deps = DB.departments.slice().sort((a, b) => String(a.name).localeCompare(String(b.name)));
   const its = (DB.users || []).filter(x => x.is_active !== false && ["admin", "tcth", "it"].includes(x.role));
   const reqs = (DB.users || []).filter(x => x.is_active !== false).sort((a, b) => String(a.full_name).localeCompare(String(b.full_name)));
-  const o = (v, sel, t) => `<option value="${esc(v)}" ${String(v) === String(sel ?? "") ? "selected" : ""}>${esc(t)}</option>`;
-  const F = (label, inner, wide) => `<div class="form-group" style="${wide ? "grid-column:1/-1" : ""}"><label>${label}</label>${inner}</div>`;
-  const ta = (name, v, ph) => `<textarea class="form-control" name="${name}" rows="3" placeholder="${ph}">${esc(v || "")}</textarea>`;
-  return `<div class="card"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:12px"><h4 style="margin:0">${itF.edit === "new" ? "➕ Tạo nhật ký công việc IT" : "✏️ Sửa nhật ký " + esc(w.id)}</h4><button class="btn btn-outline-secondary btn-sm" onclick="itCancel()">✖ Đóng</button></div>
-  <form data-form="itlog"><input type="hidden" name="id" value="${esc(itF.edit === "new" ? "" : w.id)}">
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:0 16px">
-      ${F("Công việc / tiêu đề *", `<input class="form-control" name="title" required value="${esc(w.title || w.description || "")}" placeholder="VD: Máy tính không lên nguồn">`, true)}
-      ${F("Loại công việc", `<select class="form-control" name="category">${IT_CATS.map(c => o(c, w.category || "", c)).join("")}${w.category && !IT_CATS.includes(w.category) ? o(w.category, w.category, w.category) : ""}</select>`)}
-      ${F("Người thực hiện (IT)", `<select class="form-control" name="it_user_id">${its.map(x => o(x.id, w.it_user_id || u.id, x.full_name)).join("")}</select>`)}
-      ${F("Người yêu cầu / user được hỗ trợ", `<select class="form-control" name="requester_id" onchange="itReqChange(this)"><option value="">-- Không chọn --</option>${reqs.map(x => o(x.id, w.requester_id, x.full_name + (x.username ? " (" + x.username + ")" : ""))).join("")}</select>`)}
-      ${F("Hoặc nhập tên người yêu cầu", `<input class="form-control" name="requester_name_free" value="${esc(w.requester_id ? "" : w.requester_name || "")}" placeholder="Nếu không có trong danh sách">`)}
-      ${F("Phòng ban được xử lý", `<select class="form-control" name="department_id" id="it_dept"><option value="">-- Chọn phòng ban --</option>${deps.map(d => o(d.id, w.department_id, d.name)).join("")}</select>`)}
-      ${F("Mã tài sản liên quan (nếu có)", `<input class="form-control" name="asset_code" value="${esc(w.asset_code || "")}" placeholder="VD: TS-0001" onkeydown="if(event.key==='Enter')event.preventDefault()">`)}
-      ${F("Serial thiết bị (nếu có)", `<input class="form-control" name="serial" value="${esc(w.serial || "")}">`)}
-      ${F("Thời điểm báo sự cố", `<input class="form-control" type="datetime-local" name="reported_at" value="${itLocal(w.reported_at)}">`)}
-      ${F("Mã phiếu (nếu có)", `<input class="form-control" name="ticket_code" value="${esc(w.ticket_code || "")}">`)}
-      ${F("Thời gian bắt đầu *", `<input class="form-control" type="datetime-local" name="started_at" id="it_start" required value="${itLocal(w.started_at || w.created_at)}" onchange="itCalc()">`)}
-      ${F("Thời gian kết thúc", `<input class="form-control" type="datetime-local" name="ended_at" id="it_end" value="${itLocal(w.ended_at)}" onchange="itCalc()">`)}
-      ${F("Thời lượng (phút)", `<input class="form-control" type="number" min="0" name="duration_min" id="it_dur" value="${esc(w.duration_min ?? "")}" placeholder="Tự tính từ bắt đầu – kết thúc">`)}
-      ${F("Kết quả", `<select class="form-control" name="result">${Object.entries(IT_RESULTS).map(([k, v]) => o(k, itResultOf(w) || "done", v[0])).join("")}</select>`)}
-      ${F("Nguyên nhân", ta("cause", w.cause, "Nguyên nhân sự cố / yêu cầu"), true)}
-      ${F("Hướng xử lý / công việc đã thực hiện", ta("solution", w.solution, "Các bước đã làm / giải pháp"), true)}
-      ${F("Khuyến nghị / ghi chú", ta("note", w.note, "Khuyến nghị thay thế, bảo trì, theo dõi tiếp…"), true)}
+  const sups = (DB.users || []).filter(x => w.department_id && x.department_id === w.department_id && x.is_active !== false);
+  const o = (v, sel, tx) => `<option value="${esc(v)}" ${String(v) === String(sel ?? "") ? "selected" : ""}>${esc(tx)}</option>`;
+  const inp = (n, v, extra) => `<input class="itd-in" name="${n}" value="${esc(v || "")}" ${extra || ""}>`;
+  const row = (k, inner) => `<div class="itd-row"><b>${k}</b><div>${inner}</div></div>`;
+  const parts = Array.isArray(w.parts) ? w.parts : [];
+  const afterV = w.status_after || "";
+  return `<style>
+    .modal2.it-doc>div{max-width:900px;padding:0}.itd-bar{position:sticky;top:0;z-index:2;background:#0f2a5c;color:#fff;display:flex;justify-content:space-between;align-items:center;padding:10px 16px;font-weight:700;border-radius:16px 16px 0 0}
+    .itd-paper{padding:18px 26px 8px;font-family:"Times New Roman",Times,serif;color:#111}.itd-paper h2{text-align:center;margin:8px 0 14px;font-size:20px;letter-spacing:.5px}
+    .itd-row{display:flex;gap:10px;align-items:center;margin:5px 0}.itd-row>b{min-width:150px;font-size:14px}.itd-row>div{flex:1;min-width:0}
+    .itd-in,.itd-ta,.itd-sel{width:100%;box-sizing:border-box;border:0;border-bottom:1px dashed #555;background:#fffdf3;padding:5px 6px;font:15px "Times New Roman",Times,serif;border-radius:0}
+    .itd-in:focus,.itd-ta:focus,.itd-sel:focus{outline:2px solid #2f6df0;background:#fff}.itd-ta{min-height:54px;resize:vertical}
+    .itd-box{border:1px solid #111;padding:6px 10px}.itd-box .itd-row>b{min-width:80px;text-align:center}.itd-grid{display:grid;grid-template-columns:1.2fr 1fr;gap:16px;align-items:start}
+    .itd-h{margin:12px 0 3px;font-weight:700;font-size:15px}.itd-tbl{width:100%;border-collapse:collapse}.itd-tbl th,.itd-tbl td{border:1px solid #111;padding:2px}.itd-tbl th{font-size:13px;padding:4px}
+    .itd-foot{position:sticky;bottom:0;background:#f8fafc;border-top:1px solid #ddd;padding:10px 16px;display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;border-radius:0 0 16px 16px}
+    .itd-sec{font-size:12px;color:#555;margin:10px 0 2px;font-family:Arial,sans-serif}
+    @media(max-width:700px){.itd-grid{grid-template-columns:1fr}.itd-row{flex-direction:column;align-items:stretch;gap:0}.itd-paper{padding:12px}}
+  </style>
+  <form onsubmit="submit_itlog(this);return false" data-form-modal="itlog"><input type="hidden" name="id" value="${esc(isNew ? "" : w.id)}">
+    <div class="itd-bar"><span>${isNew ? "📝 Tạo nhật ký — Biên bản xử lý sự cố" : "✏️ Sửa nhật ký " + esc(w.id)}</span><button type="button" class="btn btn-sm" style="background:#fff" onclick="itCancel()">✖ Đóng</button></div>
+    <div class="itd-paper">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px"><div style="font-weight:700;line-height:1.35">${esc(t.bank_name || "")}<br>${esc(t.branch_name || "")}</div><img src="/img/vietinbank-logo.png" alt="" style="height:38px;max-width:45%"></div>
+      <h2>BIÊN BẢN XỬ LÝ SỰ CỐ</h2>
+      ${row("I. ĐƠN VỊ GẶP SỰ CỐ:", `<select class="itd-sel" name="department_id" onchange="itDeptChange(this)"><option value="">-- Chọn phòng ban / đơn vị --</option>${deps.map(d => o(d.id, w.department_id, d.name)).join("")}</select>`)}
+      <div class="itd-grid"><div>
+        ${row("Điện thoại", inp("unit_phone", w.unit_phone))}${row("Địa chỉ", inp("unit_address", w.unit_address))}
+        ${row("Cán bộ giám sát", inp("supervisor", w.supervisor, 'list="it_sup_list" placeholder="Chọn hoặc nhập họ tên"') + `<datalist id="it_sup_list">${sups.map(x => `<option value="${esc(x.full_name)}">`).join("")}</datalist>`)}
+        ${row("Người báo sự cố", `<select class="itd-sel" name="requester_id"><option value="">-- Chọn user --</option>${reqs.map(x => o(x.id, w.requester_id, x.full_name)).join("")}</select>` + `<input class="itd-in" name="requester_name_free" placeholder="hoặc nhập tên" value="${esc(w.requester_id ? "" : w.requester_name || "")}">`)}
+      </div><div class="itd-box"><div style="text-align:center;font-weight:700;font-size:14px;margin-bottom:4px">Thông tin về Máy / Thiết bị sự cố</div>
+        ${row("Mã TS", inp("asset_code", w.asset_code, 'placeholder="Mã tài sản (nếu có)" onchange="itAssetFill(this)" onkeydown="if(event.key===\'Enter\')event.preventDefault()"'))}${row("Serial", inp("serial", w.serial))}${row("Dòng máy", inp("model", w.model))}${row("PC Name/IP", inp("pc_name_ip", w.pc_name_ip))}
+      </div></div>
+      <div class="itd-row" style="margin-top:12px"><b>II. CÁN BỘ XỬ LÝ SỰ CỐ</b><div><select class="itd-sel" name="it_user_id" style="font-weight:700">${its.map(x => o(x.id, w.it_user_id || u.id, x.full_name)).join("")}</select></div></div>
+      ${row("Ngày, giờ có mặt tại đơn vị", `<input class="itd-in" type="datetime-local" name="started_at" id="it_start" required value="${itLocal(w.arrived_at || w.started_at || w.created_at)}" onchange="itCalc()">`)}
+      <div class="itd-h">1. Lỗi sự cố được thông báo *</div><textarea class="itd-ta" name="title" required rows="2" placeholder="VD: PC không khởi động được">${esc(w.reported_issue || w.title || w.description || "")}</textarea>
+      <div style="display:flex;gap:14px;flex-wrap:wrap;margin-top:4px">${row("Loại công việc", `<select class="itd-sel" name="category">${IT_CATS.map(c => o(c, w.category || "", c)).join("")}${w.category && !IT_CATS.includes(w.category) ? o(w.category, w.category, w.category) : ""}</select>`)}${row("Thời điểm báo", `<input class="itd-in" type="datetime-local" name="reported_at" value="${itLocal(w.reported_at)}">`)}</div>
+      <div class="itd-h">2. Các công việc đã thực hiện</div><textarea class="itd-ta" name="solution" rows="3" placeholder="Các bước đã làm / giải pháp">${esc(w.solution || "")}</textarea>
+      <div class="itd-h">Linh kiện được sử dụng để sửa chữa, thay thế:</div>
+      <table class="itd-tbl"><tr><th style="width:48%">Tên linh kiện</th><th>Ghi chú</th></tr>${Array.from({ length: Math.max(3, parts.length) }, (_, i) => `<tr><td><input class="itd-in" style="border:0;text-align:center" name="part_n${i}" value="${esc((parts[i] || {}).name || "")}"></td><td><input class="itd-in" style="border:0" name="part_c${i}" value="${esc((parts[i] || {}).note || "")}"></td></tr>`).join("")}</table>
+      <div class="itd-h">3. Giải pháp khuyến nghị</div><textarea class="itd-ta" name="note" rows="2" placeholder="Khuyến nghị thay thế, bảo trì, theo dõi tiếp…">${esc(w.note || "")}</textarea>
+      ${row("Tình trạng sau xử lý:", `<input class="itd-in" name="status_after" list="it_after_list" value="${esc(afterV)}" placeholder="Chọn hoặc nhập"><datalist id="it_after_list">${IT_AFTER.map(a => `<option value="${esc(a)}">`).join("")}</datalist>`)}
+      ${row("Ngày, giờ bàn giao:", `<input class="itd-in" type="datetime-local" name="ended_at" id="it_end" value="${itLocal(w.handover_at || w.ended_at)}" onchange="itCalc()">`)}
+      <div class="itd-sec">Thông tin quản lý nhật ký (không in trên biên bản)</div>
+      <div style="display:flex;gap:14px;flex-wrap:wrap">${row("Kết quả", `<select class="itd-sel" name="result">${Object.entries(IT_RESULTS).map(([k, v]) => o(k, itResultOf(w) || "done", v[0])).join("")}</select>`)}${row("Thời lượng (phút)", `<input class="itd-in" type="number" min="0" name="duration_min" id="it_dur" value="${esc(w.duration_min ?? "")}" placeholder="Tự tính">`)}${row("Mã phiếu", inp("ticket_code", w.ticket_code))}</div>
+      ${row("Nguyên nhân", `<input class="itd-in" name="cause" value="${esc(w.cause || "")}" placeholder="Nguyên nhân sự cố (nếu cần ghi riêng)">`)}
     </div>
-    <button class="btn btn-primary" type="submit">💾 Lưu nhật ký</button> <button type="button" class="btn btn-outline-secondary" onclick="itCancel()">Hủy</button>
-  </form></div>`;
+    <div class="itd-foot"><button type="button" class="btn btn-outline-secondary" onclick="itCancel()">Hủy</button><button class="btn btn-primary" type="submit">💾 Lưu nhật ký</button><button class="btn" style="background:#16a34a;color:#fff" type="submit" onclick="this.form.dataset.docx=1">💾 Lưu & xuất Word</button></div>
+  </form>`;
 }
 
 function submit_itlog(form) {
@@ -1127,6 +1174,9 @@ function submit_itlog(form) {
     asset_id: asset ? asset.id : null, asset_code: asset ? asset.code : "", asset_name: asset ? asset.name : "",
     ticket_code: g("ticket_code") || null, serial: g("serial") || (asset && asset.serial) || "", reported_at: g("reported_at") ? new Date(g("reported_at")).toISOString() : null, started_at: startIso, ended_at: en ? new Date(en).toISOString() : null, ts_ms: Date.parse(startIso),
     duration_min: dur || 0, cause: g("cause"), solution: g("solution"), result, status: result === "done" ? "done" : "open", note: g("note"), updated_at: nowIso(),
+    unit_phone: g("unit_phone"), unit_address: g("unit_address"), supervisor: g("supervisor"), model: g("model"), pc_name_ip: g("pc_name_ip"), status_after: g("status_after"),
+    reported_issue: title, arrived_at: startIso, handover_at: en ? new Date(en).toISOString() : null,
+    parts: Array.from({ length: 12 }, (_, i) => ({ name: g("part_n" + i), note: g("part_c" + i) })).filter(p => p.name || p.note),
   };
   if (id) { const w = byId(DB.worklogs, id); if (!w || !itCanEdit(u, w)) return; Object.assign(w, vals); }
   else {
@@ -1134,7 +1184,9 @@ function submit_itlog(form) {
     DB.worklogs.push(Object.assign({ id: nid, created_at: nowIso(), source: "web" }, vals));
     if (asset) logHistory(asset.id, "it_work", `IT ghi nhật ký (${vals.category}): ${title}${dur ? ` — ${dur} phút` : ""}`);
   }
-  saveDB(); itF.edit = null; flash("Đã lưu nhật ký công việc."); render();
+  const savedId = id || DB.worklogs[DB.worklogs.length - 1].id, wantDocx = form.dataset.docx === "1";
+  saveDB(); itF.edit = null; closeModal2(); flash("Đã lưu nhật ký công việc."); render();
+  if (wantDocx) itIncidentDocx(savedId);
 }
 
 function itDetail(w, u) {
@@ -1146,7 +1198,7 @@ function itDetail(w, u) {
 
 function viewItLog(u) {
   if (!canIt(u)) return `<div class="alert alert-error">Bạn không có quyền truy cập.</div>`;
-  if (itF.edit) return itForm(u);
+  
   const list = itFiltered(), total = list.reduce((s, w) => s + (Number(w.duration_min) || 0), 0), PS = 50;
   const pages = Math.max(1, Math.ceil(list.length / PS)); if (itF.page > pages) itF.page = pages;
   const shown = list.slice((itF.page - 1) * PS, itF.page * PS);
