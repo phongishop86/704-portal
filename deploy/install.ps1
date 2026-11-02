@@ -45,11 +45,11 @@ Say "Node: $(& $node -v)  ($node)"
 $appDir = Join-Path $InstallDir "app"; $dataDir = Join-Path $InstallDir "data"; $logDir = Join-Path $InstallDir "logs"
 New-Item -ItemType Directory -Force $InstallDir,$dataDir,$logDir | Out-Null
 $task = Get-ScheduledTask -TaskName "704-assets" -ErrorAction SilentlyContinue
-if ($task) { Say "Dừng dịch vụ cũ"; Stop-ScheduledTask -TaskName "704-assets" -ErrorAction SilentlyContinue; Get-NetTCPConnection -LocalPort $Port -State Listen -ErrorAction SilentlyContinue | ForEach-Object { Stop-Process -Id $_.OwningProcess -Force -ErrorAction SilentlyContinue }; Start-Sleep 2 }
+if ($task) { Say "Dừng dịch vụ cũ"; Stop-ScheduledTask -TaskName "704-assets-telegram" -ErrorAction SilentlyContinue; Get-CimInstance Win32_Process -Filter "Name='node.exe'" | Where-Object { $_.CommandLine -like "*tg-poll.mjs*" } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }; Stop-ScheduledTask -TaskName "704-assets" -ErrorAction SilentlyContinue; Get-NetTCPConnection -LocalPort $Port -State Listen -ErrorAction SilentlyContinue | ForEach-Object { Stop-Process -Id $_.OwningProcess -Force -ErrorAction SilentlyContinue }; Start-Sleep 2 }
 if (Test-Path $appDir) { Remove-Item $appDir -Recurse -Force }
 Say "Chép mã ứng dụng vào $appDir"
 Copy-Item "$src\app" $appDir -Recurse -Force
-foreach ($f in "start.ps1","backup.ps1","restore.ps1","cron-remind.ps1","uninstall.ps1","import-excel.ps1") { if (Test-Path "$src\$f") { Copy-Item "$src\$f" $InstallDir -Force } }
+foreach ($f in "start.ps1","start-telegram.ps1","backup.ps1","restore.ps1","cron-remind.ps1","uninstall.ps1","import-excel.ps1","setup-https.ps1","setup-telegram.ps1","doctor.ps1") { if (Test-Path "$src\$f") { Copy-Item "$src\$f" $InstallDir -Force } }
 
 # 3) Cấu hình .env (giữ nếu đã có) -----------------------------------------
 $envFile = Join-Path $InstallDir ".env"
@@ -57,7 +57,7 @@ $firstTime = -not (Test-Path $envFile)
 if ($firstTime) {
   Say "Tạo .env với khóa ngẫu nhiên"
   $t = Get-Content "$src\env.local.template" -Raw -Encoding UTF8
-  $t = $t.Replace("__DATA_DIR__", $dataDir).Replace("__SESSION_SECRET__", (RandHex 32)).Replace("__ADMIN_KEY__", (RandHex 16)).Replace("__CRON_SECRET__", (RandHex 16))
+  $t = $t.Replace("__DATA_DIR__", $dataDir).Replace("__SESSION_SECRET__", (RandHex 32)).Replace("__ADMIN_KEY__", (RandHex 16)).Replace("__CRON_SECRET__", (RandHex 16)).Replace("__TG_SECRET__", (RandHex 16))
   $t = $t -replace "(?m)^PORT=.*$", "PORT=$Port"
   [IO.File]::WriteAllText($envFile, $t, (New-Object Text.UTF8Encoding($false)))
   icacls $envFile /inheritance:r /grant:r "SYSTEM:F" "Administrators:F" | Out-Null
@@ -77,6 +77,11 @@ Say "Đăng ký sao lưu hằng ngày 02:00 vào data\backups (giữ 30 bản)"
 $a2 = New-ScheduledTaskAction -Execute "powershell.exe" -Argument "-NoProfile -ExecutionPolicy Bypass -File `"$InstallDir\backup.ps1`""
 Register-ScheduledTask -TaskName "704-assets-backup" -Action $a2 -Trigger (New-ScheduledTaskTrigger -Daily -At 2:00am) -Principal $pri -Force | Out-Null
 
+if ($cfg["TELEGRAM_BOT_TOKEN"]) {
+  Say "Đăng ký bot Telegram (getUpdates, không cần địa chỉ công khai)"
+  $a4 = New-ScheduledTaskAction -Execute "powershell.exe" -Argument "-NoProfile -ExecutionPolicy Bypass -File `"$InstallDir\start-telegram.ps1`"" -WorkingDirectory $InstallDir
+  Register-ScheduledTask -TaskName "704-assets-telegram" -Action $a4 -Trigger $trg -Principal $pri -Settings $set -Force | Out-Null
+}
 if ($cfg["TELEGRAM_BOT_TOKEN"] -and $cfg["TG_GROUP_ID"]) {
   Say "Đăng ký nhắc việc 08:00 (có Telegram)"
   $a3 = New-ScheduledTaskAction -Execute "powershell.exe" -Argument "-NoProfile -ExecutionPolicy Bypass -File `"$InstallDir\cron-remind.ps1`""
@@ -93,6 +98,7 @@ if (-not $SkipFirewall) {
 # 6) Chạy và kiểm tra ----------------------------------------------------------
 Say "Khởi động dịch vụ"
 Start-ScheduledTask -TaskName "704-assets"
+if (Get-ScheduledTask -TaskName "704-assets-telegram" -ErrorAction SilentlyContinue) { Start-ScheduledTask -TaskName "704-assets-telegram" }
 $ok = $false
 for ($i = 0; $i -lt 30; $i++) {
   Start-Sleep 2

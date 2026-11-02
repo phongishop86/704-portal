@@ -1,3 +1,5 @@
+> **Bản mới, dễ hơn:** xem `HUONG_DAN_TRIEN_KHAI_PC.md` (cài một lần bấm bằng `CAI-DAT.bat`, có HTTPS và bot Telegram không cần địa chỉ công khai). Tài liệu này giữ làm tham chiếu chi tiết.
+
 # Triển khai Cổng 704 + 704-ASSETS nội bộ trên Windows Server 2019
 
 **Chạy hoàn toàn trong mạng LAN, không cần Internet.** Trang chủ `/` là **ứng dụng Quản lý tài sản (704-ASSETS)**, vào thẳng, không qua Cổng; Cổng 704 (admin thêm/xóa/sắp xếp trang) vẫn dùng được, tùy chọn, tại `/portal.html`; mọi người dùng chung một đăng nhập và một nguồn dữ liệu. **Toàn bộ dữ liệu nằm trong một thư mục `C:\704-assets\data`** (dữ liệu + sao lưu): chép thư mục này là chuyển/sao lưu được cả hệ thống. Giao diện không gọi CDN/phông chữ ngoài.
