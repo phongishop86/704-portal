@@ -5450,8 +5450,8 @@ function printOverlay(title, css, bodyHtml, hint, extraBtns) {
 function closePrintOverlay() { const o = document.getElementById("printOv"); if (o) o.remove(); document.documentElement.style.overflow = ""; }
 window.addEventListener("afterprint", () => { /* giữ khung xem trước để người dùng in lại hoặc bấm Quay lại */ });
 // Biên bản / báo cáo cũng dùng khung này thay vì tab mới
-function openPrintWindow(bodyHtml, titleHint) {
-  printOverlay(titleHint || "In", `body{font-family:Arial,Helvetica,sans-serif;color:#111} #printOv .po-pg{padding:18px;font-size:13px} #printOv table{border-collapse:collapse;width:100%} #printOv table.print-table th,#printOv table.print-table td{border:1px solid #333;padding:5px 7px;font-size:12.5px} #printOv table.print-table th{color:#f8fafc;background:#111827;border:none;font-size:12px;text-transform:uppercase} #printOv .text-end{text-align:right} #printOv h2{margin-bottom:4px} @media print{#printOv .po-pg{padding:0}}`, bodyHtml, "");
+function openPrintWindow(bodyHtml, titleHint, extraBtns) {
+  printOverlay(titleHint || "In", `body{font-family:Arial,Helvetica,sans-serif;color:#111} #printOv .po-pg{padding:18px;font-size:13px} #printOv table{border-collapse:collapse;width:100%} #printOv table.print-table th,#printOv table.print-table td{border:1px solid #333;padding:5px 7px;font-size:12.5px} #printOv table.print-table th{color:#f8fafc;background:#111827;border:none;font-size:12px;text-transform:uppercase} #printOv .text-end{text-align:right} #printOv h2{margin-bottom:4px} @media print{#printOv .po-pg{padding:0}}`, bodyHtml, "", extraBtns);
 }
 
 let QR_LAST = null;
@@ -6064,7 +6064,7 @@ function itDetail(w, u) {
   const r = (k, v) => v ? `<div style="margin-bottom:8px"><div class="text-muted small">${k}</div><div style="white-space:pre-wrap">${esc(v)}</div></div>` : "";
   return `<tr class="it-detail"><td colspan="8" style="background:#f8fafc"><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:4px 20px;padding:6px 4px">
     ${r("Nguyên nhân", w.cause)}${r("Hướng xử lý", w.solution)}${r("Khuyến nghị / ghi chú", w.note)}${r("Người yêu cầu", w.requester_name)}${r("Thời điểm báo", fmtDateTime(w.reported_at))}${r("Serial", w.serial)}${r("Bắt đầu xử lý", fmtDateTime(w.started_at))}${r("Kết thúc", fmtDateTime(w.ended_at))}${r("Nguồn", w.source === "web" ? "Nhập trên web" : "Telegram")}
-    </div><div style="padding:4px"><button class="btn btn-sm btn-primary" onclick="itIncidentReport('${w.id}')">🖨️ Biên bản xử lý sự cố</button> <button class="btn btn-sm btn-outline" onclick="itIncidentDlg('${w.id}')">✏️ Bổ sung thông tin biên bản</button></div>${itCanEdit(u, w) ? `<div style="padding:4px"><button class="btn btn-sm btn-outline" onclick="itEdit('${w.id}')">✏️ Sửa</button> <button class="btn btn-sm btn-outline" style="color:#dc2626" onclick="itDelete('${w.id}')">🗑️ Xóa</button></div>` : ""}</td></tr>`;
+    </div><div style="padding:4px"><button class="btn btn-sm btn-primary" onclick="itIncidentDocx('${w.id}')">📄 Biên bản xử lý sự cố (Word theo mẫu)</button> <button class="btn btn-sm btn-outline" onclick="itIncidentReport('${w.id}')">🖨️ Xem / in nhanh</button> <button class="btn btn-sm btn-outline" onclick="itIncidentDlg('${w.id}')">✏️ Bổ sung thông tin biên bản</button></div>${itCanEdit(u, w) ? `<div style="padding:4px"><button class="btn btn-sm btn-outline" onclick="itEdit('${w.id}')">✏️ Sửa</button> <button class="btn btn-sm btn-outline" style="color:#dc2626" onclick="itDelete('${w.id}')">🗑️ Xóa</button></div>` : ""}</td></tr>`;
 }
 
 function viewItLog(u) {
@@ -6216,7 +6216,41 @@ function itIncidentReport(id) {
       <td style="border:none;text-align:center;width:50%"><b>CÁN BỘ XỬ LÝ SỰ CỐ</b><div style="margin-top:78px"><b>${esc(it.toUpperCase())}</b></div></td>
       <td style="border:none;text-align:center;width:50%"><b>XÁC NHẬN CỦA ĐƠN VỊ</b><div style="margin-top:78px"><b>${esc((w.supervisor || "").toUpperCase())}</b></div></td>
     </tr></table>`;
-  openPrintWindow(body, "Bien_ban_su_co_" + w.id);
+  openPrintWindow(body, "Bien_ban_su_co_" + w.id, `<button style="background:#16a34a;color:#fff" onclick="itIncidentDocx('${w.id}')">📄 Xuất Word</button>`);
+}
+
+/* ---------- Xuất Word (.docx) theo file biểu mẫu BM-Bien_Ban_Xu_Ly_Su_Co_CNTT: điền dữ liệu nhật ký vào /templates/bien-ban-xu-ly-su-co.docx ---------- */
+function loadJsZip() {
+  if (window.JSZip) return Promise.resolve(window.JSZip);
+  return new Promise((res, rej) => { const sc = document.createElement("script"); sc.src = "/js/jszip.min.js"; sc.onload = () => res(window.JSZip); sc.onerror = () => rej(new Error("Không tải được thư viện nén (cần mạng lần đầu)")); document.head.appendChild(sc); });
+}
+function incFields(w0) {
+  let w = w0; const as = w.asset_id ? byId(DB.assets, w.asset_id) : null;
+  if (as) w = Object.assign({}, w, { serial: w.serial || as.serial || "", model: w.model || as.model || "", pc_name_ip: w.pc_name_ip || as.hostname || as.ip || "" });
+  const parts = Array.isArray(w.parts) ? w.parts : [];
+  const rest = parts.slice(1), join = (arr, k) => arr.map(p => p[k] || "").filter(Boolean).join("\n");
+  const it = w.it_user || "";
+  return {
+    dept: depName(w.department_id) || "", phone: w.unit_phone || "", address: w.unit_address || "", serial: w.serial || "", model: w.model || "", pcname: w.pc_name_ip || "",
+    supervisor: w.supervisor || "", itname: it.toUpperCase(), arrived: incWhen(w.arrived_at || w.started_at), issue: w.reported_issue || w.title || w.description || "", work: w.solution || "",
+    p1n: (parts[0] || {}).name || "", p1c: (parts[0] || {}).note || "", p2n: join(rest, "name"), p2c: join(rest, "note"),
+    note: w.note || "", after: w.status_after || "", handover: incWhen(w.handover_at || w.ended_at), itname_up: it.toUpperCase(), sup_up: (w.supervisor || "").toUpperCase(),
+  };
+}
+async function itIncidentDocx(id) {
+  const w = byId(DB.worklogs, id); if (!w) return;
+  try {
+    const [Z, buf] = await Promise.all([loadJsZip(), fetch("/templates/bien-ban-xu-ly-su-co.docx").then(r => { if (!r.ok) throw new Error("Không tải được file biểu mẫu"); return r.arrayBuffer(); })]);
+    const zip = await Z.loadAsync(buf), f = incFields(w);
+    const esc2 = v => String(v).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/\r?\n/g, '</w:t><w:br/><w:t xml:space="preserve">');
+    let xml = await zip.file("word/document.xml").async("string");
+    xml = xml.replace(/\{\{(\w+)\}\}/g, (m, k) => k in f ? esc2(f[k]) : "");
+    zip.file("word/document.xml", xml);
+    const blob = await zip.generateAsync({ type: "blob", mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document" });
+    const name = "BB-xu-ly-su-co-" + w.id + ".docx", file = new File([blob], name, { type: blob.type });
+    if (navigator.canShare && navigator.canShare({ files: [file] }) && /iPhone|iPad|Android/i.test(navigator.userAgent)) { await navigator.share({ files: [file], title: name }); return; }
+    const url = URL.createObjectURL(blob), a = document.createElement("a"); a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 60000);
+  } catch (e) { if (!e || e.name !== "AbortError") alert("Không xuất được file Word: " + (e && e.message || e)); }
 }
 function itReportList() {
   const list = itFiltered().slice().sort((a, b) => itMs(a) - itMs(b));
