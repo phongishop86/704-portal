@@ -2153,7 +2153,7 @@ function viewRepairDetail(u, id){
           ${rt.manager_id ? `<tr><td class="text-muted">LĐP duyệt</td><td><strong style="color:#0f172a;">${esc(userName(rt.manager_id))}</strong></td></tr>` : ""}
           ${rt.it_id ? `<tr><td class="text-muted">Điện toán XL</td><td><strong style="color:#0f172a;">${esc(userName(rt.it_id))}</strong></td></tr>` : ""}
           <tr><td class="text-muted">Ngày lập</td><td>${fmtDateTime(rt.created_at)}</td></tr>
-          ${rt.route ? `<tr><td class="text-muted">LĐP chuyển tới</td><td>${rt.route === "it" ? "Điện toán (IT) trực tiếp" : "TCTH (hư hỏng lớn)"}</td></tr>` : ""}
+          ${rt.route ? `<tr><td class="text-muted">LĐP chuyển tới</td><td>${rt.route === "it" ? "Điện toán (IT) trực tiếp" + (rt.it_id ? " — " + esc(userName(rt.it_id)) : "") : "TCTH (hư hỏng lớn)"}</td></tr>` : ""}
           ${rt.it_at ? `<tr><td class="text-muted">Thời gian xử lý (SLA)</td><td><strong style="color:var(--brand)">${calculateSLA(rt.created_at, rt.it_at)}</strong> <span class="small text-muted">(tính đến lúc Điện toán khắc phục xong)</span></td></tr>` : ""}
           ${rt.priority?`<tr><td class="text-muted">Mức độ khẩn cấp</td><td><strong style="color:#dc2626">${esc(rt.priority)}</strong></td></tr>`:""}
           ${rt.manager_note?`<tr><td class="text-muted">LĐP truyền đạt</td><td>${esc(rt.manager_note)}</td></tr>`:""}
@@ -2181,8 +2181,9 @@ function viewRepairDetail(u, id){
             <label style="font-size:12px; font-weight:600;">Chuyển tiếp đến *</label>
             <select class="form-control" name="route" required>
               <option value="">-- Chọn nơi chuyển --</option>
-              <option value="it">Dịch vụ khách hàng / Điện toán (IT) xử lý trực tiếp (bỏ bước TCTH)</option>
-              <option value="tcth">LĐP TCTH xử lý (hư hỏng lớn, ngoài chuyên môn IT)</option>
+              ${itStaff.map(x=>`<option value="it:${x.id}">Điện toán — ${esc(x.full_name)} (xử lý trực tiếp, bỏ bước TCTH)</option>`).join("")}
+              <option value="it">Điện toán — chưa chỉ định cụ thể (bỏ bước TCTH)</option>
+              <option value="tcth">TCTH điều phối (hư hỏng lớn, ngoài chuyên môn IT)</option>
             </select>
           </div>
           <button class="btn btn-success btn-block" type="submit">LĐP phê duyệt &amp; Chuyển tiếp</button>
@@ -2237,15 +2238,16 @@ function submit_repair_manager_approve(form){
   const priority = new FormData(form).get("priority");
   const manager_note = new FormData(form).get("manager_note").trim();
 
-  const route = new FormData(form).get("route") === "it" ? "it" : "tcth";
+  const rv = String(new FormData(form).get("route") || ""); const route = rv.startsWith("it") ? "it" : "tcth";
   rt.route = route;
+  if(rv.startsWith("it:") && rv.length > 3) rt.it_id = rv.slice(3);
   rt.status = route === "it" ? "pending_it" : "pending_tcth";
   rt.manager_id = u.id;
   rt.manager_at = nowIso();
   rt.priority = priority;
   rt.manager_note = manager_note;
 
-  logHistory(rt.asset_id, "repair", `LĐP phê duyệt phiếu ${rt.ticket_code || rt.id.slice(-5)} (Mức độ: ${priority}) và chuyển ${route === "it" ? "trực tiếp Điện toán (bỏ bước TCTH)" : "TCTH (hư hỏng lớn)"}`);
+  logHistory(rt.asset_id, "repair", `LĐP phê duyệt phiếu ${rt.ticket_code || rt.id.slice(-5)} (Mức độ: ${priority}) và chuyển ${route === "it" ? "trực tiếp Điện toán" + (rt.it_id ? " (" + userName(rt.it_id) + ")" : "") + " (bỏ bước TCTH)" : "TCTH (hư hỏng lớn)"}`);
   saveDB();
   alert(route === "it" ? "Đã phê duyệt và chuyển trực tiếp đến Điện toán (IT)!" : "Đã phê duyệt và chuyển tiếp đến TCTH!");
   nav("repair_detail", {id});

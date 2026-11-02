@@ -84,7 +84,7 @@ export async function allowWrite(
       return u.role === "it" || u.role === "tcth";
     }
     const T: Record<string, { to: string[]; roles: (r: string) => boolean }> = {
-      pending_manager: { to: ["pending_tcth", "rejected"], roles: (r) => (r === "manager" && inDept) || r === "tcth" },
+      pending_manager: { to: ["pending_tcth", "pending_it", "rejected"], roles: (r) => (r === "manager" && inDept) || r === "tcth" },
       pending_tcth: { to: ["pending_it", "rejected"], roles: (r) => r === "tcth" },
       pending_it: { to: ["completed", "rejected"], roles: (r) => r === "it" || r === "tcth" },
     };
