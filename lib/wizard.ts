@@ -15,9 +15,10 @@ const TTL = 30 * 60 * 1000;
 export const CATS = ["Sự cố phần cứng", "Phần mềm / Hệ điều hành", "Mạng / Internet", "Máy in / Thiết bị ngoại vi", "Cài đặt / Cấu hình", "Bảo trì định kỳ", "Tài khoản / Phân quyền", "Hỗ trợ người dùng", "Khác"];
 export const RESULTS: Record<string, string> = { done: "Hoàn thành", doing: "Đang xử lý", waiting: "Chờ linh kiện / phản hồi", escalated: "Chuyển tuyến / đơn vị ngoài", failed: "Chưa khắc phục được" };
 
-type Step = "dept" | "requester" | "title" | "category" | "asset" | "ticket" | "serial" | "reported" | "start" | "end" | "solution" | "result" | "note";
-const ORDER: Step[] = ["dept", "requester", "title", "category", "asset", "ticket", "serial", "reported", "start", "end", "solution", "result", "note"];
-const OPTIONAL: Step[] = ["dept", "requester", "category", "asset", "serial", "end", "solution", "note"];
+type Step = "dept" | "phone" | "address" | "supervisor" | "requester" | "title" | "category" | "asset" | "ticket" | "serial" | "model" | "pcname" | "reported" | "start" | "solution" | "parts" | "note" | "after" | "end" | "result";
+/** Thứ tự theo biểu mẫu "Biên bản xử lý sự cố": I. Đơn vị gặp sự cố → thiết bị → II. Cán bộ xử lý. */
+const ORDER: Step[] = ["dept", "phone", "address", "supervisor", "requester", "title", "category", "asset", "ticket", "serial", "model", "pcname", "reported", "start", "solution", "parts", "note", "after", "end", "result"];
+const OPTIONAL: Step[] = ["dept", "phone", "address", "supervisor", "requester", "category", "asset", "serial", "model", "pcname", "solution", "parts", "note", "after", "end"];
 
 interface Cand { id: string; name: string; no?: string }
 interface State {
@@ -107,14 +108,17 @@ async function prompt(st: State): Promise<Reply> {
     case "dept": {
       st.cands = await deptCands();
       await save(st);
-      return { text: `📝 Nhật ký công việc IT mới (gõ /huy để thoát).\n\nPhòng ban phát sinh sự cố? Gõ SỐ hoặc tên phòng:\n${numbered(st.cands)}` + opt, buttons: [SKIP] };
+      return { text: `📝 Biên bản xử lý sự cố mới (gõ /huy để thoát).\n\nI. ĐƠN VỊ GẶP SỰ CỐ\nPhòng ban phát sinh sự cố? Gõ SỐ hoặc tên phòng:\n${numbered(st.cands)}` + opt, buttons: [SKIP] };
     }
+    case "phone": return { text: "Điện thoại đơn vị?" + opt, buttons: [SKIP] };
+    case "address": return { text: "Địa chỉ đơn vị?" + opt, buttons: [SKIP] };
+    case "supervisor": return { text: "Cán bộ giám sát (phía đơn vị, ký xác nhận biên bản)? Gõ họ tên." + opt, buttons: [SKIP] };
     case "requester": {
       st.cands = st.data.department_id ? await userCands(st.data.department_id) : [];
       await save(st);
       return { text: `User báo sự cố?${st.cands.length ? " Gõ SỐ để chọn hoặc gõ họ tên:\n" + numbered(st.cands) : " Gõ họ tên."}` + opt, buttons: [SKIP] };
     }
-    case "title": return { text: "Tên sự cố / công việc là gì?\nVí dụ: Máy tính không lên nguồn" };
+    case "title": return { text: "II. CÁN BỘ XỬ LÝ SỰ CỐ\n1. Lỗi sự cố được thông báo là gì?\nVí dụ: PC không khởi động được" };
     case "category": return { text: "Loại công việc?" + opt, buttons: [...rowsOf(CATS.map((c, i) => btn(c, `w:cat:${i}`)), 2), SKIP] };
     case "asset": {
       st.cands = await assetCands(st.data.department_id ?? null, st.data.requester_id ?? null);
@@ -122,13 +126,17 @@ async function prompt(st: State): Promise<Reply> {
       return { text: `Thiết bị gặp sự cố?${st.cands.length ? " Gõ SỐ để chọn từ danh sách của phòng:\n" + numbered(st.cands) + "\n" : " "}Hoặc gõ mã / tên / serial để tìm, hoặc nhập tên thiết bị khác.` + opt, buttons: [SKIP] };
     }
     case "ticket": return { text: `Thiết bị này đang có phiếu ${st.data.ticket_offer.code}: “${st.data.ticket_offer.desc}”. Liên kết nhật ký với phiếu (xong việc sẽ đóng phiếu)?`, buttons: [[btn("✅ Có, liên kết", "w:tk:1"), btn("Không", "w:tk:0")]] };
+    case "model": return { text: "Dòng máy? (ví dụ: HP 600 G2)" + opt, buttons: [SKIP] };
+    case "pcname": return { text: "PC Name / IP?" + opt, buttons: [SKIP] };
     case "serial": return { text: "Số serial thiết bị (nếu có)?" + opt, buttons: [SKIP] };
     case "reported": return { text: "Thời điểm báo sự cố?\nBấm nút hoặc gõ giờ dạng 14:30 (hoặc 28/10 14:30).", buttons: [[btn("Bây giờ", "w:rp:0"), btn("30 phút trước", "w:rp:30"), btn("1 giờ trước", "w:rp:60")]] };
-    case "start": return { text: "Thời điểm bắt đầu xử lý?\nBấm nút hoặc gõ giờ (14:30).", buttons: [[btn("Bằng giờ báo", "w:st:rep"), btn("Bây giờ", "w:st:0")]] };
-    case "end": return { text: "Xử lý xong lúc nào / mất bao lâu?\nGõ giờ (15:15) hoặc thời lượng (45 phút, 1h30p)." + opt, buttons: [[btn("Vừa xong", "w:en:now"), btn("Chưa xong", "w:skip")]] };
-    case "solution": return { text: "Công việc đã thực hiện?" + opt, buttons: [SKIP] };
+    case "start": return { text: "Ngày, giờ có mặt tại đơn vị (bắt đầu xử lý)?\nBấm nút hoặc gõ giờ (14:30 hoặc 29/10 16:40).", buttons: [[btn("Bằng giờ báo", "w:st:rep"), btn("Bây giờ", "w:st:0")]] };
+    case "parts": return { text: "Linh kiện được sử dụng để sửa chữa, thay thế? Mỗi dòng một linh kiện, dạng: Tên linh kiện - ghi chú\nVí dụ: CPU Dell 5050 - đang lưu kho điện toán" + opt, buttons: [SKIP] };
+    case "after": return { text: "Tình trạng sau xử lý? (ví dụ: máy tính hoạt động bình thường)" + opt, buttons: [SKIP] };
+    case "end": return { text: "Ngày, giờ bàn giao (xử lý xong) / mất bao lâu?\nGõ giờ (15:15) hoặc thời lượng (45 phút, 1h30p)." + opt, buttons: [[btn("Vừa xong", "w:en:now"), btn("Chưa xong", "w:skip")]] };
+    case "solution": return { text: "2. Các công việc đã thực hiện?" + opt, buttons: [SKIP] };
     case "result": return { text: "Kết quả?", buttons: Object.entries(RESULTS).map(([k, v]) => [btn(v, `w:res:${k}`)]) };
-    case "note": return { text: "Khuyến nghị (thay thế, bảo trì, theo dõi tiếp…)?" + opt, buttons: [SKIP] };
+    case "note": return { text: "3. Giải pháp khuyến nghị (thay thế, bảo trì, theo dõi tiếp…)?" + opt, buttons: [SKIP] };
   }
 }
 
@@ -175,6 +183,16 @@ async function finish(st: State): Promise<Reply> {
     ended_at: d.ended_ms ? new Date(d.ended_ms).toISOString() : null,
     duration_min: dur ?? 0,
     cause: "",
+    unit_phone: d.unit_phone ?? "",
+    unit_address: d.unit_address ?? "",
+    supervisor: d.supervisor ?? "",
+    model: d.model ?? "",
+    pc_name_ip: d.pc_name_ip ?? "",
+    arrived_at: new Date(started).toISOString(),
+    handover_at: d.ended_ms ? new Date(d.ended_ms).toISOString() : null,
+    reported_issue: d.title ?? "",
+    parts: d.parts ?? [],
+    status_after: d.status_after ?? "",
     solution: d.solution ?? "",
     note: d.note ?? "",
     result,
@@ -191,14 +209,16 @@ async function finish(st: State): Promise<Reply> {
   const line = (k: string, v: string) => (v ? `\n• ${k}: ${v}` : "");
   return {
     text:
-      "Kiểm tra lại nhật ký:" +
-      line("Phòng ban", dept) + line("User báo", draft.requester_name) + line("Sự cố", draft.title) + line("Loại", d.category ?? "") +
+      "Kiểm tra lại biên bản:" +
+      line("Đơn vị", dept) + line("Điện thoại", draft.unit_phone) + line("Địa chỉ", draft.unit_address) + line("Cán bộ giám sát", draft.supervisor) +
+      line("Dòng máy", draft.model) + line("PC Name/IP", draft.pc_name_ip) +
+      line("Linh kiện", (draft.parts as {name:string;note:string}[]).map((p) => p.name + (p.note ? ` (${p.note})` : "")).join("; ")) + line("Tình trạng sau xử lý", draft.status_after) + line("User báo", draft.requester_name) + line("Sự cố", draft.title) + line("Loại", d.category ?? "") +
       line("Thiết bị", draft.asset_code ? `${draft.asset_code} · ${draft.asset_name}` : draft.asset_name) + line("Serial", draft.serial) +
-      line("Thời điểm báo", fmtVN(reported)) + line("Bắt đầu xử lý", fmtVN(started)) + line("Kết thúc", d.ended_ms ? fmtVN(d.ended_ms) : "") +
+      line("Thời điểm báo", fmtVN(reported)) + line("Có mặt tại đơn vị", fmtVN(started)) + line("Bàn giao", d.ended_ms ? fmtVN(d.ended_ms) : "") +
       line("Thời gian xử lý", draft.duration_min ? `${draft.duration_min} phút` : "") +
       line("Công việc đã làm", draft.solution) + line("Kết quả", RESULTS[result]) + line("Khuyến nghị", draft.note) +
       line("Phiếu", draft.ticket_code ? `${draft.ticket_code}${result === "done" ? " (sẽ đóng phiếu)" : ""}` : "") +
-      "\n\nGhi vào hệ thống?",
+      "\n\nGhi vào hệ thống? Sau khi ghi, mở mục Nhật ký IT trên web, chọn dòng này và bấm “📝 Biên bản xử lý sự cố” để in.",
     buttons: [[btn("✅ Ghi", `ok:${dref.id}`), btn("❌ Huỷ", `no:${dref.id}`)]],
   };
 }
@@ -214,7 +234,7 @@ async function load(user: User): Promise<State | null> {
 export const wizardActive = async (user: User) => !!(await load(user));
 
 export async function wizardStart(user: User): Promise<Reply> {
-  if (!IT_ROLES.includes(user.role)) return { text: "Ghi nhật ký dành cho vai trò IT/Admin." };
+  if (!IT_ROLES.includes(user.role)) return { text: "Lập biên bản xử lý sự cố dành cho vai trò IT/Admin." };
   const st: State = { kind: "wizard", user_id: user.id, step: "dept", data: {}, expires_at: Date.now() + TTL };
   const r = await prompt(st);
   await save(st);
@@ -243,7 +263,7 @@ async function pickAsset(st: State, a: any): Promise<WizardOut> {
 /** Bấm nút (callback_data bắt đầu bằng "w:"). */
 export async function wizardCallback(user: User, data: string): Promise<WizardOut> {
   const st = await load(user);
-  if (!st) return { ack: "Phiên nhập nhật ký đã hết hạn. Gõ /nhatky để bắt đầu lại." };
+  if (!st) return { ack: "Phiên nhập nhật ký đã hết hạn. Gõ /bienban để bắt đầu lại." };
   const [, kind, arg] = data.split(":");
   const s = st.step;
   if (kind === "skip") {
@@ -273,7 +293,7 @@ const pickNum = (st: State, t: string): Cand | null => {
 /** Tin nhắn chữ trong lúc đang nhập. */
 export async function wizardText(user: User, text: string): Promise<Reply> {
   const st = await load(user);
-  if (!st) return { text: "Phiên nhập nhật ký đã hết hạn. Gõ /nhatky để bắt đầu lại." };
+  if (!st) return { text: "Phiên nhập nhật ký đã hết hạn. Gõ /bienban để bắt đầu lại." };
   const s = st.step, t = text.trim();
   if (/^(\/boqua|\/skip|-)$/i.test(t)) {
     if (!OPTIONAL.includes(s)) return { text: "Câu này bắt buộc." };
@@ -296,6 +316,16 @@ export async function wizardText(user: User, text: string): Promise<Reply> {
       if (c) return done({ requester_id: c.id, requester_name: c.name });
       return done({ requester_name: t.slice(0, 100) });
     }
+    case "phone": return done({ unit_phone: t.slice(0, 40) });
+    case "address": return done({ unit_address: t.slice(0, 200) });
+    case "supervisor": return done({ supervisor: t.slice(0, 100) });
+    case "model": return done({ model: t.slice(0, 80) });
+    case "pcname": return done({ pc_name_ip: t.slice(0, 80) });
+    case "parts": {
+      const parts = t.split(/\n+/).map((l) => l.trim()).filter(Boolean).slice(0, 8).map((l) => { const [n, ...r] = l.split(/\s+[-–—]\s+/); return { name: n.slice(0, 80), note: r.join(" - ").slice(0, 160) }; });
+      return done({ parts });
+    }
+    case "after": return done({ status_after: t.slice(0, 300) });
     case "title": return done({ title: t.slice(0, 200) });
     case "category": {
       const i = CATS.findIndex((c) => norm(c).includes(norm(t)) || norm(t).includes(norm(c)));

@@ -276,6 +276,17 @@ export async function handleCallback(user: User, data: string): Promise<string> 
       solution: d.solution ?? "",
       result: d.result ?? (d.status === "done" ? "done" : "doing"),
       note: d.note ?? "",
+      // Biên bản xử lý sự cố
+      unit_phone: d.unit_phone ?? "",
+      unit_address: d.unit_address ?? "",
+      supervisor: d.supervisor ?? "",
+      model: d.model ?? "",
+      pc_name_ip: d.pc_name_ip ?? "",
+      arrived_at: d.arrived_at ?? d.started_at ?? null,
+      handover_at: d.handover_at ?? d.ended_at ?? null,
+      reported_issue: d.reported_issue ?? d.title ?? "",
+      parts: Array.isArray(d.parts) ? d.parts : [],
+      status_after: d.status_after ?? "",
       ...meta,
     });
     if (d.asset_id) {

@@ -9,9 +9,9 @@ import {
   myTickets,
   todaySummary,
 } from "@/lib/core";
-import { tgAnswerCallback, tgEdit, tgSend } from "@/lib/channels/telegram";
+import { tgAnswerCallback, tgEdit, tgSend, tgSetCommands } from "@/lib/channels/telegram";
 import { wizardActive, wizardCallback, wizardCancel, wizardStart, wizardText } from "@/lib/wizard";
-import type { User } from "@/lib/types";
+import type { Button, User } from "@/lib/types";
 
 export const maxDuration = 60;
 
@@ -25,7 +25,13 @@ async function getUserByTelegramId(tgId: string): Promise<User | null> {
 }
 
 const HELP =
-  "Cách dùng:\n• /nhatky — khai báo nhật ký từng bước (phòng ban, user báo, sự cố, thiết bị, serial, thời gian, xử lý, kết quả, khuyến nghị)\n• /huy — thoát khi đang khai báo\n• Nhắn tự nhiên, ví dụ: Thay RAM máy FA0001, 30 phút\n• /lichsu FA0001 — lịch sử xử lý thiết bị\n• /phieu — phiếu đang chờ Điện toán xử lý\n• /homnay — việc bạn đã ghi hôm nay\n• /id — xem Telegram ID của bạn và ID nhóm đang chat";
+  "Cách dùng:\n• /bienban — lập biên bản xử lý sự cố từng bước (đơn vị, thiết bị, công việc, linh kiện, tình trạng, bàn giao). In biên bản trên web ở mục Nhật ký IT\n• /huy — thoát khi đang lập biên bản\n• /phieu — phiếu báo hỏng đang chờ bạn\n• /homnay — tóm tắt hôm nay\n• /lichsu MÃ — lịch sử một tài sản\nHoặc nhắn tự nhiên, ví dụ: “máy FA0001 thay RAM xong”.";
+
+const MENU: Button[][] = [
+  [{ text: "📝 Lập biên bản sự cố", data: "m:bb" }],
+  [{ text: "📋 Phiếu của tôi", data: "m:phieu" }, { text: "📅 Hôm nay", data: "m:homnay" }],
+  [{ text: "🔎 Lịch sử tài sản", data: "m:ls" }, { text: "ℹ️ Hướng dẫn", data: "m:help" }],
+];
 
 export async function POST(req: Request) {
   // 1. Chặn request giả mạo (secret_token đặt khi setWebhook)
@@ -42,6 +48,15 @@ export async function POST(req: Request) {
       await tgAnswerCallback(cb.id);
       const user = await getUserByTelegramId(String(cb.from.id));
       if (!user) return Response.json({ ok: true });
+      if (typeof cb.data === "string" && cb.data.startsWith("m:")) {
+        const chat = cb.message.chat.id;
+        if (cb.data === "m:bb") { const r = await wizardStart(user); await tgSend(chat, r.text, r.buttons); }
+        else if (cb.data === "m:phieu") await tgSend(chat, await myTickets(user));
+        else if (cb.data === "m:homnay") await tgSend(chat, await todaySummary(user));
+        else if (cb.data === "m:ls") await tgSend(chat, "Gõ: /lichsu kèm mã tài sản, ví dụ /lichsu 070400.12.0002");
+        else await tgSend(chat, HELP, MENU);
+        return Response.json({ ok: true });
+      }
       if (typeof cb.data === "string" && cb.data.startsWith("w:")) {
         const out = await wizardCallback(user, cb.data);
         if (out.ack) await tgEdit(cb.message.chat.id, cb.message.message_id, out.ack);
@@ -75,13 +90,15 @@ export async function POST(req: Request) {
     }
 
     // 3. Lệnh nhanh
-    if (/^\/(nhatky|moi|ghi)(@\w+)?$/i.test(text)) {
+    if (/^\/(bienban|nhatky|moi|ghi)(@\w+)?$/i.test(text)) {
       const r = await wizardStart(user);
       await tgSend(chatId, r.text, r.buttons);
     } else if (/^\/(huy|cancel)(@\w+)?$/i.test(text)) {
       await tgSend(chatId, await wizardCancel(user));
     } else if (text === "/start" || text === "/help") {
-      await tgSend(chatId, `Xin chào ${user.full_name}.\n${HELP}`);
+      tgSetCommands().catch(() => {});
+      await tgSend(chatId, `Xin chào ${user.full_name}. Bạn muốn làm gì?`, MENU);
+      if (text === "/help") await tgSend(chatId, HELP);
     } else if (text.startsWith("/lichsu")) {
       const code = text.replace("/lichsu", "").trim();
       if (!code) {

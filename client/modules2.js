@@ -1141,7 +1141,7 @@ function itDetail(w, u) {
   const r = (k, v) => v ? `<div style="margin-bottom:8px"><div class="text-muted small">${k}</div><div style="white-space:pre-wrap">${esc(v)}</div></div>` : "";
   return `<tr class="it-detail"><td colspan="8" style="background:#f8fafc"><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:4px 20px;padding:6px 4px">
     ${r("Nguyên nhân", w.cause)}${r("Hướng xử lý", w.solution)}${r("Khuyến nghị / ghi chú", w.note)}${r("Người yêu cầu", w.requester_name)}${r("Thời điểm báo", fmtDateTime(w.reported_at))}${r("Serial", w.serial)}${r("Bắt đầu xử lý", fmtDateTime(w.started_at))}${r("Kết thúc", fmtDateTime(w.ended_at))}${r("Nguồn", w.source === "web" ? "Nhập trên web" : "Telegram")}
-    </div><div style="padding:4px"><button class="btn btn-sm btn-primary" onclick="itReport('${w.id}')">🖨️ Biên bản (A4 / PDF)</button></div>${itCanEdit(u, w) ? `<div style="padding:4px"><button class="btn btn-sm btn-outline" onclick="itEdit('${w.id}')">✏️ Sửa</button> <button class="btn btn-sm btn-outline" style="color:#dc2626" onclick="itDelete('${w.id}')">🗑️ Xóa</button></div>` : ""}</td></tr>`;
+    </div><div style="padding:4px"><button class="btn btn-sm btn-primary" onclick="itIncidentDlg('${w.id}')">📝 Biên bản xử lý sự cố</button> <button class="btn btn-sm btn-outline" onclick="itReport('${w.id}')">🖨️ Biên bản xác nhận công việc</button></div>${itCanEdit(u, w) ? `<div style="padding:4px"><button class="btn btn-sm btn-outline" onclick="itEdit('${w.id}')">✏️ Sửa</button> <button class="btn btn-sm btn-outline" style="color:#dc2626" onclick="itDelete('${w.id}')">🗑️ Xóa</button></div>` : ""}</td></tr>`;
 }
 
 function viewItLog(u) {
@@ -1218,6 +1218,80 @@ function itReport(id) {
       <td style="border:none;text-align:center;width:33%"><b>TRƯỞNG PHÒNG / ĐƠN VỊ XÁC NHẬN</b><div style="font-style:italic;font-size:11px">(Ký, ghi rõ họ tên, đóng dấu)</div><div style="margin-top:62px">&nbsp;</div></td>
     </tr></table>`;
   openPrintWindow(body, "Bien_ban_" + w.id);
+}
+
+/* ============================================================================
+   BIÊN BẢN XỬ LÝ SỰ CỐ CNTT (theo biểu mẫu của chi nhánh) — nhập bổ sung rồi in A4
+   Các trường bổ sung lưu ngay vào nhật ký (cùng bộ trường với wizard Telegram).
+   ============================================================================ */
+const INC_PARTS_ROWS = 4;
+const pad2 = n => String(n).padStart(2, "0");
+const incWhen = iso => { if (!iso) return ""; const d = new Date(iso); if (isNaN(d)) return ""; return `${pad2(d.getHours())}h${pad2(d.getMinutes())}, ngày ${pad2(d.getDate())}/${pad2(d.getMonth() + 1)}/${d.getFullYear()}`; };
+const incLocal = iso => { if (!iso) return ""; const d = new Date(iso); if (isNaN(d)) return ""; return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}T${pad2(d.getHours())}:${pad2(d.getMinutes())}`; };
+function itIncidentDlg(id) {
+  const w = byId(DB.worklogs, id); if (!w) return;
+  const a = w.asset_id ? byId(DB.assets, w.asset_id) : null;
+  const parts = Array.isArray(w.parts) ? w.parts : [];
+  const f = (lab, nm, val, ph, type) => `<div class="form-group" style="margin:0 0 8px"><label style="font-size:12px">${lab}</label><input class="form-control" type="${type || "text"}" name="${nm}" value="${esc(val || "")}" placeholder="${esc(ph || "")}"></div>`;
+  const ta = (lab, nm, val) => `<div class="form-group" style="margin:0 0 8px"><label style="font-size:12px">${lab}</label><textarea class="form-control" name="${nm}" rows="2">${esc(val || "")}</textarea></div>`;
+  modal2(`<h3 style="margin:0 0 8px">📝 Biên bản xử lý sự cố</h3><div class="text-muted small" style="margin-bottom:10px">${esc(w.title || w.description || "")}</div>
+    <form id="incForm" onsubmit="return false" style="max-height:62vh;overflow:auto;padding-right:4px">
+      <b>I. Đơn vị gặp sự cố</b>
+      ${f("Điện thoại đơn vị", "unit_phone", w.unit_phone)}${f("Địa chỉ", "unit_address", w.unit_address)}${f("Cán bộ giám sát (phía đơn vị)", "supervisor", w.supervisor)}
+      ${f("Serial", "serial", w.serial || (a && a.serial))}${f("Dòng máy", "model", w.model)}${f("PC Name / IP", "pc_name_ip", w.pc_name_ip)}
+      <b>II. Cán bộ xử lý sự cố</b>
+      ${f("Ngày, giờ có mặt tại đơn vị", "arrived_at", incLocal(w.arrived_at || w.started_at), "", "datetime-local")}
+      ${ta("1. Lỗi sự cố được thông báo", "reported_issue", w.reported_issue || w.title || w.description)}
+      ${ta("2. Các công việc đã thực hiện", "solution", w.solution)}
+      <div class="small" style="margin:4px 0"><b>Linh kiện được sử dụng để sửa chữa, thay thế</b></div>
+      ${Array.from({ length: INC_PARTS_ROWS }, (_, i) => `<div style="display:flex;gap:6px;margin-bottom:6px"><input class="form-control" name="part_n${i}" placeholder="Tên linh kiện" value="${esc((parts[i] || {}).name || "")}"><input class="form-control" name="part_c${i}" placeholder="Ghi chú" value="${esc((parts[i] || {}).note || "")}"></div>`).join("")}
+      ${ta("3. Giải pháp khuyến nghị", "note", w.note)}
+      ${ta("Tình trạng sau xử lý", "status_after", w.status_after)}
+      ${f("Ngày, giờ bàn giao", "handover_at", incLocal(w.handover_at || w.ended_at), "", "datetime-local")}
+    </form>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px"><button class="btn" onclick="closeModal2()">Hủy</button><button class="btn btn-primary" onclick="itIncidentGo('${w.id}')">💾 Lưu & in</button></div>`);
+}
+function itIncidentGo(id) {
+  const w = byId(DB.worklogs, id), fm = document.getElementById("incForm"); if (!w || !fm) return;
+  const g = n => (fm.elements[n].value || "").trim(), iso = n => { const v = g(n); const d = v ? new Date(v) : null; return d && !isNaN(d) ? d.toISOString() : null; };
+  Object.assign(w, { unit_phone: g("unit_phone"), unit_address: g("unit_address"), supervisor: g("supervisor"), serial: g("serial"), model: g("model"), pc_name_ip: g("pc_name_ip"),
+    arrived_at: iso("arrived_at"), reported_issue: g("reported_issue"), solution: g("solution"), note: g("note"), status_after: g("status_after"), handover_at: iso("handover_at") });
+  w.parts = Array.from({ length: INC_PARTS_ROWS }, (_, i) => ({ name: g("part_n" + i), note: g("part_c" + i) })).filter(p => p.name || p.note);
+  saveDB(); closeModal2(); itIncidentReport(id);
+}
+function itIncidentReport(id) {
+  const w = byId(DB.worklogs, id); if (!w) return;
+  const dep = depName(w.department_id) || "";
+  const dots = (txt, n) => txt ? `<div style="border-bottom:1px dotted #333;min-height:20px;padding:1px 2px;white-space:pre-wrap">${esc(txt)}</div>` : `<div style="border-bottom:1px dotted #333;min-height:20px">&nbsp;</div>`.repeat(n || 1);
+  const lbl = (k, v) => `<div style="display:flex;gap:8px;margin:3px 0"><b style="min-width:150px">${k}</b><div style="flex:1;border-bottom:1px dotted #333;min-height:18px">${esc(v || "")}</div></div>`;
+  const parts = Array.isArray(w.parts) ? w.parts : [];
+  const prow = Array.from({ length: Math.max(4, parts.length) }, (_, i) => `<tr><td style="border:1px solid #000;padding:2px 6px;height:26px;text-align:center">${esc((parts[i] || {}).name || "")}</td><td style="border:1px solid #000;padding:2px 6px">${esc((parts[i] || {}).note || "")}</td></tr>`).join("");
+  const it = w.it_user || "";
+  const body = `
+    ${reportLetterheadHtml()}
+    <h2 style="text-align:center;margin:14px 0 12px;letter-spacing:.5px">BIÊN BẢN XỬ LÝ SỰ CỐ</h2>
+    <p style="margin:6px 0 4px"><b>I. ĐƠN VỊ GẶP SỰ CỐ:</b> <span style="margin-left:6px">${esc(dep)}</span></p>
+    <div style="display:flex;gap:14px;align-items:flex-start">
+      <div style="flex:1.2">${lbl("Điện thoại", w.unit_phone)}${lbl("Địa chỉ", w.unit_address)}${lbl("Cán bộ giám sát", w.supervisor)}</div>
+      <table class="print-table" style="flex:1;border-collapse:collapse"><tr><th colspan="2" style="background:none;color:#000;border:1px solid #000;text-transform:none;font-size:12.5px">Thông tin về Máy / Thiết bị sự cố</th></tr>
+        <tr><td style="border:1px solid #000;text-align:center;width:34%">Serial</td><td style="border:1px solid #000">${esc(w.serial || "")}</td></tr>
+        <tr><td style="border:1px solid #000;text-align:center">Dòng máy</td><td style="border:1px solid #000">${esc(w.model || "")}</td></tr>
+        <tr><td style="border:1px solid #000;text-align:center">PC Name/IP</td><td style="border:1px solid #000">${esc(w.pc_name_ip || "")}</td></tr></table>
+    </div>
+    <p style="margin:12px 0 4px"><b>II. CÁN BỘ XỬ LÝ SỰ CỐ</b> <b style="float:right;margin-right:6px">${esc(it.toUpperCase())}</b></p>
+    ${lbl("Ngày, giờ có mặt tại đơn vị", incWhen(w.arrived_at || w.started_at))}
+    <p style="margin:8px 0 2px"><b>1. Lỗi sự cố được thông báo</b></p>${dots(w.reported_issue || w.title || w.description, 2)}
+    <p style="margin:8px 0 2px"><b>2. Các công việc đã thực hiện</b></p>${dots(w.solution, 3)}
+    <p style="margin:8px 0 3px"><b>Linh kiện được sử dụng để sửa chữa, thay thế:</b></p>
+    <table class="print-table" style="width:100%;border-collapse:collapse"><tr><th style="background:none;color:#000;border:1px solid #000;text-transform:none;font-size:12.5px;width:45%">Tên linh kiện</th><th style="background:none;color:#000;border:1px solid #000;text-transform:none;font-size:12.5px">Ghi chú</th></tr>${prow}</table>
+    <p style="margin:10px 0 2px"><b>3. Giải pháp khuyến nghị</b></p>${dots(w.note, 2)}
+    ${lbl("Tình trạng sau xử lý:", w.status_after)}${lbl("Ngày, giờ bàn giao:", incWhen(w.handover_at || w.ended_at))}
+    <p style="margin:12px 0 0;font-style:italic;text-align:center">Biên bản này được lập thành 02 bản, có giá trị như nhau (Mỗi bên giữ 01 bản)</p>
+    <table style="width:100%;border:none;margin-top:10px;page-break-inside:avoid"><tr>
+      <td style="border:none;text-align:center;width:50%"><b>CÁN BỘ XỬ LÝ SỰ CỐ</b><div style="margin-top:78px"><b>${esc(it.toUpperCase())}</b></div></td>
+      <td style="border:none;text-align:center;width:50%"><b>XÁC NHẬN CỦA ĐƠN VỊ</b><div style="margin-top:78px"><b>${esc((w.supervisor || "").toUpperCase())}</b></div></td>
+    </tr></table>`;
+  openPrintWindow(body, "Bien_ban_su_co_" + w.id);
 }
 function itReportList() {
   const list = itFiltered().slice().sort((a, b) => itMs(a) - itMs(b));
