@@ -1,5 +1,6 @@
 ﻿# Khởi động lại 704-assets nhanh (ứng dụng + bot Telegram + HTTPS nếu có). Dùng sau khi sửa .env.
 $root = $PSScriptRoot
+if (-not (Test-Path "$root\.env") -and (Test-Path "C:\704-assets\.env")) { $root = "C:\704-assets" }  # chạy từ thư mục nguồn thì dùng bản đã cài
 $port = 3000; if (Test-Path "$root\.env") { Get-Content "$root\.env" | ForEach-Object { if ($_ -match '^PORT=(\d+)') { $port = [int]$Matches[1] } } }
 foreach ($t in "704-assets-telegram","704-assets") { Stop-ScheduledTask -TaskName $t -ErrorAction SilentlyContinue }
 Get-CimInstance Win32_Process -Filter "Name='node.exe'" | Where-Object { $_.CommandLine -like "*tg-poll.mjs*" } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }

@@ -6,6 +6,7 @@
 param([Parameter(Mandatory=$true)][string]$Token, [string]$GroupId = "")
 $ErrorActionPreference = "Stop"
 $root = $PSScriptRoot
+if (-not (Test-Path "$root\.env") -and (Test-Path "C:\704-assets\.env")) { $root = "C:\704-assets" }  # chạy từ thư mục nguồn thì dùng bản đã cài
 $envFile = "$root\.env"
 if (-not (Test-Path $envFile)) { throw "Không thấy $envFile - hãy chạy install.ps1 trước." }
 $t = Get-Content $envFile -Raw -Encoding UTF8

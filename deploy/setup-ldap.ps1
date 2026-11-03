@@ -6,6 +6,7 @@
 param([string]$Url = "", [string]$Domain = "ICBV", [string]$UpnSuffix = "", [string]$CaFile = "", [switch]$AutoCreate, [string]$LocalUsers = "admin", [switch]$Off)
 $ErrorActionPreference = "Stop"
 $root = $PSScriptRoot; $envFile = "$root\.env"
+if (-not (Test-Path "$root\.env") -and (Test-Path "C:\704-assets\.env")) { $root = "C:\704-assets" }  # chạy từ thư mục nguồn thì dùng bản đã cài
 if (-not (Test-Path $envFile)) { throw "Không thấy .env - chạy install.ps1 trước." }
 if (-not $Off -and -not $Url) { throw "Thiếu -Url, ví dụ -Url ldap://icbv.com (nên dùng ldaps://...:636 nếu AD hỗ trợ)." }
 $t = Get-Content $envFile -Raw -Encoding UTF8

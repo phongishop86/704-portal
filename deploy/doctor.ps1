@@ -1,5 +1,6 @@
 ﻿# Kiểm tra sức khỏe máy chủ 704-assets:  powershell -ExecutionPolicy Bypass -File doctor.ps1
 $root = $PSScriptRoot
+if (-not (Test-Path "$root\.env") -and (Test-Path "C:\704-assets\.env")) { $root = "C:\704-assets" }  # chạy từ thư mục nguồn thì dùng bản đã cài
 $cfg = @{}; if (Test-Path "$root\.env") { Get-Content "$root\.env" -Encoding UTF8 | ForEach-Object { if ($_ -match '^\s*([A-Z0-9_]+)=(.*)$') { $cfg[$Matches[1]] = $Matches[2].Trim() } } }
 function Row($ok, $name, $msg) { $c = if ($ok -eq $true) { "Green" } elseif ($ok -eq $false) { "Red" } else { "Yellow" }; $tag = if ($ok -eq $true) { "[ OK ]" } elseif ($ok -eq $false) { "[LỖI ]" } else { "[ -- ]" }; Write-Host "$tag $name  $msg" -ForegroundColor $c }
 $port = if ($cfg["PORT"]) { $cfg["PORT"] } else { 3000 }

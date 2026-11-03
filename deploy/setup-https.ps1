@@ -9,6 +9,7 @@
 param([string]$HostName = "", [string]$CaddyExe = "", [int]$AppPort = 0, [int]$CertPort = 8081)
 $ErrorActionPreference = "Stop"
 $root = $PSScriptRoot
+if (-not (Test-Path "$root\.env") -and (Test-Path "C:\704-assets\.env")) { $root = "C:\704-assets" }  # chạy từ thư mục nguồn thì dùng bản đã cài
 function Say($m) { Write-Host "==> $m" -ForegroundColor Cyan }
 if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) { throw "Hãy mở PowerShell bằng 'Run as Administrator'." }
 $envFile = "$root\.env"; if (-not (Test-Path $envFile)) { throw "Không thấy .env - chạy install.ps1 trước." }

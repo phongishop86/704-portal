@@ -5,6 +5,7 @@
 #>
 param([string]$Password = "", [string]$User = "admin")
 $root = $PSScriptRoot
+if (-not (Test-Path "$root\.env") -and (Test-Path "C:\704-assets\.env")) { $root = "C:\704-assets" }  # chạy từ thư mục nguồn thì dùng bản đã cài
 if (-not $Password) { $s = Read-Host "Mật khẩu mới (tối thiểu 8 ký tự)" -AsSecureString; $Password = [Runtime.InteropServices.Marshal]::PtrToStringAuto([Runtime.InteropServices.Marshal]::SecureStringToBSTR($s)) }
 if ($Password.Length -lt 8) { throw "Mật khẩu tối thiểu 8 ký tự." }
 $cfg = @{}; Get-Content "$root\.env" -Encoding UTF8 | ForEach-Object { if ($_ -match '^\s*([A-Z0-9_]+)=(.*)$') { $cfg[$Matches[1]] = $Matches[2].Trim() } }
