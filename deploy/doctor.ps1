@@ -18,4 +18,6 @@ if ($cfg["TELEGRAM_BOT_TOKEN"]) {
   try { $me = Invoke-RestMethod "https://api.telegram.org/bot$($cfg['TELEGRAM_BOT_TOKEN'])/getMe" -TimeoutSec 10; Row $true "Telegram" "bot @$($me.result.username)" } catch { Row $false "Telegram" "token sai hoặc không ra được Internet" }
   if (Test-Path "$root\logs\telegram.log") { Write-Host "       log cuối: $(Get-Content "$root\logs\telegram.log" -Tail 1)" }
 } else { Row $null "Telegram" "chưa cấu hình (chạy setup-telegram.ps1)" }
+if ($cfg["LDAP_URL"]) { Row $true "Active Directory" "bật: $($cfg['LDAP_URL']) (miền $($cfg['LDAP_DOMAIN']))" } else { Row $null "Active Directory" "chưa bật (chạy setup-ldap.ps1)" }
+if ($cfg["COOKIE_SECURE"] -eq "1") { Write-Host "       Lưu ý: COOKIE_SECURE=1 chỉ đúng khi truy cập bằng https://. Nếu vào http://IP:3000 mà không đăng nhập được, đặt COOKIE_SECURE=0 rồi chạy restart.ps1" -ForegroundColor Yellow }
 if ($cfg["SESSION_SECRET"] -and $cfg["SESSION_SECRET"].Length -ge 32) { Row $true "Khóa phiên" "đã đặt" } else { Row $false "Khóa phiên" "SESSION_SECRET thiếu/ngắn" }

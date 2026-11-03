@@ -3,14 +3,14 @@
  Chạy trong thư mục đã giải nén gói 704-assets-pc-server.zip:  bấm đúp CAI-DAT.bat
  hoặc (PowerShell Run as Administrator):
    powershell -ExecutionPolicy Bypass -File deploy\CAI-DAT-TU-DONG.ps1 [-InstallDir C:\704-assets] [-Port 3000]
-        [-AdminPassword "..."] [-Https] [-TelegramToken "..."] [-TelegramGroupId "-100..."] [-DataFile D:\backup.json]
+        [-AdminPassword "..."] [-Https] [-TelegramToken "..."] [-TelegramGroupId "-100..."] [-DataFile D:\backup.json] [-LdapUrl ldap://icbv.com -LdapDomain ICBV]
  Các bước: kiểm tra quyền -> cài Node.js -> npm install + build -> cài dịch vụ (install.ps1)
            -> [tùy chọn] nạp dữ liệu -> [tùy chọn] HTTPS -> [tùy chọn] bot Telegram -> kiểm tra (doctor.ps1)
  Chạy lại lệnh này để NÂNG CẤP bản mới (giữ .env và dữ liệu).
 #>
 param(
   [string]$InstallDir = "C:\704-assets", [int]$Port = 3000, [string]$AdminUser = "admin", [string]$AdminPassword = "",
-  [switch]$Https, [string]$HostName = "", [string]$TelegramToken = "", [string]$TelegramGroupId = "", [string]$DataFile = "",
+  [switch]$Https, [string]$HostName = "", [string]$TelegramToken = "", [string]$TelegramGroupId = "", [string]$DataFile = "", [string]$LdapUrl = "", [string]$LdapDomain = "ICBV", [string]$LdapUpnSuffix = "",
   [switch]$SkipBuild
 )
 $ErrorActionPreference = "Stop"
@@ -68,6 +68,12 @@ if ($Https) {
 if ($TelegramToken) {
   Step 7 "Bật bot Telegram"
   $a = @("-NoProfile","-ExecutionPolicy","Bypass","-File","$InstallDir\setup-telegram.ps1","-Token",$TelegramToken); if ($TelegramGroupId) { $a += @("-GroupId",$TelegramGroupId) }
+  & powershell.exe @a
+}
+
+if ($LdapUrl) {
+  Step 7 "Bật đăng nhập Active Directory"
+  $a = @("-NoProfile","-ExecutionPolicy","Bypass","-File","$InstallDir\setup-ldap.ps1","-Url",$LdapUrl,"-Domain",$LdapDomain); if ($LdapUpnSuffix) { $a += @("-UpnSuffix",$LdapUpnSuffix) }
   & powershell.exe @a
 }
 
