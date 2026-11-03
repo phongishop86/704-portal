@@ -49,7 +49,7 @@ if ($task) { Say "Dừng dịch vụ cũ"; Stop-ScheduledTask -TaskName "704-ass
 if (Test-Path $appDir) { Remove-Item $appDir -Recurse -Force }
 Say "Chép mã ứng dụng vào $appDir"
 Copy-Item "$src\app" $appDir -Recurse -Force
-foreach ($f in "start.ps1","start-telegram.ps1","backup.ps1","restore.ps1","cron-remind.ps1","uninstall.ps1","import-excel.ps1","setup-https.ps1","setup-telegram.ps1","setup-ldap.ps1","doctor.ps1","restart.ps1","reset-admin.ps1","KHOI-DONG-LAI.bat","KIEM-TRA.bat","DAT-LAI-MAT-KHAU-ADMIN.bat","SAO-LUU-NGAY.bat") { if (Test-Path "$src\$f") { Copy-Item "$src\$f" $InstallDir -Force } }
+foreach ($f in "start.ps1","start-telegram.ps1","backup.ps1","restore.ps1","cron-remind.ps1","uninstall.ps1","import-excel.ps1","setup-https.ps1","setup-telegram.ps1","setup-ldap.ps1","doctor.ps1","restart.ps1","reset-admin.ps1","KHOI-DONG-LAI.bat","KIEM-TRA.bat","DAT-LAI-MAT-KHAU-ADMIN.bat","SAO-LUU-NGAY.bat","reset-data.ps1","XOA-TRANG-DU-LIEU.bat") { if (Test-Path "$src\$f") { Copy-Item "$src\$f" $InstallDir -Force } }
 
 # 3) Cấu hình .env (giữ nếu đã có) -----------------------------------------
 $envFile = Join-Path $InstallDir ".env"

@@ -155,6 +155,7 @@ Bot hỏi Telegram bằng `getUpdates`: chỉ cần máy chủ ra được Inter
 | Sao lưu tay | `SAO-LUU-NGAY.bat` (tự động 02:00, giữ 30 bản trong `data\backups`) |
 | Khôi phục | `powershell -ExecutionPolicy Bypass -File C:\704-assets\restore.ps1 -File C:\704-assets\data\backups\data-YYYYMMDD-HHmm.json` |
 | Xem log | `Get-Content C:\704-assets\logs\app.err.log -Tail 50` (cũng có `telegram.log`, `caddy.log`) |
+| **Xóa trắng dữ liệu để thử lại từ đầu** | Bấm đúp `XOA-TRANG-DU-LIEU.bat` (gõ `XOA` để xác nhận). Tự sao lưu bản cũ vào `data\backups\truoc-khi-xoa-...json`, tạo lại admin (mật khẩu in ra và ghi ở `TAI_KHOAN_BAN_DAU.txt`). Giữ `.env`, ứng dụng, dịch vụ |
 | Gỡ cài đặt | `uninstall.ps1` (giữ nguyên dữ liệu) |
 
 **Sao lưu ra ngoài PC:** `data\backups` nằm cùng ổ với dữ liệu, nên mỗi tuần chép ra USB/NAS/ổ mạng khác. Sao lưu chỉ nằm trên cùng PC thì ổ hỏng là mất hết.
