@@ -67,7 +67,7 @@ if ($t -match "(?m)^COOKIE_SECURE=") { $t = $t -replace "(?m)^COOKIE_SECURE=.*$"
 [IO.File]::WriteAllText($envFile, $t, (New-Object Text.UTF8Encoding($false)))
 foreach ($p in 443, $CertPort) {
   Get-NetFirewallRule -DisplayName "704-assets-https-$p" -ErrorAction SilentlyContinue | Remove-NetFirewallRule
-  New-NetFirewallRule -DisplayName "704-assets-https-$p" -Direction Inbound -Protocol TCP -LocalPort $p -Action Allow -Profile Domain,Private | Out-Null
+  New-NetFirewallRule -DisplayName "704-assets-https-$p" -Direction Inbound -Protocol TCP -LocalPort $p -Action Allow -Profile Any -RemoteAddress LocalSubnet | Out-Null
 }
 # Cổng ứng dụng chỉ cần cho chính máy này (Caddy chuyển tiếp) -> đóng cổng trực tiếp từ mạng LAN
 Get-NetFirewallRule -DisplayName "704-assets" -ErrorAction SilentlyContinue | Remove-NetFirewallRule

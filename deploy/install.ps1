@@ -92,7 +92,7 @@ if ($cfg["TELEGRAM_BOT_TOKEN"] -and $cfg["TG_GROUP_ID"]) {
 if (-not $SkipFirewall) {
   Say "Mở cổng $Port trên Windows Firewall (mạng nội bộ)"
   Get-NetFirewallRule -DisplayName "704-assets" -ErrorAction SilentlyContinue | Remove-NetFirewallRule
-  New-NetFirewallRule -DisplayName "704-assets" -Direction Inbound -Protocol TCP -LocalPort $Port -Action Allow -Profile Domain,Private | Out-Null
+  New-NetFirewallRule -DisplayName "704-assets" -Direction Inbound -Protocol TCP -LocalPort $Port -Action Allow -Profile Any -RemoteAddress LocalSubnet | Out-Null
 }
 
 # 6) Chạy và kiểm tra ----------------------------------------------------------
