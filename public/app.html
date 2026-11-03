@@ -6608,6 +6608,45 @@ function submit_tpl_upload(form) {
   rd.readAsDataURL(file);
 }
 
+
+/* ===== Sao lưu trên máy chủ (bản nội bộ DB_MODE=local): nút "Sao lưu ngay", lịch hằng ngày, tải bản cũ ===== */
+(function () {
+  var _vab = (typeof viewAdminBackup === "function") ? viewAdminBackup : null;
+  if (!_vab) return;
+  function fsz(n) { return n > 1048576 ? (n / 1048576).toFixed(1) + " MB" : Math.max(1, Math.round(n / 1024)) + " KB"; }
+  function fdt(t) { var d = new Date(t); return d.toLocaleDateString("vi-VN") + " " + d.toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" }); }
+  window.sbRender = function (j) {
+    var el = document.getElementById("sbCard"); if (!el) return;
+    if (!j || !j.local) { el.style.display = "none"; return; }
+    var rows = (j.files || []).map(function (f) {
+      return "<tr><td>" + fdt(f.time) + "</td><td>" + f.name + "</td><td>" + fsz(f.size) + "</td>" +
+        "<td><a class='btn btn-sm' href='/api/admin/server-backup?file=" + encodeURIComponent(f.name) + "'>⬇️ Tải</a></td></tr>";
+    }).join("");
+    el.innerHTML =
+      "<h5>3. Sao lưu trên máy chủ (tự động hằng ngày)</h5>" +
+      "<p style='font-size:14px;'>Máy chủ tự sao lưu mỗi ngày lúc <b>" + String(j.hour).padStart(2, "0") + ":00</b> và giữ 30 bản gần nhất. Bạn cũng có thể sao lưu ngay hoặc tải một bản về máy. " +
+      "Các bản được lưu trong thư mục <code>data\\backups</code> của máy chủ.</p>" +
+      "<button class='btn btn-primary' onclick='sbRun()' id='sbBtn'>💾 Sao lưu ngay trên máy chủ</button>" +
+      "<div class='table-wrap' style='margin-top:12px;max-height:260px;overflow:auto'><table class='table'><thead><tr><th>Thời gian</th><th>Tên file</th><th>Dung lượng</th><th></th></tr></thead><tbody>" +
+      (rows || "<tr><td colspan='4' class='text-muted text-center'>Chưa có bản sao lưu nào.</td></tr>") + "</tbody></table></div>";
+  };
+  window.sbLoad = function () {
+    fetch("/api/admin/server-backup", { credentials: "same-origin" }).then(function (r) { return r.json(); }).then(window.sbRender).catch(function () {});
+  };
+  window.sbRun = function () {
+    var b = document.getElementById("sbBtn"); if (b) { b.disabled = true; b.textContent = "Đang sao lưu..."; }
+    fetch("/api/admin/server-backup", { method: "POST", credentials: "same-origin" }).then(function (r) { return r.json(); }).then(function (j) {
+      if (j.error) { flash(j.error, "error"); } else { flash("Đã sao lưu: " + j.name); }
+      render();
+    }).catch(function () { flash("Không sao lưu được.", "error"); render(); });
+  };
+  viewAdminBackup = function (u) {
+    var html = _vab(u);
+    setTimeout(window.sbLoad, 80);
+    return html + "<div id='sbCard' class='card' style='margin-top:16px'></div>";
+  };
+})();
+
 boot();
 </script>
 </body>

@@ -152,6 +152,7 @@ Bot hỏi Telegram bằng `getUpdates`: chỉ cần máy chủ ra được Inter
 |---|---|
 | **Khởi động lại nhanh** (sau khi sửa `.env`) | Bấm đúp `C:\704-assets\KHOI-DONG-LAI.bat` hoặc `powershell -ExecutionPolicy Bypass -File C:\704-assets\restart.ps1` |
 | Kiểm tra sức khỏe | `KIEM-TRA.bat` |
+| **Sao lưu ngay trong ứng dụng** | Đăng nhập admin › **Nhập - Xuất dữ liệu** › mục 3 *Sao lưu trên máy chủ*: nút **Sao lưu ngay**, danh sách và tải bản cũ. Ứng dụng cũng tự sao lưu lúc 02:00 hằng ngày (đổi giờ bằng `BACKUP_HOUR=` trong `.env`), giữ 30 bản. Không cần file bat |
 | Sao lưu tay | `SAO-LUU-NGAY.bat` (tự động 02:00, giữ 30 bản trong `data\backups`) |
 | Khôi phục | `powershell -ExecutionPolicy Bypass -File C:\704-assets\restore.ps1 -File C:\704-assets\data\backups\data-YYYYMMDD-HHmm.json` |
 | Xem log | `Get-Content C:\704-assets\logs\app.err.log -Tail 50` (cũng có `telegram.log`, `caddy.log`) |
