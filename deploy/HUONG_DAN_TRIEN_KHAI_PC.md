@@ -114,6 +114,23 @@ Nhắc việc hằng sáng 08:00 được bật khi có `-GroupId`.
 - Thư mục `C:\704-assets` không chia sẻ mạng. Nên bật BitLocker cho ổ đĩa chứa dữ liệu.
 - Windows Update: đặt giờ hoạt động để máy không tự khởi động lại giữa giờ làm. Sau khởi động lại, dịch vụ tự chạy.
 
+## Đăng nhập bằng Active Directory (tùy chọn, domain ICBV)
+
+Khi bật, người dùng đăng nhập bằng **tên và mật khẩu Windows**: gõ `an.nguyen`, `ICBV\an.nguyen` hoặc `an.nguyen@icbv.local` đều được. Mật khẩu do AD kiểm tra (bind), ứng dụng không lưu mật khẩu AD. Vai trò, phòng ban và Telegram ID vẫn do ứng dụng quản lý.
+
+1. Trong `C:\704-assets\.env` điền:
+   ```
+   LDAP_URL=ldaps://<máy-chủ-AD>:636
+   LDAP_DOMAIN=ICBV
+   ```
+   Nên dùng `ldaps://`. Nếu chứng chỉ của AD do CA nội bộ cấp, chép file CA vào máy chủ và đặt `LDAP_CA_FILE=C:\704-assets\ad-ca.crt`. Tùy chọn `LDAP_UPN_SUFFIX=icbv.local` nếu AD yêu cầu đăng nhập dạng `tên@icbv.local`.
+2. Tài khoản **`admin` luôn dùng mật khẩu cục bộ** (dự phòng khi AD không truy cập được). Muốn thêm tài khoản cục bộ khác: `LDAP_LOCAL_USERS=admin,ten-khac`.
+3. Tên đăng nhập của người dùng trong ứng dụng phải **trùng tên đăng nhập AD** (không gồm `ICBV\`). Người dùng phải được tạo sẵn trong mục Người dùng (kèm vai trò, phòng ban), hoặc đặt `LDAP_AUTOCREATE=1` để tự tạo tài khoản vai trò `user` ở lần đăng nhập AD đầu tiên.
+4. Khởi động lại: `Stop-ScheduledTask 704-assets`, tắt tiến trình đang giữ cổng, `Start-ScheduledTask 704-assets`.
+5. Thử bằng một tài khoản AD thường. Nếu báo "Không liên lạc được máy chủ Active Directory": kiểm tra máy chủ có truy cập được `<máy-chủ-AD>:636` (`Test-NetConnection`), tên máy, chứng chỉ; xem `logs\app.err.log`.
+
+Lưu ý: khi AD khóa hoặc vô hiệu hóa tài khoản thì bind thất bại nên người đó không đăng nhập được. Nhưng tài khoản vẫn hiện "đang hoạt động" trong ứng dụng và nếu dùng Telegram vẫn nhận thông báo cho đến khi bạn tắt thủ công. Đổi mật khẩu của tài khoản AD thực hiện ở Windows, không đổi trong ứng dụng.
+
 ## Bước 10. Vận hành hằng ngày
 
 | Việc | Lệnh (PowerShell Admin) |
