@@ -1,6 +1,6 @@
 import type { Button } from "../types";
 
-const API = () => `https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}`;
+const API = () => `${process.env.TELEGRAM_API_BASE || "https://api.telegram.org"}/bot${process.env.TELEGRAM_BOT_TOKEN}`;
 
 async function call(method: string, body: unknown) {
   const res = await fetch(`${API()}/${method}`, {

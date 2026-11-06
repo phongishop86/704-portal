@@ -79,9 +79,14 @@ export async function allowWrite(
     const from = String(prev.status), to = String(data.status);
     if (from === to) {
       // xác nhận của người dùng / phòng ban sau khi sửa xong
-      const okKeys = ["user_confirmed_at", "returned_to_user", "returned_at"];
+      const okKeys = ["user_confirmed_at", "returned_to_user", "returned_at", "user_feedback", "user_decision", "feedback_log"];
       if (keys.every((k) => okKeys.includes(k))) return prev.reported_by === u.id || inDept || PRIV.includes(u.role);
       return u.role === "it" || u.role === "tcth";
+    }
+    // Người báo không đồng ý kết quả: phiếu đã xong quay lại bước Điện toán xử lý (kèm góp ý)
+    if (from === "completed" && to === "pending_it") {
+      const okReopen = ["status", "user_feedback", "user_decision", "feedback_log", "user_reopen_count", "user_reopen_at", "user_confirmed_at"];
+      return String(prev.reported_by) === u.id && !prev.user_confirmed_at && keys.every((k) => okReopen.includes(k));
     }
     const T: Record<string, { to: string[]; roles: (r: string) => boolean }> = {
       pending_manager: { to: ["pending_tcth", "pending_it", "rejected"], roles: (r) => (r === "manager" && inDept) || r === "tcth" },

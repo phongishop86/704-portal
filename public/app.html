@@ -1870,11 +1870,8 @@ function viewTransferNew(u, presetAssetId){
   return `
   <div class="card" style="max-width:720px">
     <form data-form="transfer_new">
-      <div class="form-group"><label>Tài sản</label>
-        <select class="form-control" name="asset_id" required>
-          <option value="">-- Chọn tài sản --</option>
-          ${assets.slice().sort(cmpName).map(a=>`<option value="${a.id}" ${presetAssetId===a.id?"selected":""}>${esc(a.code)} - ${esc(a.name)} (${esc(depName(a.department_id)||"chưa có phòng")})</option>`).join("")}
-        </select>
+      <div class="form-group"><label>Tài sản (gõ để tìm)</label>
+        ${assetPicker(assets, presetAssetId)}
         ${!assets.length?`<div class="small" style="color:var(--red)">Không có tài sản đang sử dụng trong phạm vi của bạn.</div>`:""}
       </div>
       <div class="form-group"><label>Phòng ban đích</label>
@@ -1893,7 +1890,7 @@ function submit_transfer_new(form){
   const fd = new FormData(form);
   const assetId = fd.get("asset_id"), toDept = fd.get("to_department_id"), reason = fd.get("reason").trim();
   const a = byId(DB.assets, assetId);
-  if(!a){ flash("Tài sản không hợp lệ.", "error"); render(); return; }
+  if(!a){ alert("Bạn chưa chọn tài sản. Hãy gõ để tìm rồi bấm vào dòng gợi ý."); return; }
   const u = currentUser();
   if(u.role !== "admin" && a.department_id !== u.department_id) { flash("Thẩm quyền bị từ chối. Bạn chỉ có thể điều chuyển tài sản của phòng ban mình.", "error"); render(); return; }
   if(String(a.department_id) === String(toDept)){ flash("Phòng đích phải khác phòng hiện tại.", "error"); render(); return; }
@@ -2059,16 +2056,62 @@ function viewRepairsList(u){
     </table>
   </div>`;
 }
+
+/* Ô gõ tìm tài sản có gợi ý (dùng cho Lập phiếu báo hỏng / Lập lệnh điều chuyển) */
+function assetPicker(assets, presetId){
+  window.__apAssets = assets;
+  const p = assets.find(a=>a.id===presetId);
+  const lab = a => `${a.code} - ${a.name} (${depName(a.department_id)||"chưa có phòng"})`;
+  return `<div style="position:relative">
+    <input type="text" class="form-control" id="apInput" autocomplete="off" placeholder="Gõ mã, tên thiết bị hoặc phòng để tìm… (VD: laptop, camera, 000196)" value="${p?esc(lab(p)):""}" oninput="apSearch(this,true)" onfocus="apSearch(this,false)" onkeydown="apKey(event)">
+    <input type="hidden" name="asset_id" id="apId" value="${p?esc(p.id):""}">
+    <div id="apList" style="display:none;position:absolute;left:0;right:0;top:100%;z-index:50;background:#fff;border:1px solid #cbd5e1;border-radius:8px;box-shadow:0 8px 24px rgba(15,23,42,.18);max-height:300px;overflow:auto;margin-top:2px"></div>
+    <div class="small text-muted" id="apHint" style="margin-top:4px">${p?"Đã chọn tài sản.":"Chưa chọn tài sản — gõ để tìm rồi bấm vào dòng gợi ý."} (${assets.length} tài sản trong phạm vi của bạn)</div>
+  </div>`;
+}
+window.apSearch = function(inp, clear){
+  const list = document.getElementById("apList"), hid = document.getElementById("apId"), hint = document.getElementById("apHint");
+  if(!list) return;
+  if(clear && hid){ hid.value = ""; if(hint) hint.textContent = "Chưa chọn tài sản — bấm vào một dòng gợi ý."; }
+  const toks = stripDiacritics(inp.value).toLowerCase().split(/\s+/).filter(Boolean);
+  const all = window.__apAssets || [];
+  const hits = [];
+  for(const a of all){
+    const hay = stripDiacritics([a.code,a.name,depName(a.department_id),a.serial,a.serial_number,a.model,a.brand,a.note].filter(Boolean).join(" ")).toLowerCase();
+    if(toks.every(t=>hay.includes(t))){ hits.push(a); if(hits.length>=30) break; }
+  }
+  window.__apHits = hits; window.__apSel = hits.length?0:-1;
+  list.innerHTML = hits.length ? hits.map((a,i)=>`<div class="ap-item" data-i="${i}" onmousedown="apPick(${i});return false" style="padding:8px 12px;cursor:pointer;border-bottom:1px solid #f1f5f9;${i===0?"background:#f0fdfa":""}"><b>${esc(a.code)}</b> - ${esc(a.name)}<div class="small text-muted">${esc(depName(a.department_id)||"chưa có phòng")}</div></div>`).join("")
+    : `<div style="padding:10px 12px;color:#64748b">Không tìm thấy tài sản phù hợp.</div>`;
+  list.style.display = "block";
+};
+window.apPick = function(i){
+  const a = (window.__apHits||[])[i]; if(!a) return;
+  document.getElementById("apInput").value = `${a.code} - ${a.name} (${depName(a.department_id)||"chưa có phòng"})`;
+  document.getElementById("apId").value = a.id;
+  document.getElementById("apList").style.display = "none";
+  const h = document.getElementById("apHint"); if(h) h.textContent = "Đã chọn tài sản.";
+};
+window.apKey = function(ev){
+  const list = document.getElementById("apList"); if(!list) return;
+  const open = list.style.display !== "none", n = (window.__apHits||[]).length;
+  if(ev.key==="ArrowDown"||ev.key==="ArrowUp"){
+    if(!open||!n) return; ev.preventDefault();
+    window.__apSel = (window.__apSel + (ev.key==="ArrowDown"?1:-1) + n) % n;
+    list.querySelectorAll(".ap-item").forEach((el,i)=>{ el.style.background = i===window.__apSel?"#f0fdfa":""; if(i===window.__apSel) el.scrollIntoView({block:"nearest"}); });
+  } else if(ev.key==="Enter"){
+    if(open && n){ ev.preventDefault(); apPick(Math.max(0,window.__apSel)); }
+  } else if(ev.key==="Escape"){ list.style.display = "none"; }
+};
+document.addEventListener("click", e => { const l = document.getElementById("apList"); if(l && e.target.id!=="apInput") l.style.display = "none"; });
+
 function viewRepairNew(u, presetAssetId){
   let assets = DB.assets.filter(a=>a.status!=="liquidation"); if(u.role!=="admin") assets = assets.filter(a=>a.department_id===u.department_id);
   return `
   <div class="card" style="max-width:720px">
     <form data-form="repair_new">
-      <div class="form-group"><label>Tài sản</label>
-        <select class="form-control" name="asset_id" required>
-          <option value="">-- Chọn tài sản --</option>
-          ${assets.slice().sort(cmpName).map(a=>`<option value="${a.id}" ${presetAssetId===a.id?"selected":""}>${esc(a.code)} - ${esc(a.name)} (${esc(depName(a.department_id)||"chưa có phòng")})</option>`).join("")}
-        </select>
+      <div class="form-group"><label>Tài sản (gõ để tìm)</label>
+        ${assetPicker(assets, presetAssetId)}
       </div>
       <div class="form-group"><label>Mô tả sự cố</label><textarea class="form-control" name="description" rows="4" required placeholder="VD: Màn hình không lên nguồn..."></textarea></div>
       <div class="alert alert-warning">Sau khi lập phiếu, tài sản sẽ tự động chuyển sang "Hỏng - đề nghị sửa chữa".</div>
@@ -2096,7 +2139,7 @@ function submit_repair_new(form){
   const fd = new FormData(form);
   const assetId = fd.get("asset_id"), description = fd.get("description").trim();
   const a = byId(DB.assets, assetId);
-  if(!a){ flash("Tài sản không hợp lệ.", "error"); render(); return; }
+  if(!a){ alert("Bạn chưa chọn tài sản. Hãy gõ để tìm rồi bấm vào dòng gợi ý."); return; }
   const u = currentUser();
   if(u.role !== "admin" && a.department_id !== u.department_id) { flash("Thẩm quyền bị từ chối. Bạn chỉ có thể điều chuyển tài sản của phòng ban mình.", "error"); render(); return; }
   const id = uid(), now = nowIso();
@@ -2130,7 +2173,7 @@ function viewRepairDetail(u, id){
     {label:"2. LĐP phê duyệt", who:userName(rt.manager_id), at:rt.manager_at},
     {label:"3. TCTH điều phối", who:(rt.route === "it" ? "Bỏ qua — LĐP chuyển thẳng Điện toán" : userName(rt.tcth_id)), at:(rt.route === "it" ? rt.manager_at : rt.tcth_at)},
     {label:"4. Điện toán xử lý xong", who:userName(rt.it_id), at:rt.it_at},
-    {label:"5. Người báo xác nhận", who:userName(rt.reported_by), at:rt.user_confirmed_at},
+    {label:"5. Người báo xác nhận / phản hồi", who:userName(rt.reported_by), at:rt.user_confirmed_at},
   ];
   steps.forEach(s => s.cls = s.at ? "done" : "");
   if(rt.route === "it") steps[2].cls = "skipped";
@@ -2206,12 +2249,17 @@ function viewRepairDetail(u, id){
       ${(rt.status==="completed" && !rt.user_confirmed_at && String(u.id)===String(rt.reported_by)) ? `
       <div class="card" style="background:#f0fdf4; border:2px solid #22c55e;">
         <h4 style="color:#15803d; margin-top:0;">✅ Xác nhận hoàn tất</h4>
-        <div style="font-size:14px; margin-bottom:12px;">Yêu cầu <b>${rt.ticket_code || rt.id.slice(-5)}</b> đã được xử lý thành công bởi <b>${userName(rt.it_id)}</b> lúc <b>${fmtDateTime(rt.it_at)}</b>.<br>Vui lòng xác nhận để ghi nhận vào lịch sử.</div>
+        <div style="font-size:14px; margin-bottom:12px;">Yêu cầu <b>${rt.ticket_code || rt.id.slice(-5)}</b> đã được xử lý bởi <b>${esc(userName(rt.it_id))}</b> lúc <b>${fmtDateTime(rt.it_at)}</b>.${rt.resolution_note?`<br>Kết quả: <i>${esc(rt.resolution_note)}</i>`:""}<br>Vui lòng kiểm tra thiết bị và cho ý kiến.</div>
         <form data-form="repair_user_confirm" data-repair-id="${rt.id}">
-          <button class="btn btn-success btn-block" style="font-size:16px; font-weight:bold; padding:12px;" type="submit">OK - Xác nhận thiết bị đã hoạt động tốt</button>
+          <label style="font-size:13px;font-weight:600">Ý kiến phản hồi / góp ý (bắt buộc nếu chưa đồng ý)</label>
+          <textarea class="form-control" name="feedback" rows="3" placeholder="VD: Đã dùng tốt, cảm ơn. / Máy vẫn còn chập chờn, đề nghị kiểm tra lại..." style="margin:6px 0 10px"></textarea>
+          <button class="btn btn-success btn-block" style="font-size:16px; font-weight:bold; padding:12px; margin-bottom:8px" type="submit" onclick="this.form.dataset.decision='ok'">👍 Đồng ý - Thiết bị đã hoạt động tốt</button>
+          <button class="btn btn-outline-danger btn-block" style="font-weight:bold; padding:10px" type="submit" onclick="this.form.dataset.decision='reopen'">↩️ Chưa ổn - Đề nghị Điện toán xử lý lại</button>
         </form>
       </div>
       ` : ""}
+      ${(rt.status==="pending_it" && rt.user_feedback && rt.user_decision==="reopen") ? `<div class="alert alert-warning"><b>↩️ Người báo chưa đồng ý kết quả trước, yêu cầu xử lý lại</b> (lần ${rt.user_reopen_count||1}):<br>${esc(rt.user_feedback)}</div>` : ""}
+      ${(rt.user_confirmed_at && rt.user_feedback) ? `<div class="alert" style="background:#f0fdf4;border:1px solid #bbf7d0">💬 Phản hồi của người báo: ${esc(rt.user_feedback)}</div>` : ""}
       ${canReject ? `
       <div class="card">
         <h4 style="color:var(--red)">Từ chối / Huỷ phiếu</h4>
@@ -2278,10 +2326,30 @@ function submit_repair_complete(form){
 function submit_repair_user_confirm(form){
   const id = form.dataset.repairId;
   const rt = byId(DB.repairs, id), u = currentUser();
-  rt.user_confirmed_at = nowIso();
-  logHistory(rt.asset_id, "repair", `Người dùng xác nhận thiết bị đã được sửa chữa xong (Phiếu ${rt.ticket_code || rt.id.slice(-5)})`);
-  saveDB(); 
-  alert("Bạn đã xác nhận hoàn tất thành công! Xin cảm ơn.");
+  const decision = form.dataset.decision === "reopen" ? "reopen" : "ok";
+  const feedback = String(new FormData(form).get("feedback") || "").trim();
+  const code = rt.ticket_code || rt.id.slice(-5);
+  if(decision === "reopen" && !feedback){ alert("Vui lòng ghi rõ nội dung cần xử lý lại vào ô góp ý."); return; }
+  const now = nowIso();
+  rt.feedback_log = (rt.feedback_log || []).concat([{at: now, by: u.id, decision, text: feedback}]);
+  rt.user_feedback = feedback || null;
+  rt.user_decision = decision;
+  if(decision === "reopen"){
+    rt.status = "pending_it";
+    rt.user_confirmed_at = null;
+    rt.user_reopen_count = (rt.user_reopen_count || 0) + 1;
+    rt.user_reopen_at = now;
+    const a = byId(DB.assets, rt.asset_id);
+    if(a){ a.status = "broken"; a.status_changed_at = now; a.updated_at = now; }
+    logHistory(rt.asset_id, "repair", `Người báo chưa đồng ý kết quả phiếu ${code}, yêu cầu xử lý lại: ${feedback}`);
+    saveDB();
+    alert("Đã gửi yêu cầu xử lý lại cho Điện toán.");
+  } else {
+    rt.user_confirmed_at = now;
+    logHistory(rt.asset_id, "repair", `Người dùng xác nhận thiết bị đã được sửa chữa xong (Phiếu ${code})${feedback?": "+feedback:""}`);
+    saveDB();
+    alert("Bạn đã xác nhận hoàn tất thành công! Xin cảm ơn.");
+  }
   nav("repair_detail", {id});
 }
 function submit_repair_reject(form){
