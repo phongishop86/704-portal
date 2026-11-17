@@ -17,7 +17,7 @@ export const ssoHeaderEnabled = () => (process.env.SSO_PROXY_SECRET ?? "").lengt
 const b64 = (s: string) => Buffer.from(s, "base64url");
 const seen = new Map<string, number>(); // jti -> hạn (chống dùng lại token)
 
-export interface SsoClaims { username: string; prof: DirProfile }
+export interface SsoClaims { username: string; prof: DirProfile; lookup?: boolean }
 
 /** Trả claims nếu token hợp lệ; ném Error với lý do (không lộ cho người dùng cuối) nếu không. */
 export function verifySsoToken(token: string, now = Date.now()): SsoClaims {
@@ -67,5 +67,8 @@ export function claimsFromHeaders(req: Request): SsoClaims | null {
   const h = (k: string, d: string) => req.headers.get(process.env[k] || d) ?? "";
   const username = normalizeSso(h("SSO_HDR_USER", "x-remote-user"));
   if (!username) return null;
-  return { username, prof: toProfile(h("SSO_HDR_NAME", "x-remote-name"), h("SSO_HDR_MAIL", "x-remote-mail"), h("SSO_HDR_DEPT", "x-remote-dept"), h("SSO_HDR_GROUPS", "x-remote-groups")) };
+  const prof = toProfile(h("SSO_HDR_NAME", "x-remote-name"), h("SSO_HDR_MAIL", "x-remote-mail"), h("SSO_HDR_DEPT", "x-remote-dept"), h("SSO_HDR_GROUPS", "x-remote-groups"));
+  // IIS (Windows Authentication) chỉ biết tên người dùng, không có nhóm: máy chủ 704 tự tra nhóm trong AD bằng tài khoản chỉ đọc
+  if (!prof.groups.length) return { username, prof: { ...prof, searched: false }, lookup: true };
+  return { username, prof };
 }

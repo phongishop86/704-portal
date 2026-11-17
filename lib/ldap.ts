@@ -140,3 +140,24 @@ export async function ldapAuth(username: string, password: string): Promise<Ldap
 export async function ldapCheck(username: string, password: string): Promise<boolean> {
   return (await ldapAuth(username, password)) !== null;
 }
+
+/** Tra hồ sơ + nhóm AD của một tài khoản BẰNG TÀI KHOẢN CHỈ ĐỌC (LDAP_BIND_DN) — dùng cho SSO khi Portal/IIS chỉ biết tên người dùng. */
+export async function ldapLookup(username: string): Promise<LdapProfile | null> {
+  const u = normalizeLdapUser(username);
+  const url = process.env.LDAP_URL, dn = process.env.LDAP_BIND_DN, pw = process.env.LDAP_BIND_PASSWORD;
+  if (!u || !url || !dn || !pw) return null;
+  const tlsOptions: Record<string, unknown> = {};
+  if (process.env.LDAP_CA_FILE) tlsOptions.ca = [readFileSync(process.env.LDAP_CA_FILE)];
+  if (process.env.LDAP_TLS_INSECURE === "1") tlsOptions.rejectUnauthorized = false;
+  const ms = Number(process.env.LDAP_TIMEOUT_MS) || 8000;
+  const client = new Client({ url, timeout: ms, connectTimeout: ms, ...(url.toLowerCase().startsWith("ldaps:") ? { tlsOptions } : {}) });
+  try {
+    await client.bind(dn, pw);
+    return await searchProfile(client, u);
+  } catch (e) {
+    console.error("LDAP tra cứu (tài khoản chỉ đọc) lỗi:", (e as Error).message);
+    return null;
+  } finally {
+    try { await client.unbind(); } catch { /* bỏ qua */ }
+  }
+}

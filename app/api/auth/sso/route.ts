@@ -1,5 +1,5 @@
 import { json, makeSessionCookie } from "@/lib/auth";
-import { isLocalOnly } from "@/lib/ldap";
+import { isLocalOnly, ldapLookup } from "@/lib/ldap";
 import { provisionDirectoryUser } from "@/lib/ldap-user";
 import { claimsFromHeaders, ssoHeaderEnabled, ssoTokenEnabled, verifySsoToken, type SsoClaims } from "@/lib/sso";
 import { recordLogin } from "@/lib/usage";
@@ -21,7 +21,12 @@ function resolve(req: Request, token: string | null): { claims?: SsoClaims; erro
 async function establish(req: Request, token: string | null) {
   const r = resolve(req, token);
   if (!r.claims) return { err: json({ error: r.error }, r.status) };
-  const { username, prof } = r.claims;
+  const { username } = r.claims;
+  let prof = r.claims.prof;
+  if (r.claims.lookup) {
+    const found = await ldapLookup(username);
+    if (found) prof = { displayName: prof.displayName || found.displayName, mail: prof.mail || found.mail, department: prof.department || found.department, groups: found.groups, searched: found.searched };
+  }
   if (isLocalOnly(username)) { await recordLogin(req, { username, ok: false }); return { err: json({ error: "Tài khoản quản trị nội bộ phải đăng nhập bằng mật khẩu, không dùng SSO." }, 403) }; }
   const p = await provisionDirectoryUser(username, prof);
   if (!p.ok) { await recordLogin(req, { username, ok: false }); return { err: json({ error: p.error }, p.status) }; }
