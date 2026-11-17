@@ -7,6 +7,7 @@
     "build": "next build",
     "start": "next start",
     "typecheck": "tsc --noEmit",
+    "build:standalone": "python3 -I client/build-standalone.py",
     "build:app": "python3 -I client/build-app.py client/source/offline-original.html",
     "test": "npm run test:client && npm run test:server",
     "test:client": "node client/sync-engine.test.js",

@@ -22,3 +22,4 @@ out_*.json
 data/
 dist-win/
 *.zip
+dist/
