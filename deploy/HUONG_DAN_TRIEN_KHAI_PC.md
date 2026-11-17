@@ -189,3 +189,25 @@ Bot hỏi Telegram bằng `getUpdates`: chỉ cần máy chủ ra được Inter
 | "Không liên lạc được máy chủ Active Directory" | Kiểm tra `Test-NetConnection icbv.com -Port 389`, DNS, chứng chỉ (nếu ldaps); xem `logs\app.err.log` |
 | Đăng nhập AD báo sai mật khẩu | Thử thêm `-UpnSuffix icbv.com` trong `setup-ldap.ps1`; kiểm tra tên đăng nhập trong ứng dụng trùng tên AD |
 | Port 80/443 bị chiếm (IIS...) | Dừng IIS hoặc dùng cổng khác cho Caddy (sửa `https\Caddyfile`) |
+
+---
+
+## Phụ lục: Trang con của Portal + phân quyền theo nhóm Active Directory
+
+**Nguyên tắc:** trình duyệt không nói chuyện trực tiếp với AD được, nên trang phải được **phục vụ từ máy chủ 704** (chính máy chủ này làm việc với AD). File `704-assets-offline.html` khi mở từ máy chủ (http/https) sẽ tự dùng máy chủ thật và đăng nhập AD; chỉ khi mở thẳng từ ổ đĩa (file://) mới chạy bản dùng thử. Cách đơn giản nhất: Portal đặt **liên kết** tới `https://<máy-chủ>/` (trang chủ của máy chủ 704 chính là ứng dụng tài sản).
+
+**Bước 1. Tạo 5 nhóm bảo mật trong AD** (ví dụ trong OU Groups): `704-Admin`, `704-TCTH`, `704-IT`, `704-LDP`, `704-User`; cho nhân sự vào nhóm phù hợp.
+**Bước 2. Cấu hình** (PowerShell quản trị, trong `C:\704-assets`):
+```
+powershell -ExecutionPolicy Bypass -File setup-ldap.ps1 -Url "ldap://icbv.com" -Domain ICBV `
+  -BaseDn "dc=icbv,dc=com" `
+  -RoleMap "admin=704-Admin;tcth=704-TCTH;it=704-IT;manager=704-LDP;user=704-User" `
+  -RequireGroup -DeptAttr department
+```
+- `-RequireGroup`: người không thuộc nhóm nào ở trên **không đăng nhập được** (khuyến nghị).
+- `-Nested`: tính cả nhóm lồng nhau. `-BindDn/-BindPassword`: tài khoản chỉ đọc, dùng khi AD không cho người dùng thường đọc thuộc tính.
+- Tài khoản `admin` nội bộ (LDAP_LOCAL_USERS) luôn đăng nhập bằng mật khẩu trong ứng dụng, không phụ thuộc AD.
+
+**Cách hoạt động mỗi lần đăng nhập AD:** xác thực mật khẩu → đọc nhóm `memberOf`, `displayName`, `mail`, `department` → vai trò = nhóm cao nhất (admin > tcth > it > manager > user) → phòng ban khớp theo tên với danh mục phòng ban (không tự tạo phòng mới) → tự tạo tài khoản nếu chưa có. Vai trò chỉnh tay trong ứng dụng sẽ bị đặt lại theo nhóm AD ở lần đăng nhập sau; muốn đổi quyền thì đổi nhóm trong AD.
+
+**Kiểm tra:** đăng nhập thử bằng một tài khoản mỗi nhóm; xem `logs\app.err.log` nếu có dòng "LDAP". Lưu ý: nếu `-RequireGroup` mà báo "Không đọc được nhóm", cần cấp quyền đọc hoặc dùng `-BindDn`.

@@ -136,13 +136,24 @@
   }
 
   var realFetch = window.fetch.bind(window);
+  // Nếu trang được mở từ MÁY CHỦ 704 thật (http/https và /api/auth/me trả JSON) thì KHÔNG giả lập: dùng máy chủ thật
+  // (đăng nhập LDAP/AD + phân quyền theo nhóm AD). Mở trực tiếp từ file (file://) thì chạy bản dùng thử trong trình duyệt.
+  var serverMode = /^https?:$/.test(location.protocol)
+    ? realFetch("/api/auth/me", { credentials: "same-origin" }).then(function (r) { return /json/i.test(r.headers.get("content-type") || "") && (r.status === 200 || r.status === 401); }).catch(function () { return false; })
+    : Promise.resolve(false);
+  window.__a704Server = serverMode;
   window.fetch = function (input, init) {
     var u; try { u = new URL(typeof input === "string" ? input : input.url, location.href); } catch (e) { return realFetch(input, init); }
-    if (u.pathname.indexOf("/api/") !== 0 && !/\/api\//.test(u.pathname)) return realFetch(input, init);
-    u = new URL(u.href.replace(/^.*?(\/api\/)/, "http://x$1")); // chuẩn hoá: file:///.../api/x -> /api/x
-    return handle(u, init);
+    if (!/\/api\//.test(u.pathname)) return realFetch(input, init);
+    return serverMode.then(function (real) {
+      if (real) return realFetch(input, init);
+      var v = new URL(u.href.replace(/^.*?(\/api\/)/, "http://x$1")); // file:///.../api/x -> /api/x
+      return handle(v, init);
+    });
   };
-  if (navigator.sendBeacon) navigator.sendBeacon = function () { return true; };
+  var realBeacon = navigator.sendBeacon && navigator.sendBeacon.bind(navigator);
+  if (realBeacon) navigator.sendBeacon = function (a, b) { return window.__a704Real ? realBeacon(a, b) : true; };
+  serverMode.then(function (real) { window.__a704Real = real; });
 
   // --- Thanh thông tin bản dùng thử ---
   window.__a704Reset = function () {
@@ -150,7 +161,7 @@
     try { sessionStorage.clear(); Object.keys(localStorage).forEach(function (k) { localStorage.removeItem(k); }); } catch (e) {}
     var r = indexedDB.deleteDatabase(IDB); r.onsuccess = r.onerror = r.onblocked = function () { location.reload(); };
   };
-  document.addEventListener("DOMContentLoaded", function () {
+  document.addEventListener("DOMContentLoaded", function () { serverMode.then(function (real) { if (real) return;
     var b = document.createElement("div");
     b.style.cssText = "position:fixed;left:12px;bottom:60px;z-index:9999;font:12px/1.4 system-ui,sans-serif";
     b.innerHTML = '<details style="background:#0f172a;color:#e2e8f0;border-radius:10px;padding:8px 12px;box-shadow:0 4px 16px rgba(0,0,0,.3);max-width:330px"><summary style="cursor:pointer">🧪 Bản dùng thử — chạy trong trình duyệt</summary>' +
@@ -158,5 +169,5 @@
       '<code>demo.admin</code> Admin · <code>demo.tcth</code> TCTH · <code>demo.it1</code> Điện toán · <code>demo.lanhdao</code> LĐP · <code>demo.nhanvien</code> Nhân viên<br>' +
       '<a href="#" onclick="__a704Reset();return false" style="color:#7dd3fc">↺ Đặt lại dữ liệu mẫu</a></div></details>';
     document.body.appendChild(b);
-  });
+  }); });
 })();
