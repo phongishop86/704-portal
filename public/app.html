@@ -717,7 +717,15 @@ async function doLogin(username, password){
 async function boot(){
   root().innerHTML = '<div style="padding:60px;text-align:center;color:#475569;font-size:15px">⏳ Đang kết nối máy chủ…</div>';
   try{
-    const me = await api("/api/auth/me");
+    let me;
+    try{ me = await api("/api/auth/me"); }
+    catch(e0){
+      if(e0.status !== 401) throw e0;
+      // Chưa có phiên: thử đăng nhập một lần từ Portal (proxy đã xác thực AD gắn header). Không được thì hiện form đăng nhập.
+      const r = await fetch("/api/auth/sso", {method:"POST", credentials:"same-origin", headers:{"Content-Type":"application/json"}, body:"{}"}).catch(()=>null);
+      if(!r || !r.ok) throw e0;
+      me = await r.json();
+    }
     await bootAfterAuth(me.user.id);
     if(typeof handleDeepLink === "function") handleDeepLink();
     render();

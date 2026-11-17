@@ -211,3 +211,55 @@ powershell -ExecutionPolicy Bypass -File setup-ldap.ps1 -Url "ldap://icbv.com" -
 **Cách hoạt động mỗi lần đăng nhập AD:** xác thực mật khẩu → đọc nhóm `memberOf`, `displayName`, `mail`, `department` → vai trò = nhóm cao nhất (admin > tcth > it > manager > user) → phòng ban khớp theo tên với danh mục phòng ban (không tự tạo phòng mới) → tự tạo tài khoản nếu chưa có. Vai trò chỉnh tay trong ứng dụng sẽ bị đặt lại theo nhóm AD ở lần đăng nhập sau; muốn đổi quyền thì đổi nhóm trong AD.
 
 **Kiểm tra:** đăng nhập thử bằng một tài khoản mỗi nhóm; xem `logs\app.err.log` nếu có dòng "LDAP". Lưu ý: nếu `-RequireGroup` mà báo "Không đọc được nhóm", cần cấp quyền đọc hoặc dùng `-BindDn`.
+
+---
+
+## Phụ lục 2: Đăng nhập một lần (SSO) từ Portal — trang con không hỏi lại mật khẩu
+
+**Mục tiêu:** người dùng đã đăng nhập AD ở Portal bấm vào trang 704 thì vào thẳng, **quyền lấy theo nhóm AD** như phụ lục trước; chưa đăng nhập Portal thì trang 704 vẫn hiện form đăng nhập AD bình thường.
+
+### Chọn một trong hai cách (có thể bật cả hai)
+
+| | Cách A: Portal ký token (khuyến nghị) | Cách B: Proxy gắn header |
+|---|---|---|
+| Phù hợp | Portal có mã phía máy chủ (.NET, Java, PHP, Node…) | Portal/IIS/Nginx tự xác thực (Windows/Kerberos/LDAP) rồi chuyển tiếp |
+| Cách hoạt động | Portal tạo JWT ngắn hạn, trỏ liên kết tới `/api/auth/sso?token=…` | Proxy gắn `X-Remote-User`, `X-Remote-Groups`… + `x-sso-secret` |
+| Cần cấu hình | `SSO_SECRET` (dùng chung với Portal) | `SSO_PROXY_SECRET` (dùng chung với proxy) |
+| Bật | `setup-sso.ps1` | `setup-sso.ps1 -HeaderMode` |
+
+Điều kiện chung: đã bật phân quyền theo nhóm (`setup-ldap.ps1 -RoleMap …`). Trang 704 và Portal nên cùng tên miền gốc (ví dụ `portal.icbv.com` và `assets.icbv.com`) và dùng HTTPS.
+
+### Cách A: Portal ký token
+
+1. Trên máy chủ 704: `powershell -ExecutionPolicy Bypass -File setup-sso.ps1 -Issuer icbv-portal`. Khóa nằm trong `.env` (`SSO_SECRET`); đưa cho quản trị Portal qua kênh an toàn, **không dán vào chat/email**.
+2. Portal, khi người dùng bấm vào ô "Quản lý tài sản", **tạo JWT HS256** rồi chuyển hướng:
+   `https://<máy-chủ-704>/api/auth/sso?token=<JWT>&next=/`
+   Claims: `sub` (tên đăng nhập AD, dạng `an` hoặc `ICBV\\an`), `name`, `email`, `department`, `groups` (mảng tên nhóm hoặc DN, **gửi đúng các nhóm 704-***), `iss`=`icbv-portal`, `iat` (giờ phát hành), `exp` (= iat + 60 giây), `jti` (chuỗi ngẫu nhiên, mỗi lần một giá trị).
+3. Mẫu C# (.NET): 
+```csharp
+var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret));           // secret = SSO_SECRET
+var token = new JwtSecurityToken(issuer: "icbv-portal", claims: new[]{
+    new Claim("sub", user), new Claim("name", fullName), new Claim("email", mail),
+    new Claim("department", dept), new Claim("jti", Guid.NewGuid().ToString())
+  }.Concat(groups.Select(g => new Claim("groups", g))),
+  notBefore: null, expires: DateTime.UtcNow.AddSeconds(60),
+  signingCredentials: new SigningCredentials(key, SecurityAlgorithms.HmacSha256));
+// lưu ý: cần thêm claim iat; groups nên là mảng JSON
+return Redirect($"https://assets.icbv.com/api/auth/sso?token={new JwtSecurityTokenHandler().WriteToken(token)}&next=/");
+```
+   Mẫu Node: `jwt.sign({sub, name, email, department, groups, jti: crypto.randomUUID()}, secret, {algorithm:"HS256", issuer:"icbv-portal", expiresIn:60})` (thư viện `jsonwebtoken` tự thêm `iat`).
+4. Token **dùng một lần** (jti), sống 60–120 giây, thuật toán chỉ nhận HS256. Token sai/hết hạn thì người dùng về form đăng nhập AD bình thường.
+
+### Cách B: proxy gắn header
+
+1. `setup-sso.ps1 -HeaderMode` (sinh `SSO_PROXY_SECRET` trong `.env`).
+2. Proxy đã xác thực người dùng gắn khi chuyển tiếp tới máy chủ 704: `x-sso-secret: <SSO_PROXY_SECRET>`, `X-Remote-User: <tên AD>`, `X-Remote-Groups: <nhóm1;nhóm2>`, tuỳ chọn `X-Remote-Name`, `X-Remote-Mail`, `X-Remote-Dept`. **Proxy phải xoá các header này nếu client tự gửi** (nếu không thì bị giả mạo; riêng `x-sso-secret` chỉ proxy biết nên máy khác không dùng được).
+3. Mẫu Caddy (Portal và 704 cùng phía sau proxy): `reverse_proxy 127.0.0.1:3000 { header_up x-sso-secret "{env.SSO_PROXY_SECRET}"  header_up X-Remote-User "{http.auth.user.id}" }` (tên biến tuỳ cơ chế xác thực của proxy).
+4. Khi mở trang mà chưa có phiên, ứng dụng tự hỏi máy chủ; có header hợp lệ thì vào thẳng.
+5. **Tuyệt đối không** để cổng 3000 mở trực tiếp cho người dùng nếu bật cách B (chỉ proxy được tới), vì người dùng có thể đi vòng qua proxy. Cách A không có rủi ro này.
+
+### Quy tắc an toàn
+- Tài khoản `admin` nội bộ (và `LDAP_LOCAL_USERS`) **không dùng SSO**, luôn nhập mật khẩu.
+- Quyền lấy từ nhóm mỗi lần vào; `LDAP_REQUIRE_GROUP=1` chặn người không thuộc nhóm 704-*.
+- Đăng xuất ở Portal: phiên 704 vẫn còn tới 12 giờ hoặc tới khi bấm đăng xuất ở 704; nếu cần đồng bộ, đặt liên kết đăng xuất của Portal gọi `POST /api/auth/logout` của 704 hoặc rút ngắn thời hạn phiên.
+- Nhúng iframe từ Portal khác site hiện **chưa bật** (cookie `SameSite` và tiêu đề `X-Frame-Options`); dùng liên kết mở tab mới/cùng tab. Cần iframe thì báo để cấu hình thêm.

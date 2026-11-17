@@ -45,7 +45,9 @@ export function makeSessionCookie(userId: string): string {
   const secure = process.env.DB_MODE === "local"
     ? (process.env.COOKIE_SECURE === "1" ? "; Secure" : "")
     : (process.env.NODE_ENV === "production" && process.env.COOKIE_SECURE !== "0" ? "; Secure" : "");
-  return `${COOKIE}=${payload}.${sign(payload)}; HttpOnly; SameSite=Lax; Path=/; Max-Age=${SESSION_TTL_MS / 1000}${secure}`;
+  // COOKIE_SAMESITE=None chỉ khi trang được nhúng iframe từ Portal KHÁC site (bắt buộc HTTPS); mặc định Lax
+  const ss = (process.env.COOKIE_SAMESITE ?? "").toLowerCase() === "none" ? "None" : "Lax";
+  return `${COOKIE}=${payload}.${sign(payload)}; HttpOnly; SameSite=${ss}; Path=/; Max-Age=${SESSION_TTL_MS / 1000}${ss === "None" ? "; Secure" : secure}`;
 }
 
 export function clearSessionCookie(): string {
